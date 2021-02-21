@@ -1,0 +1,62 @@
+\documentclass[a4paper, technote, compsoc]{IEEEtran}
+%\documentclass[a4paper]{article}
+
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{float}  % used to fix location of images i.e.\begin{figure}[H]
+\usepackage{graphicx}  %needed to include png, eps figures
+\usepackage{mwe}
+\usepackage{url} % correct bad hyphenation here
+\usepackage{xcolor}
+\usepackage{xr}
+\usepackage{subfiles}
+
+\externaldocument[M-]{main}
+
+\usepackage[backend=biber,style=ieee]{biblatex} 
+\bibliography{biblio.bib} %your file created using JabRef
+
+
+\begin{document}
+
+% paper title
+\title{Reduced Order Models \\ With Moving Domains}
+
+% author names 
+\author{Enrique Millán Valbuena \\ \normalsize{463 426 8}}% <-this % stops a space
+        
+% The report headers
+\markboth{M. Sc. Aerospace Engineering, TU Delft}%do not delete next lines
+{Shell \MakeLowercase{\textit{et al.}}: Bare Demo of IEEEtran.cls for IEEE Journals}
+
+% make the title area
+\maketitle
+
+\begin{abstract}
+   The research objective is to build a Reduced Order Model (ROM) for a two-dimensional parametrized unsteady PDE with a moving boundary:
+   \begin{itemize}
+      \item Heat diffusion problem.
+      \item (Bonus) Graetz convection-diffusion problem.
+   \end{itemize}
+   Both the main body of the PDE and the geometrical definition of the moving boundary will be parametrized.
+
+   A concise description of the reducing procedure is provided, together with a priori convergence rates for basis size estimation and a posteriori error estimators to certify the use of the Reduced Order Model.
+   Numerical examples to showcase computational costs and implementation details are designed, implemented and validated with the Manufactured Solutions Method. 
+\end{abstract}
+
+\begin{IEEEkeywords}
+    Reduced Order Model, Moving Domain, FEM, DEIM, POD, Galerkin-Projection
+\end{IEEEkeywords}
+    
+
+\section*{Literature Review}
+\subfile{literature_review/literature.tex}
+
+\newpage
+\section*{Research Structure}
+\subfile{research_project/research.tex}
+
+\end{document}
