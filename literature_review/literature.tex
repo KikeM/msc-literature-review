@@ -83,7 +83,69 @@
 
 \section{Introduction}
 
-\newpage
+From  \cite{2016_CertifiedReducedBasisMethodsParametrizedPDE_Hesthaven}:
+\begin{quotation}
+    The central idea of the reduced basis approach is the identification of a suitable problem-dependent basis to effectively represent parametrized solutions to partial differential equations.
+\end{quotation}
+
+\section{Needs}
+We aim at obtaining efficiently the solution of parametrized parabolic PDEs with moving boundaries in time.
+
+\begin{itemize}
+    \item Build a ROM system equivalent to the FEM discretization of the weak form of the PDE.
+    \begin{itemize}
+        \item Solve the ROM for each time-step and project back to physical domain.
+        \item Functional evaluation of the solution.
+    \end{itemize}
+    \item Do not assemble and project any high fidelity operators to build the ROM operators.
+    \begin{itemize}
+        \item Create a POD-basis for the solution space.
+        \item Create a POD-basis for each operator (matrix or vector) of the system.
+        \item Discrete Empirical Interpolation of the ROM operators.
+    \end{itemize}
+    \item Certify the ROM solution with a posteriori error bounds.
+\end{itemize}
+
+\subsection{Scope}
+\begin{itemize}
+    \item Prescribed deformation of the domain:
+    \begin{itemize}
+        \item Interpolate through the mesh with a Laplacian operator for each time-step.
+        \item Separable geometrical and time parametrization of the domain deformation.
+        \item No FSI problem to be solved.
+    \end{itemize}
+    \item Linear operators:
+    \begin{itemize}
+        \item Heat equation.
+        \item Convection-diffusion with known velocity field. 
+    \end{itemize}
+    \item Lifting function for boundary conditions:
+    \begin{itemize}
+        \item The homogeneous problem is reduced.
+        \item The lifting operators are reduced. 
+    \end{itemize}
+\end{itemize}
+\section{What Others Have Done}
+\begin{itemize}
+    \item POD-Galerkin projection.
+    \item Operators reduction:
+    \begin{itemize}
+        \item (DEIM) Vector reduction and interpolation \cite{2010_nonlinearModelReductionDeim_chaturantabut}.
+        \item (MDEIM) Matrix reduction and interpolation \cite{2015_efficientModelReductionParametrizedSystemsMatrixDeim_Negri}.
+        \item Reduction of non-linear operators.
+    \end{itemize}
+    \item Problem parametrization: 
+    \begin{itemize}
+        \item PDE coefficients.
+        \item Boundary conditions.
+        \item Geometrical deformation of the domain.
+    \end{itemize}
+\end{itemize}
+
+\section{What We Intend To Do}
+
+\subsection{Research Questions}
+
 \section{Conclusions}
 \label{sec:conclusions}
 
