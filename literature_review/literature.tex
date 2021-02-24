@@ -88,6 +88,11 @@ From  \cite{2016_CertifiedReducedBasisMethodsParametrizedPDE_Hesthaven}:
     The central idea of the reduced basis approach is the identification of a suitable problem-dependent basis to effectively represent parametrized solutions to partial differential equations.
 \end{quotation}
 
+\begin{itemize}
+    \item Difference between local and global support.
+    \item Decomposition techniques.
+\end{itemize}
+
 \section{Needs}
 We aim at obtaining efficiently the solution of parametrized parabolic PDEs with moving boundaries in time.
 
@@ -99,9 +104,21 @@ We aim at obtaining efficiently the solution of parametrized parabolic PDEs with
     \end{itemize}
     \item Do not assemble and project any high fidelity operators to build the ROM operators.
     \begin{itemize}
-        \item Create a POD-basis for the solution space.
-        \item Create a POD-basis for each operator (matrix or vector) of the system.
+        \item Sampling strategies across the parameter space are crucial.
+            \begin{itemize}
+                \item Ensure convergence.
+                \item Computational efficiency.
+            \end{itemize}
+        \item Create a POD-basis for:
+        \begin{itemize}
+            \item The solution space.
+            \item Each operator, matrix or vector, of the system.
+            \item How does the selection of the inner product change the resultant basis of the POD?
+            \item Can we use information from the PDE to improve this inner product?
+            \item Why does the POD generate basis functions with global support? 
+        \end{itemize}
         \item Discrete Empirical Interpolation of the ROM operators.
+        \item Greedy sampling techniques are similar in objective to, but very different in approach from, the more well-known methods of proper orthogonal decomposition (POD). How are they different?
     \end{itemize}
     \item Certify the ROM solution with a posteriori error bounds.
 \end{itemize}
@@ -145,6 +162,15 @@ We aim at obtaining efficiently the solution of parametrized parabolic PDEs with
 \section{What We Intend To Do}
 
 \subsection{Research Questions}
+
+\begin{itemize}
+    \item How does the parameter sampling strategy affect the goodness of the POD-basis?
+    \item How does the parameter sampling strategy affect the goodness of the Discrete Empirical Interpolation?
+    \item Can we predict the minimum viable number of basis for a given error?
+    \item What is a representative snapshot?
+    \item When can we consider the basis sufficiently rich?
+    \item What does it mean for a basis to be \textit{rich}? 
+\end{itemize}
 
 \section{Conclusions}
 \label{sec:conclusions}
