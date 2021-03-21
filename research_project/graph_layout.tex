@@ -42,21 +42,21 @@ The strong formulation of an unsteady model can be expressed with three ingredie
     \item Spatial operator $L_{SF}(u, \tau)$.
     \item Forcing term $f(\tau)$.
 \end{itemize}
-\begin{equation*}
+\begin{equation}
     \frac{\partial u}{\partial t} + L_{SF}(u, \tau) = f(\tau)
-\end{equation*}
+\end{equation}
 The spatial operator and the forcing term depend on a generic parameter $\tau$, which serves to show a general dependency on a modelling parameter $\mu$, time $t$, or both.
 
 \subsubsection*{Weak Formulation}
 If we equip our functional space $V$ with an inner product~$(u,v)_\tau$,
-\begin{equation*}
+\begin{equation}
     (u,v)_\tau = \int_{\Omega(\tau)} u v d\Omega,
-\end{equation*}
+\end{equation}
 which has a dependency with the parametrization if the geometry $\Omega = \Omega(\tau)$ itself does too,
 we can derive a variational formulation of the strong formulation with a Galerkin projection,
-\begin{equation*}
+\begin{equation}
     \left(\frac{\partial u}{\partial t}, v \right)_{\tau} + \left(L_{WF}(u, \tau), v \right)_{\tau} = \left(f(\tau), v \right)_{\tau}.
-\end{equation*}
+\end{equation}
 This is called the \textit{weak formulation} because the differentiability demanded to the solution space is often smaller than the one present in the strong formulation
 % \footnote{The highest order derivative of the spatial operator can often be reduced via integration by parts within the integral of the inner product, which is why we write $L_{WF}$ instead of $L_{SF}$.}. 
 
@@ -67,16 +67,16 @@ To do so, we require a \textit{discretization}, that is, a representation of our
 Dimensional Space, $V_h = \text{span}(\left\{\phi_0(x), \phi_1(x), \ldots, \phi_{N_h}(x)\right\})$.
  
 Within the context of the Finite Elements, the basis functions $\phi_i(x)$ allow us to represent our solution as a linear combination of unknown coefficients and basis functions:
-\begin{equation*}
+\begin{equation}
     u_h \left(\tau\right) = \sum^{N_h}_{i=0} u_{h_{i}} \left(\tau\right) \phi_i (x).
-\end{equation*}
+\end{equation}
 The application of the Galerkin projection principle with~$V_h$ leads to a system of algebraic equations
 % \footnote{The same kind of system of algebraic equations would arise for a Finite Differences or Finite Volumes scheme, but the contents of each matrix/vector could be potentially be different.}
 ,
-\begin{equation*}
+\begin{equation}
     \label{eq:algebraic_system_fom}
     M_h (\tau) \frac{d u_h}{dt} + A_h (\tau) u_h  = F_h(\tau),
-\end{equation*}
+\end{equation}
 where $u_h$ represents the vector of unknown coefficients.
 
 This system of equations is a semi-discrete system of equations, since it is discrete in space but not in time. 
@@ -97,9 +97,9 @@ Two simultaneous issues can be addressed separately from each other, to later be
         u_N \left(\tau\right) &= \sum^{N}_{i=0} u_{N_{i}} \left(\tau\right) \psi_i (x).
     \end{align*}
     \item System Approximation, a.k.a. hyper-reduction: find a problem-based basis for each algebraic operator:
-    \begin{equation*}
+    \begin{equation}
         A_h^m(\tau) = \sum_{q}^{Q_a} \Theta_{q}^{a}(\tau) A_q
-    \end{equation*}
+    \end{equation}
 \end{itemize}
 To deal with the algebraic problem and not the continuous problem allows us to have a complete black box approach to the reduction problem.
 
@@ -113,22 +113,22 @@ The first requires an error estimator, the second one a good sampling strategy o
 \subsubsection{Reduced Order Model (ROM)}
 If we only make use the reduced basis $V_N$, we are in the context of a RB-Galerkin procedure. 
 We have less equations to solve, but for each time step we still need to assemble the full order operators and project them unto the reduced basis:
-\begin{equation*}
+\begin{equation}
     M_N (\tau) \frac{d u_N}{dt} + A_N (\tau) u_N  = F_N(\tau).
-\end{equation*}
+\end{equation}
 
 \subsubsection{Hyper-Reduced Full Order Model (HFOM)}
 If we only make use of the system approximation for the operators, we are going to be skip the assembly step, but our system of equations will remain costly to solve, since we are still in the generic context of the FE basis functions:
-\begin{equation*}
+\begin{equation}
     M_h^m (\tau) \frac{d u_h^m}{dt} + A_h^m (\tau) u_h^m  = F_h^m(\tau).
-\end{equation*}
+\end{equation}
 
 \subsubsection{Hyper Reduced Order Model (HROM)}
 If we make use the reduced basis $V_N$ and the system approximation for the operators, we are in the context of a HRB-Galerkin procedure.
 We have less equations to solve, and additionally we can directly assemble the reduced operators without having to build the complete full order operators:
-\begin{equation*}
+\begin{equation}
     M_N^m (\tau) \frac{d u_N^m}{dt} + A_N^m (\tau) u_N^m  = F_N^m(\tau).
-\end{equation*}
+\end{equation}
 
 \section{Error Definitions}
 There are a suite of errors and their norms that we are concerned with.
@@ -139,17 +139,17 @@ There are a suite of errors and their norms that we are concerned with.
         e_{N}^{m}(\tau) &= e_{h}^{m}(\tau) + e_{N}(\tau)
     \end{align*}
     \item HFOM Error:
-    \begin{equation*}
+    \begin{equation}
         e_{h}^{m}(\tau) = u_h(\tau) - u_h^m(\tau)
-    \end{equation*}
+    \end{equation}
     \item ROM Error w.r.t. HFOM:
-    \begin{equation*}
+    \begin{equation}
         e_{N}(\tau) = u_h^{m}(\tau) - \mathbb{V}u_N^m(\tau)
-    \end{equation*}
+    \end{equation}
     \item ROM Error (skipped in the derivations, why?):
-    \begin{equation*}
+    \begin{equation}
         e_{h}(\tau) = u_h(\tau) - \mathbb{V}u_N(\tau)
-    \end{equation*}
+    \end{equation}
 \end{itemize}
 
 Brief derivation:
@@ -170,9 +170,9 @@ Additionally, one can study how does the error in the reduction of each operator
 \end{align*}
 
 The question is to determine:
-\begin{equation*}
+\begin{equation}
     e_{N}^{m}(\tau) = f\left(e^m_A(\tau), e^m_F(\tau)\right)
-\end{equation*}
+\end{equation}
 
 Finally, one has to investigate if the error made by the discretization scheme in time plays any role in the reduction process.
 
