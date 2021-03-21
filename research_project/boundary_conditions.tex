@@ -1,0 +1,99 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+    
+\section{How to Deal with Inhomogeneous Essential Boundary Conditions}
+We recall that, within the Galerkin Reduced Basis Method, we are going to build a set of basis functions with global support to solve the variational problem.
+
+Due to the global support, we cannot set essential boundary conditions with the same procedures as we conventionally do within the Finite Element Context.
+
+Whereas essential boundary conditions present difficulties, natural boundary conditions do not. 
+This is due to the fact that the latter arise as a functional in the weak form, and are therefore handled naturally by the reduction procedure. 
+
+Ideally, we want to handle boundary conditions in the most generic way, specially in terms of the matrices element values\footnote{
+    If we have to modify the forcing term it should not be seen as an issue, since by definition that term is already the most generic one in all problem definitions.}.
+That is, we aim at finding a procedure which does not change if changes occur in the underlying equation, the mesh size or the interpolation degree\footnote{Within the context of Lagrangian Finite Elements.}.
+
+\subsection{Finite Element Context}
+With the usual $L^2$ inner product, 
+\begin{equation}
+    (u,v)_\tau = \int_{\Omega(\tau)} u v d\Omega,
+\end{equation}
+say we want to solve the following toy problem in 1D, 
+\begin{subequations}
+    \begin{align}
+        (\nabla u, \nabla v)_\tau &= (f, v)_\tau, \\
+        u(0) &= g_0, \\
+        u(L) &= g_L.
+    \end{align}
+\end{subequations}
+
+Due to the variational nature of the weak formulation, and the nodal character of the basis the FE method uses, one can impose the essential boundary conditions strongly or weakly.
+
+\subsubsection{Modifying Degrees of Freedom}
+When the boundary conditions are imposed strongly, the degrees of freedom (and their associated basis functions) are directly modified to reach the prescribed value.
+
+This is translated into the appropriate imposition of unity values in the matrix rows and columns, and the direct modification of the right hand side.
+
+% This is an invasive and mesh-dependent procedure. 
+
+\subsubsection{Penalty Method}
+When the boundary conditions are imposed weakly, the variational form is modified so that the conditions are met up to an error.
+% This is known as the penalty method.
+
+This method involves integrals in the exterior facets.
+
+\subsubsection{Lifting Operator}
+Additionally, one could define an in-between method, which we refer to as the lifting method, where the boundary conditions are introduced by splitting the problem between the solution of an homogeneous problem and the latter addition of the lifting operator to satisfy the boundary conditions,
+\begin{equation}
+    u = \hat{u} + g_D,
+\end{equation}
+where $g_D$ is known as a lifting (extension or prolongation) of the boundary data, since
+\begin{equation}
+    \left.g_D\right|_{\Gamma_D} = u_D,
+\end{equation} 
+where $u_D$ represents the function values at the Dirichlet section of the boundary. 
+
+When we are dealing with a 1D problem, the computation of the lifting operator is straigthforward.
+It suffices to take
+\begin{equation}
+    g_D(x) = g_L \frac{x}{L} + g_0 \frac{L-x}{L}.
+\end{equation}
+
+With this trick, the problem we would solve becomes
+\begin{subequations}
+    \begin{align}
+        (\nabla \hat{u}, \nabla v)_\tau &= (f, v)_\tau - (\nabla g_D, \nabla v), \\
+        \hat{u}(0) &= 0, \\
+        \hat{u}(L) &= 0.
+    \end{align}
+\end{subequations}
+This provides us with a more generic framework, since we would always analyze an homogeneous problem, and only our right hand side would change if the wanted to explore other boundary values.
+
+In the context of the FE method, the nodal values of the $g_D$ representation in the basis can be obtained via interpolation or projection. 
+
+\subsubsection{Convert to Natural Conditions}
+Can we convert any essential boundary condition into a natural one?
+
+% https://math.stackexchange.com/questions/1470239/converting-dirichlet-boundary-conditions-to-neumann-boundary-conditions-for-the
+
+\subsection{Reduced Basis Context}
+From the point of view of the construction of a reduced basis, the existence of non-homogeneous boundary values poses a problem.
+
+It is difficult to build a generic basis if the different snapshots have different values at the boundary nodes. 
+A POD of such a collection would give back a sort of average value in those nodes, but the boundary values is not something we can approximate, it should be accurate to machine precision!
+
+\subsubsection{Lifting Operator}
+In that context, the use of the lifting operator is of great help. 
+
+Through its application, we have defined a FOM whose boundary conditions are always of homogeneous nature, therefore giving a general character to the basis built via the snapshots method.
+
+\subsubsection{Snapshots Modification}
+Several authors suggest the modification of the snapshots prior to the construction of the basis.
+By substracting different snapshots subject to the same boundary values (but different internal ones), one can obtain a snapshot with relevant information of the PDE with homogeneous boundary values. 
+
+\subsubsection{Other Methods}
+Due to the global support of the reduced basis functions, one cannot simply "modify" the matrix and vector entries to set the boundary conditions, since \textit{the global reduced basis is no longer a nodal basis}.
+
+
+\end{document}
