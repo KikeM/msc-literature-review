@@ -1,0 +1,187 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+    
+\section{Vocabulary Definition}
+
+This section defines the vocabulary we will use from now on in the Thesis. It serves as an explanatory document of the graph, which shows how we move from reality to the final reduced model. 
+
+First, the analytical model in the infinite dimensional space is introduced. 
+Secondly, we move from an infinite dimensional space to a finite one, the discretization step (explained in the context of the Finite Elements).
+In this section we define the algebraic Full Order Model (FOM), benchmark of our reduction work. 
+Then, we present the two reduction techniques we shall be using in this work: a reduced basis for the Galerkin projection (ROM) and a collateral basis for the assembly of the operators (HR). 
+Finally, the three possible algebraic reduced problems are presented. 
+
+Even if we are only interested in the combination of the reduced and collateral basis to build the complete reduced order model, the error of the final reduced model can be expressed as a combination of the other two separately. 
+
+\subsection{How To Read The Graph}
+The graph aims at portraying the following main concepts:
+\begin{enumerate}
+    \item Numerical modelling terms (grey boxes).
+    \item Analysis/Calculus terms (green boxes).
+    \item Collections of the previous (coloured rectangles).
+\end{enumerate}
+The line between the first two concepts is sometimes blurry. 
+We seek to put together the ideas from functional analysis, calculus and numerical analysis which are used to build numerical models of parametrized partial differential equations.
+
+\subsection{Graph Walkthrough}
+In the following sections we explain from the top left to the bottom right the different elements contained within the graph. 
+
+We start off from reality, which can be dealt with either with experiments, which are out of the scope of this work, or analytical models.
+
+\subsubsection{Analytical Model}
+Analytical models are studied within the body of infinite dimensional function spaces, $V$.
+
+\subsubsection*{Strong Formulation}
+The model often starts with a Parametrized Partial Differential Equation (PDE), also known as \textit{strong formulation}.
+% \footnote{This is so because under this expression the derivatives involved in the model are the highest possible.}
+
+The strong formulation of an unsteady model can be expressed with three ingredients:
+\begin{itemize}
+    \item First order time derivative $\frac{\partial u}{\partial t}$.
+    \item Spatial operator $L_{SF}(u, \tau)$.
+    \item Forcing term $f(\tau)$.
+\end{itemize}
+\begin{equation*}
+    \frac{\partial u}{\partial t} + L_{SF}(u, \tau) = f(\tau)
+\end{equation*}
+The spatial operator and the forcing term depend on a generic parameter $\tau$, which serves to show a general dependency on a modelling parameter $\mu$, time $t$, or both.
+
+\subsubsection*{Weak Formulation}
+If we equip our functional space $V$ with an inner product~$(u,v)_\tau$,
+\begin{equation*}
+    (u,v)_\tau = \int_{\Omega(\tau)} u v d\Omega,
+\end{equation*}
+which has a dependency with the parametrization if the geometry $\Omega = \Omega(\tau)$ itself does too,
+we can derive a variational formulation of the strong formulation with a Galerkin projection,
+\begin{equation*}
+    \left(\frac{\partial u}{\partial t}, v \right)_{\tau} + \left(L_{WF}(u, \tau), v \right)_{\tau} = \left(f(\tau), v \right)_{\tau}.
+\end{equation*}
+This is called the \textit{weak formulation} because the differentiability demanded to the solution space is often smaller than the one present in the strong formulation
+% \footnote{The highest order derivative of the spatial operator can often be reduced via integration by parts within the integral of the inner product, which is why we write $L_{WF}$ instead of $L_{SF}$.}. 
+
+\subsubsection{Full Order Model (FOM)}
+Eventually, we need to obtain a computable solution of the analytical model. 
+To do so, we require a \textit{discretization}, that is, a representation of our problem in a Finite
+% \footnote{The parameter $h$ is a generic mesh element size. It is introduced to denote the dimension of the space, since $\text{dim}(V_h) = N_h \sim 1/h$.} 
+Dimensional Space, $V_h = \text{span}(\left\{\phi_0(x), \phi_1(x), \ldots, \phi_{N_h}(x)\right\})$.
+ 
+Within the context of the Finite Elements, the basis functions $\phi_i(x)$ allow us to represent our solution as a linear combination of unknown coefficients and basis functions:
+\begin{equation*}
+    u_h \left(\tau\right) = \sum^{N_h}_{i=0} u_{h_{i}} \left(\tau\right) \phi_i (x).
+\end{equation*}
+The application of the Galerkin projection principle with~$V_h$ leads to a system of algebraic equations
+% \footnote{The same kind of system of algebraic equations would arise for a Finite Differences or Finite Volumes scheme, but the contents of each matrix/vector could be potentially be different.}
+,
+\begin{equation*}
+    \label{eq:algebraic_system_fom}
+    M_h (\tau) \frac{d u_h}{dt} + A_h (\tau) u_h  = F_h(\tau),
+\end{equation*}
+where $u_h$ represents the vector of unknown coefficients.
+
+This system of equations is a semi-discrete system of equations, since it is discrete in space but not in time. 
+Further discretization of the time derivative is necessary to obtain the time evolution of the coefficients, but that level of detail is not required to discuss and build the reduced order model. 
+
+In numerical terms and within the scope of this work, since in general we do not know the true solution $u(x)$ of the PDE
+% \footnote{Unless the forcing term is obtained by introducing a closed-form function into the differential operators, this is called the Method Of Manufactured Solutions, and it is quite useful to validate codes.}
+, we refer to the solution of this algebraic system $u_h$ as \textit{the truth}.
+It is against this value we shall benchmark our reduced order models. 
+
+\subsection{Reduction Techniques}
+Solving the previous algebraic problem is often costly in terms of memory and computation time.
+Two simultaneous issues can be addressed separately from each other, to later be combined:
+\begin{itemize}
+    \item State-Space Reduction: replace the generic FE basis functions (compact support) with a problem-based basis functions $\psi_i$ (global support), :
+    \begin{align*}
+        V_N &= \text{span}(\left\{\psi_0(x), \psi_1(x), \ldots, \psi_{N}(x)\right\}), \\
+        u_N \left(\tau\right) &= \sum^{N}_{i=0} u_{N_{i}} \left(\tau\right) \psi_i (x).
+    \end{align*}
+    \item System Approximation, a.k.a. hyper-reduction: find a problem-based basis for each algebraic operator:
+    \begin{equation*}
+        A_h^m(\tau) = \sum_{q}^{Q_a} \Theta_{q}^{a}(\tau) A_q
+    \end{equation*}
+\end{itemize}
+To deal with the algebraic problem and not the continuous problem allows us to have a complete black box approach to the reduction problem.
+
+In broad terms, a problem-based basis can be generated in two ways:
+\begin{enumerate}
+    \item Greedy: error-based selection of the best snapshots.
+    \item Automatic: POD over a collection of solution snapshots.
+\end{enumerate}
+The first requires an error estimator, the second one a good sampling strategy over the parameter space. 
+
+\subsubsection{Reduced Order Model (ROM)}
+If we only make use the reduced basis $V_N$, we are in the context of a RB-Galerkin procedure. 
+We have less equations to solve, but for each time step we still need to assemble the full order operators and project them unto the reduced basis:
+\begin{equation*}
+    M_N (\tau) \frac{d u_N}{dt} + A_N (\tau) u_N  = F_N(\tau).
+\end{equation*}
+
+\subsubsection{Hyper-Reduced Full Order Model (HFOM)}
+If we only make use of the system approximation for the operators, we are going to be skip the assembly step, but our system of equations will remain costly to solve, since we are still in the generic context of the FE basis functions:
+\begin{equation*}
+    M_h^m (\tau) \frac{d u_h^m}{dt} + A_h^m (\tau) u_h^m  = F_h^m(\tau).
+\end{equation*}
+
+\subsubsection{Hyper Reduced Order Model (HROM)}
+If we make use the reduced basis $V_N$ and the system approximation for the operators, we are in the context of a HRB-Galerkin procedure.
+We have less equations to solve, and additionally we can directly assemble the reduced operators without having to build the complete full order operators:
+\begin{equation*}
+    M_N^m (\tau) \frac{d u_N^m}{dt} + A_N^m (\tau) u_N^m  = F_N^m(\tau).
+\end{equation*}
+
+\section{Error Definitions}
+There are a suite of errors and their norms that we are concerned with.
+\begin{itemize}
+    \item HROM Error:
+    \begin{align*}
+        e_{N}^{m}(\tau) &= u_h(\tau) - \mathbb{V}u_N^m(\tau) \\
+        e_{N}^{m}(\tau) &= e_{h}^{m}(\tau) + e_{N}(\tau)
+    \end{align*}
+    \item HFOM Error:
+    \begin{equation*}
+        e_{h}^{m}(\tau) = u_h(\tau) - u_h^m(\tau)
+    \end{equation*}
+    \item ROM Error w.r.t. HFOM:
+    \begin{equation*}
+        e_{N}(\tau) = u_h^{m}(\tau) - \mathbb{V}u_N^m(\tau)
+    \end{equation*}
+    \item ROM Error (skipped in the derivations, why?):
+    \begin{equation*}
+        e_{h}(\tau) = u_h(\tau) - \mathbb{V}u_N(\tau)
+    \end{equation*}
+\end{itemize}
+
+Brief derivation:
+\begin{align*}
+    e_{N}^{m}(\tau) &= u_h(\tau) - \mathbb{V}u_N^m(\tau) \\
+    e_{N}^{m}(\tau) &= u_h(\tau) - \mathbb{V}u_N^m(\tau) \pm u_h^m(\tau) \\
+    e_{N}^{m}(\tau) &= 
+    \left[u_h(\tau) - u_h^m(\tau)\right] 
+    +
+    \left[u_h^m(\tau) - \mathbb{V}u_N^m(\tau)\right] \\
+    e_{N}^{m}(\tau) &= e_{h}^{m}(\tau) + e_{N}(\tau) \\
+\end{align*}
+
+Additionally, one can study how does the error in the reduction of each operator affect the solution error:
+\begin{align*}
+    e^m_A(\tau) &= A_h(\tau) - A_h^m(\tau) \\
+    e^m_F(\tau) &= F_h(\tau) - F_h^m(\tau)
+\end{align*}
+
+The question is to determine:
+\begin{equation*}
+    e_{N}^{m}(\tau) = f\left(e^m_A(\tau), e^m_F(\tau)\right)
+\end{equation*}
+
+Finally, one has to investigate if the error made by the discretization scheme in time plays any role in the reduction process.
+
+\section{Remaining questions}
+\begin{itemize}
+    \item How is the collateral basis obtained?
+    \item How are the approximated operators obtained?
+    \item How is an efficient offline-online decomposition achieved?
+    \item How are the errors bounded?
+\end{itemize}
+
+\end{document}
