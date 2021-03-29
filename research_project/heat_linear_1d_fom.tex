@@ -1,0 +1,578 @@
+% \documentclass[a4paper, technote, compsoc]{IEEEtran}
+\documentclass[../main.tex]{subfiles}
+
+\newcommand{\inner}[2]{\left<#1, #2\right>}
+
+\begin{document}
+
+\section{Full Order Model: Heat Equation}
+\label{sec:1d_fom_heat_equation_full_order_model}
+The Full Order Model for the parametrized one-dimensional linear heat equation is derived.
+Due to its simplicity, this problem is not the focus of the thesis, yet it serves well to set a benchmark and test our ideas and implementations without the noise and effort required by non-linear terms.
+
+The model will be derived in the continuous, semi-discrete and fully discrete contexts for a generic parametrization and forcing term.
+We shall use the Galerkin projection principle to find a weak form, which we later discretize using the Finite Element Method. 
+At the end of the document two specific problems will be presented, to implement and test the solver and reduction algorithms. 
+
+If the variational or Finite Element problem is not correctly stated in formal terms yet, we apologize in advance.
+These kind of language formalities take time to settle and this is still a draft. 
+The reader will be able to fill in any notational or definition gaps for the moment. 
+
+We define the vector $\mu \in \mathcal{P}$ to collect all the parameters present in the formulation.
+Parameters can be present in the PDE's body, in the boundary conditions, or in the geometrical definition of the domain. 
+We shall define our problem within a deforming domain in time, whose movement is known and not part of the solution,
+\begin{equation*}
+    \Omega(t, \mu) := \left\{x \in \mathbb{R} : x \in \left[0, L(t, \mu)\right]\right\}.
+\end{equation*}
+The function $L(t, \mu)$ is a real-valued smooth function in the time and parameter space.
+From now on, we drop the dependency on time and the parameters unless it is strictly necessary. 
+
+\subsection{Continuous Problem}
+We start with the definition of the problem in the continuous setting: 
+a differential model given by a PDE, referred to as \emph{strong formulation}; 
+and its weak formulation derived with the Galerkin principle.
+
+\subsubsection{Strong Formulation}
+The differential model that captures heat transfer for a function~$u = u(x,t)$ is given by the following PDE, boundary and initial conditions,
+\begin{subequations}
+    \begin{align}
+        \frac{\partial u}{\partial t} - \alpha(x) \Delta u &= f(x, t; \mu), \\
+        u(0, t) &= b_0(t; \mu), \\
+        u(L, t) &= b_L(t; \mu), \\
+        u(x, 0) &= u_0(x; \mu),
+    \end{align}
+\end{subequations}
+where we assume all the terms to be present in their non-dimensional form with respect to the original problem. 
+
+Additionally, we have the boundary conditions and the forcing term to depend on time and the parameter vector without loss of generality.
+Again, from now on we drop the dependency to have a clear notation.
+
+For the one-dimensional scenario, the Laplacian operator reduces to the simple expression of the second derivative,
+\begin{equation}
+    \Delta u = \frac{\partial^2 u}{\partial x^2}.
+\end{equation}
+
+\subsubsection{Weak Formulation}
+Since we will be working with the Galerkin procedure to solve PDEs, 
+we define the $L^2(\Omega)$ inner product to transform the strong formulation into a weak, variational one,
+\begin{equation}
+    \inner{u}{v}_{(t, \mu)} = \int_{\Omega(t, \mu)} uv\ d\Omega.
+\end{equation}
+This inner product induces the so called \emph{eyeball} norm, since it checks if two functions look alike,
+\begin{equation}
+    \norm{f-g}_{(t, \mu)}  = \sqrt{\int_{\Omega(t, \mu)} (f - g)^2\ d\Omega}.
+\end{equation}
+Eventually, we will also be interested in other norms, such as the $H^1(\Omega)$ norm, which captures the differences in the gradients too.
+This is important when computing stress-related values from the solved field.
+
+With this inner product, we project the residual of the strong formulation onto a given fuction $v \in V$,
+where $V$ is a suitable Hilbert space,
+\begin{subequations}
+    \begin{align}
+        \label{eq:1d_fom_weak_formulation}
+        \inner{\frac{\partial u}{\partial t}}{v} + \inner{\alpha(x) \grad u}{\grad v} &= \inner{f}{v} \\
+        u(0, t) &= b_0(t), \\
+        u(L, t) &= b_L(t), \\
+        u(x, 0) &= u_0(x).
+    \end{align}
+\end{subequations}
+We have exploited the integration by parts rule to lower by one the derivative degree of the laplacian operator.
+This is the reason to call this the \emph{weak form}, since the differentiability of the highest operator has been reduced.
+
+\subsubsection{Dirichlet Lifting}
+\label{sec:1d_fom_heat_equation_dirichlet_lifting}
+For reasons that will become apparent later, it is preferable to work with a homogeneous problem in the Dirichlet boundary conditions.
+
+To obtain so, we introduce a \emph{lifting} $g(x,t)$ of the Dirichlet boundary conditions.
+We express the solution of our problem like the linear combination of the solution of the homogeneous problem and the lifting function:
+\begin{equation}
+    \label{eq:1d_fom_homogeneous_plus_lifting}
+    u(x,t) = \hat{u}(x,t) + g(x,t).
+\end{equation}
+There are two conditions to be met by the lifting of the boundary conditions:
+\begin{enumerate}
+    \item To reach the prescribed values at the boundary nodes.
+    \item To be sufficiently smooth within the domain.
+\end{enumerate}
+In a one-dimensional setting, the definition of a lifting function $g(x,t)$ is straigtforward, with a simple linear interpolation:
+\begin{equation}
+    \label{eq:1d_fom_dirichlet_lifting}
+    g(x,t) = b_L(t) \left(\frac{x}{L}\right) + b_0(t) \left(\frac{L - x}{L}\right).
+\end{equation}
+We verify that the function reaches the prescribed values at the boundaries,
+\begin{subequations}
+    \begin{align*}
+        g(0,t) &= b_L(t) \left(\frac{0}{L}\right) + b_0(t) \left(\frac{L}{L}\right) = b_0(t), \\
+        g(L,t) &= b_L(t) \left(\frac{L}{L}\right) + b_0(t) \left(\frac{L - L}{L}\right) = b_L(t).
+    \end{align*}
+\end{subequations}
+The smoothness condition is reached thanks to the linearity and smoothness of the interpolation functions.
+
+In higher dimensional settings this procedure is valid too. 
+However, due to the arbitrary shape the domain can take, the construction of the lifting function becomes more laborious.
+We shall skip that for the moment, since we are dealing with a one-dimensional problem, where we can build the extension of the boundary conditions analytically. 
+
+Introducing the lifting breakdown \eqref{eq:1d_fom_homogeneous_plus_lifting} into the weak formulation \eqref{eq:1d_fom_weak_formulation},
+we find an additional forcing term,
+\begin{subequations}
+    \label{eq:1d_fom_weak_formulation_homogeneous}
+    \begin{align}
+        \inner{\frac{\partial \hat{u}}{\partial t}}{v} + \inner{\alpha(x) \grad \hat{u}}{\grad v} &= \inner{f}{v} + \inner{f_g}{v}, \\
+        f_g &= - \left(\frac{\partial g}{\partial t} + \alpha(x) \grad g\right), \\
+        \hat{u}(0, t) &= 0, \\
+        \hat{u}(L, t) &= 0, \\
+        \hat{u}(x, 0) &= \hat{u}_0(x),
+    \end{align}
+\end{subequations}
+and the spatial boundary conditions become identically zero for all time $t$.
+The initial condition should be modified accordingly to the homogeneous problem definition, 
+\begin{align}
+    u(x,0) &= \hat{u}(x,0) + g(x,0), \nonumber \\ 
+    \hat{u}(x,0) &= u(x,0) - g(x,0) := \hat{u}_0(x). 
+\end{align}
+At this point, we have defined the continuous problem of the heat equation in a one-dimensional moving domain. 
+
+\subsection{Full Semi-Discrete Problem}
+The continuous solution changes in two directions: space and time.
+Eventually, we need to discretize both, but we can do it incrementally, so first, we discretize in time. 
+To do so, we need to build an approximation for the time derivate, $\frac{\partial \hat{u}}{\partial t}$, and there is a complete body of knowledge devoted to this step of the numerical scheme CITE. 
+Briefly, there is a trade-off between computational effort and stability in terms of the resulting matrices.
+For our needs, we opt for the maximization of stability, so we chose what is called an implicit scheme, which is unconditionally stable, in exchange for a more dense linear system to be solved. 
+
+The procedure is the following: a polynomial interpolation of the function $u(x,t)$ is built, 
+using previous timesteps $u(x,t^{n}), u(x,t^{n-1}), \ldots$.
+Then, the interpolant's derivative at time $t^{n+1}$ is used as an approximation of the actual derivative.
+The accuracy of the scheme (and also its complexity) is determined by the number of previous timestamps used in the interpolation. 
+
+In the coming sections, we define two implicit schemes of order one and two
+\begin{enumerate}
+    \item BDF-1: also known as Backwards Euler.
+    \item BDF-2: also known as ... 
+\end{enumerate}
+Throughout our simulations we will use the BDF-2 scheme, but since it uses two points from the past, 
+it cannot be used at the beginning of the simulation, in the calculation of the first step. 
+That is where the BDF-1 comes into play, to obtain $u(x,t^1)$.
+Additionally, studying the BDF-1 scheme is still useful, to understand the implications of discretizing in time.  
+
+As a final note, we point out that according to each problem needs or complexities, sometimes a convergent scheme can be obtained even if certain equation terms are treated explicitly.
+This trick can be used in problems such as the Navier-Stokes equations, where going fully implicit leads to a non-linear algebraic system. 
+Instead, if the convective term is treated semi-implicitly, one recovers a linear system, and yet reaches a satisfactory numerical solution.
+
+In terms of notation, from now on we use
+\begin{equation}
+    \hat{u}^n := \hat{u}(x,t^n)
+\end{equation}
+to define a function in space evaluated at time $t^n$.
+
+\subsubsection{BDF-1: Backwards Euler Scheme}
+To derive the BDF-1 scheme, we start by evaluating our weak formulation at time $t^{n+1}$, where the solution is unknown,
+\begin{equation}
+    \inner{\frac{\partial \hat{u}}{\partial t}}{v}^{n+1} + \inner{\alpha(x) \grad \hat{u}}{\grad v}^{n+1} = \inner{f}{v}^{n+1} + \inner{f_g}{v}^{n+1}.
+\end{equation}
+Then, we construct our interpolation polynomial using only one previous timestamp from the past, 
+\begin{align}
+    \hat{u}(x,t) &\simeq I_1(t) := 
+    \hat{u}^{n+1}\left( \frac{t-t^{n}}{\Delta t}  \right)
+    + \hat{u}^{n}\left(\frac{t^{n+1}-t}{\Delta t}\right), \\
+    \left.\frac{\partial\hat{u}}{\partial t}\right|^{n+1} &\simeq \frac{d I_1(t)}{dt} = \frac{\hat{u}^{n+1} - \hat{u}^{n}}{\Delta t}
+\end{align}
+With this approximation of the time derivative, we get the following semi-discrete weak formulation, 
+\begin{subequations}
+    \begin{align}
+        \label{eq:1d_fom_weak_formulation_semidiscrete_time}
+        \inner{\hat{u}^{n+1}}{v} + \Delta t \inner{\alpha(x) \grad \hat{u}^{n+1}}{\grad v} &= \inner{\hat{u}^{n}}{v} \\
+        + \Delta t \inner{f^{n+1}}{v} + \Delta t \inner{f_g^{n+1}}{v}, \nonumber \\
+        \hat{u}^{n+1}(0) &= 0, \\
+        \hat{u}^{n+1}(L\left(t^{n+1}\right)) &= 0, \\
+        \hat{u}^{0}(x) &= \hat{u}_0(x).
+    \end{align}
+\end{subequations}
+The forcing term $\inner{\hat{u}^{n}}{v}$ is an interesting one.
+This inner product is done at time $t^{n+1}$, but the solution $\hat{u}^{n}$ belongs to the previous time. 
+In a way, it is a sort of $L^2$ projection of the previous solution into the current domain.
+DEVELOP. 
+
+Note that the problem is still continuous in space, but no longer in time.
+
+\subsubsection{BDF-2}
+To derive the BDF-2 scheme, again, we start by evaluating our weak formulation at time $t^{n+1}$, where the solution is unknown,
+\begin{equation}
+    \inner{\frac{\partial \hat{u}}{\partial t}}{v}^{n+1} + \inner{\alpha(x) \grad \hat{u}}{\grad v}^{n+1} = \inner{f}{v}^{n+1} + \inner{f_g}{v}^{n+1}.
+\end{equation}
+Then, we construct our interpolation polynomial using two previous timestamps from the past, 
+\begin{align}
+    \hat{u}(x,t) &\simeq I_2(t) := 
+      \alpha_1 \hat{u}^{n+1} 
+    + \alpha_2 \hat{u}^{n}
+    + \alpha_3 \hat{u}^{n-1}, \\
+    \left.\frac{\partial\hat{u}}{\partial t}\right|^{n+1} &\simeq \frac{d I_2(t)}{dt} = 
+    \frac{\frac{3}{4}\hat{u}^{n+1} - \frac{1}{2}\hat{u}^{n} + \frac{1}{4}\hat{u}^{n-1}}{\Delta t}
+\end{align}
+With this approximation of the time derivative, we get the following semi-discrete weak formulation, 
+\begin{subequations}
+    \begin{align}
+        \label{eq:1d_fom_weak_formulation_semidiscrete_time_bdf2}
+        \frac{3}{4}\inner{\hat{u}^{n+1}}{v} + \Delta t \inner{\alpha(x) \grad \hat{u}^{n+1}}{\grad v} &= \\
+          \frac{1}{2}\inner{\hat{u}^{n}}{v}
+        - \frac{1}{4}\inner{\hat{u}^{n-1}}{v} \\
+        + \Delta t \inner{f^{n+1}}{v} + \Delta t \inner{f_g^{n+1}}{v}, \nonumber \\
+        \hat{u}^{n+1}(0) &= 0, \\
+        \hat{u}^{n+1}(L\left(t^{n+1}\right)) &= 0, \\
+        \hat{u}^{0}(x) &= \hat{u}_0(x).
+    \end{align}
+\end{subequations}
+Note how the only changes between both discretizations are the forcing terms due to the previous solutions and the leading coefficient multipliying the inner product of the desired unknown solution $\hat{u}^{n+1}$. 
+
+\subsection{Full Discrete Problem}
+To complete our discretization, we define a finite functional space $V_h \subset V$, where we can represent the solution as the linear combination of a set of Finite Elements (FE) basis functions $\varphi_i(x)$ with local support,
+\begin{align}
+    \hat{u}^{n}(x) \simeq \hat{u}_h^n(x) &= \sum_j^{N_h} \hat{u}_{h_i}^n \varphi_j(x), \\
+    \vb{\hat{u}}_h^{n} &= \left[\hat{u}_{h_i}^n\right].
+\end{align}
+In this discrete setting, we define the FE vector $\vb{\hat{u}}_h^{n}$ to be the collection of coefficients~$[\hat{u}_{h_i}^n]$ which multiply the basis functions.
+In the FE context, these coincide with the values of the function at each mesh node.
+
+Applying the Galerkin principle to solve PDEs, we enforce the orthogonality of the residual to the functional space $V_h$. 
+This is equivalent to enforcing the orthogonality to each basis function of the space, so we get an algebraic system with the same number of unknowns as equations, 
+\begin{subequations}
+    \begin{align}
+        \label{eq:1d_fom_weak_formulation_discrete}
+        \vb{M}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} + \Delta t \vb{A}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} &= \vb{F}^{n}_{\vb{\hat{u}}_h} \\
+        &+ \Delta t \vb{F}_h^{n+1} + \Delta t \vb{F}^{n+1}_{g, h}, \nonumber \\
+        \vb{\hat{u}}_h^{0} &= \vb{\hat{u}}_{h,0}.
+    \end{align}
+\end{subequations}
+The spatial boundary conditions are encoded within the matrices and the vectors. 
+The computation of the discrete initial condition $\vb{\hat{u}}_{h,0}$ is addressed in Section~\ref{sec:1d_fom_projection_interpolation}.
+
+If we collect terms and factor out the unknowns, we get a linear system to be solved at each timestep to advance the solution,
+\begin{subequations}
+    \begin{align}
+        \label{eq:1d_fom_linear_system_timestep}
+        \vb{K}_h^{n+1} \vb{\hat{u}}_h^{n+1} &= \vb{b}_h^{n+1}, \\
+        \vb{K}_h^{n+1} &= \vb{M}_{h}^{n+1} + \Delta t \vb{A}_{h}^{n+1}, \\
+        \vb{b}_h^{n+1} &= \vb{F}_{\vb{\hat{u}}_h}^{n} + \Delta t \vb{F}_h^{n+1} + \Delta t \vb{F}_{g,h}^{n+1}, \\
+        \vb{\hat{u}}_h^{0} &= \vb{\hat{u}}_{h,0}.
+    \end{align}
+\end{subequations}
+Because the domain changes with time, even if we are solving a linear system, both the matrix and the RHS change at each timestep,
+\begin{subequations}
+    \label{eq:1d_fom_linear_system_operators}
+    \begin{align}
+        \left[\vb{M}_{h}^{n+1}\right]_{ij} &= m_{\text{BDF}} \inner{\varphi_j}{\varphi_i}  \\
+        \left[\vb{A}_{h}^{n+1}\right]_{ij} &= \inner{\alpha(x) \grad \varphi_j}{\grad \varphi_i} \\
+        \left[\vb{F}_{h}^{n+1}\right]_{i} &= \inner{f^{n+1}}{\varphi_i}, \label{eq:1d_fom_linear_system_operators_f} \\
+        \left[\vb{F}_{{g,h}}^{n+1}\right]_{i} &= \inner{f_g^{n+1}}{\varphi_i}, \label{eq:1d_fom_linear_system_operators_fg}
+    \end{align}
+\end{subequations}
+The assembly of the forcing terms given in Equations~\eqref{eq:1d_fom_linear_system_operators_f} and \eqref{eq:1d_fom_linear_system_operators_fg}
+are to be done with the FE vector representations of the functional expressions of each of the terms $f$ and $f_g$, to be obtained by projection or interpolation, as explained in Section~\ref{sec:1d_fom_projection_interpolation}.
+
+The change in time is implied in the inner product, which is defined for a domain that changes in time. 
+This fact makes the integration in time quite a costly operation.
+
+Finally, the parameter $m_{\text{BDF}}$ changes according to the integration scheme used,
+\begin{equation}
+    m_{\text{BDF}} = 
+    \begin{cases}
+    1, &\text{BDF-1} \\    
+    \frac{3}{4}, &\text{BDF-2}    
+    \end{cases}
+\end{equation}
+as so does the vector linked to the previous timesteps, 
+\begin{equation}
+    \left[\vb{F}_{\vb{\hat{u}}_h}^{n}\right]_{i} = 
+    \begin{cases}
+        \inner{\hat{u}_h^{n}}{\varphi_i}, &\text{BDF-1} \\
+        \frac{1}{2}\inner{\hat{u}_h^{n}}{\varphi_i}
+        - \frac{3}{4}\inner{\hat{u}_h^{n-1}}{\varphi_i}, &\text{BDF-2}
+    \end{cases}
+\end{equation}
+
+Lastly, we point out how the timestep $\Delta t$ has been intentionally left out of the discrete operators definition.
+There are two reasons to back this decision:
+\begin{enumerate}
+    \item Conceptually, each discrete operator encodes a spatial model, in terms of a differential operator or the presence of a forcing term.
+    The timestep $\Delta t$ shows up because we first discretized the continuous problem in time. 
+    Had we gone the other way around, discretizing the problem in space in the first place, we would have found a system of ODEs with the previously defined spatial operators. 
+    \item When we leverage the system approximation reduction technique, we will not want to have there the presence of the timestep.
+    The reduced model could use a different timestep, or the snapshots for different $\mu$ values could be collected for different timestep values.
+\end{enumerate} 
+
+\subsubsection{FE Representation of the Initial Condition}
+
+\label{sec:1d_fom_projection_interpolation}
+The initial condition in time $\hat{u}_0(x)$ needs to be expressed in terms of the basis functions $\varphi_i(x)$ to obtain the FE vector~$\vb{\hat{u}}_{h,0}$.
+There are two ways to compute the values of this FE vector:
+\begin{itemize}
+    \item Interpolation.
+    \item Projection.
+\end{itemize}
+
+\subsubsection*{Interpolation}
+Since we are dealing with a nodal basis\footnote{We recall a nodal basis is one where each node of the mesh has a basis function assigned, 
+such that the value of the coefficient which multiplies each basis function corresponds to the value of the function at that node.}, 
+the interpolation procedure simply assigns to each vector entry the value of the function at the node corresponding to that entry.
+
+In a sense, it is what we have done with the lifting of the boundary conditions in Section~\ref{sec:1d_fom_heat_equation_dirichlet_lifting}.
+Since we are dealing with a nodal basis, we can express the lifting FE vector~$\vb{g}_h$ as a linear combination of the FE basis functions,
+\begin{equation}
+    g(x,t) \simeq g_h(x,t) = \sum_i^{N_h} g_{h_i}(t) \varphi_i(x),
+\end{equation}
+where each coefficient $\vb{g}_h = [g_{h_i}]$ is the value taken by the analytical interpolation of the boundary conditions given in Equation~\eqref{eq:1d_fom_dirichlet_lifting}. 
+
+\subsubsection*{Projection}
+Instead, the projection procedure aims at solving the approximation problem
+\begin{equation}
+    \hat{u}^{0}_h(x) = \sum_j^{N_h} \hat{u}_{h_i}^0 \varphi_j(x) = \hat{u}_0(x)
+\end{equation}
+with a variational approach within $V_h$. 
+That is, the approximation error is set to be orthogonal to the function space $V_h$, yielding the weak formulation
+\begin{equation}
+    \inner{\hat{u}^{0}_h(x)}{v} = \inner{\hat{u}_0(x)}{v}, \, \forall \, v \in V_h,
+\end{equation}
+which leads to a linear system of equations if we enforce the orthogonality to each basis function,
+\begin{subequations}
+    \begin{align}
+        \label{eq:projection_equation}
+        \vb{M}_{h} \vb{\hat{u}}_{h,0} &= \vb{p}_h, \\
+        \left[\vb{M}_{h}\right]_{ij} &= \inner{\varphi_j}{\varphi_i}, \\
+        \left[\vb{p}_{h}\right]_{i} &= \inner{\hat{u}_0(x)}{\varphi_i}.
+    \end{align}
+\end{subequations}
+
+In practice, the projection method is to be used, because even within the FE context we might not have a nodal basis (this would be the case if exotic function spaces are used).
+
+However, when the Method of Manufactured Solutions is being used to certify the code implementation, only the interpolation procedure will allow us to reach machine accuracy when computing the error.
+
+\subsubsection{Conclusions}
+With all of the above, the generic Finite Element Method for the one-dimensional linear heat equation with a time-deforming domain is defined.
+
+The problem has been explained within three levels of abstraction: continuous with strong and weak formulations, semi-discrete in time and fully discretized in time and space.
+An implicit single-step time discretization scheme is used, to obtain an inconditionally stable algebraic system. 
+
+A lifting of the Dirichlet boundary conditions has been introduced, which lead to the appearence of an additional forcing term and the cancellation of the boundary conditions.
+Thus, we will focus in the solution of an homogeneous boundary value problem.
+This fact will prove useful when we get into the implementation details of the reduction procedure.
+
+\subsection{Deformation of the Space-Time Domain}
+TBD.
+
+Comment on how in the $(x,t)$ domain we actually have a deforming domain. 
+
+This could be solved with space-time FE, but it involves complex tensor products. 
+
+Explain how what we have done is a good approximation of the latter.
+
+
+\newpage
+\subsection{Method of Manufactured Solutions}
+\label{sec:1d_fom_toy_problem}
+For completeness, we define two specific problems:
+\begin{itemize}
+    \item MFP-1: Reach a Steady-State Solution from Zero.
+    \item MFP-2: Unsteady-State for All Times.
+\end{itemize}
+For the above we give explicit forcing terms, boundary and initial conditions.
+They are derived departing from a known solution
+\begin{equation}
+    u_e(x,t) = \tilde{f}(t) \tilde{u}(x),
+\end{equation}
+which we trim according to the implementations we want to exercise.
+Although this step could be seen like a loss of time, since we are not dealing with an actual problem of industrial or clinical application, it has many benefits.
+It gives us a known benchmark against which we can compare numerical solutions.
+This can not only help us find bugs in the implementation, but also certify the expected convergence rates in terms of mesh and timestep sizes.
+Later on, when we deal with an equation whose solution is unknown, we can be assured that the code we have written actually solves the equations written out on paper. 
+
+To simplify our equations, we chose~$\tilde{u}(x)$ such that
+\begin{equation}
+    \frac{\partial^2\tilde{u}}{\partial x^2} = C.
+\end{equation}
+For $\delta\in\mathbb{R}$, this can be achieved with 
+\begin{equation}
+    \tilde{u}(x) = 1 + \delta^2 x^2, \rightarrow C = 2 \delta^2.
+\end{equation}
+We set a spatial-dependent diffusion term $\alpha(x)$ with a small deviation from a fixed value,
+\begin{equation}
+    \label{eq:1d_fom_mfp_diffusion_term}
+    \alpha(x) = \alpha_0(1 + \varepsilon x^2),
+\end{equation}
+with $\alpha_0, \varepsilon \in \mathbb{R}^{+}$ and $\varepsilon \ll 1$.
+If $\varepsilon=0$, $\alpha(x) = \alpha_0$ for the whole domain.
+
+% Note that this manufactured solution is separable to a point, since $x = x(t)$.
+% Thus we have 
+% \begin{equation}
+%     u_e(x,t) = u_e(x(t), t) = u_e(t).
+% \end{equation}
+% However, it is useful to split it in space and time, since one can study properties for a fixed location $x_0$ or a fixed time value, provided the location always exists within the moving domain, i.e., $x_0 \in [0, L(t)] \, \forall t$.
+
+Our toy model is useful in exercising all the discretized operators and necessary skills to tackle the challenges the reduction of a problem alike presents. 
+
+\subsubsection{Boundary and Initial Conditions}
+The boundary conditions are obtained by evaluating the function $u_e(x,t)$ at the domain endpoints, namely 
+\begin{subequations}
+    \label{eq:1d_fom_mfp_boundary_conditions}
+    \begin{align}
+        b_0(t) &= u_e(0,t) = \tilde{f}(t) \tilde{u}(0) = \tilde{f}(t), \\
+        b_L(t) &= u_e(L,t) = \tilde{f}(t) \tilde{u}(L) = \tilde{f}(t)\left(1 + \delta^2L^2(t)\right).
+    \end{align}
+\end{subequations}
+We get the initial condition from an evaluation of $u_e(x,t)$ at time zero, namely
+\begin{equation}
+    u_0(x) := u_e(x,0) = \tilde{f}(0) \tilde{u}(x).
+\end{equation}
+
+\subsubsection{Forcing Term}
+The strong formulation forcing term $f(x,t)$ from which we depart is computed by introducing~$u_e(x,t)$ into the PDE, which leads to
+\begin{subequations}
+    \label{eq:1d_fom_mfp_forcing_term}
+    \begin{align}
+        f(x,t) &= \tilde{f}'(t) \tilde{u}(x) - \alpha(x) \tilde{f}(t) \tilde{u}''(x), \\
+        f(x,t) &= \tilde{f}'(t) \tilde{u}(x) - 2 \alpha(x) \delta^2 \tilde{f}(t).
+    \end{align}
+\end{subequations}
+Since we did not obtain $u_e(x,t)$ from any reasoning related to the body of the PDE, 
+the forcing term is not identically zero.
+This was precisely our goal, to obtain a forcing term which would lead the solution of the PDE to be $u_e(x,t)$. 
+
+\subsubsection{Time Deforming Mesh}
+The movement of the rightmost side $L(t)$ of the domain is defined with a harmonic function, 
+\begin{equation}
+    L(t) = L_0 \left[1 - \sin\left(\omega t\right)\right],
+\end{equation}
+where the frequency $\omega$ will be our geometrical parameter.
+If we want the domain to reduce its size by a factor $n$
+\begin{equation}
+    L(t_f) = n L_0, \quad 0 < n < 1,
+\end{equation}
+the end time $t_f$ of our simulation should be
+\begin{equation}
+    t_f = \frac{1}{\omega} \arcsin\left(1 - n\right).
+\end{equation}
+
+
+% Overall, the problem has been parametrized with three parameters, 
+% \begin{enumerate}
+%     \item $\alpha(x)$: diffusion coefficient.
+%     \item $U_L$: value at the moving boundary.
+%     \item $\omega$: moving boundary displacement frequency.
+% \end{enumerate}
+% In a way, $\omega$ is a proxy of the boundary velocity, since 
+% \begin{equation}
+%     L'(t) \sim L_0 \cdot \omega.
+% \end{equation}
+% We see that despite the simplicity of the problem, we capture the three type of possible parametrizations a real problem can have: model, boundary values and geometry.
+
+\subsubsection{MFP-1: Reach a Steady-State Solution from Zero}
+Our first problem will be built such that a zero initial condition is given, and that a steady state solution is reached. 
+
+For $\beta \in \mathbb{R}^{+}$, let the function $\tilde{f}(t)$ be
+\begin{subequations}
+    \begin{align}
+        \tilde{f}(t) &= 1 - e^{-\beta t}, \label{eq:1d_fom_mfp_1_time_function}\\
+        \tilde{f}'(t) &= \beta e^{-\beta t}.
+    \end{align}
+\end{subequations}
+The shape of the time function $\tilde{f}(t)$,
+\begin{equation*}
+    \begin{cases}
+    \tilde{f}(0) = 0, \\ 
+    \lim_{t \rightarrow \infty} \tilde{f}(t) = 1,
+    \end{cases}
+\end{equation*}
+ensures that we reach a steady state solution for large time values,
+\begin{equation}
+    \lim_{t\rightarrow \infty} u_e(x,t) = \tilde{u}(x),
+\end{equation}
+and that we have a null initial condition.
+
+If we define the number $f_\infty$ to be smaller than unity, but very close to it, $f_\infty \sim 1$, we can estimate the final simulation time to arrive to the steady-state solution by solving for $t$ in Equation~\eqref{eq:1d_fom_mfp_1_time_function},
+\begin{equation}
+    t_f \simeq - \frac{1}{\beta} \ln(1 - f_\infty).
+\end{equation}
+The larger $\beta$, the quicker the steady-state arrives, but also the smaller the discrete timestep $\Delta t$ will have to be to capture correctly the time evolution of the system.
+
+The explicit expression for the forcing term is obtained from Equations~\eqref{eq:1d_fom_mfp_forcing_term} and \eqref{eq:1d_fom_mfp_diffusion_term},
+\begin{equation}
+    \begin{split}
+        f(x,t) &= \beta e^{-\beta t} (1+\delta^2 x^2) \\
+        &- 2 \delta^2 \alpha_0(1 + \varepsilon x^2) \left(1 - e^{-\beta t}\right).    
+    \end{split}
+\end{equation}
+
+The boundary condition values, to be used to build the lifting term in Equation~\eqref{eq:1d_fom_dirichlet_lifting}, are obtained from Equations~\eqref{eq:1d_fom_mfp_boundary_conditions},
+\begin{subequations}
+    \begin{align}
+        b_0(t) &= 1 - e^{-\beta t}, \\
+        b_L(t) &= \left(1 - e^{-\beta t}\right)\left(1 + \delta^2 L^{2}(t)\right).
+    \end{align}
+\end{subequations}
+
+Collecting all the parameters used to define problem MFP-1, we find:
+\begin{itemize}
+    \item $\alpha_0$: constant diffusion constant. 
+    \item $\varepsilon$: present in the diffusion coefficient, it determines how sensitive $\alpha(x)$ is to spatial variations. 
+    \item $\omega$: Present in the definition of the moving domain, it defines how quickly the domain boundary moves.
+    \item $\delta$: present in the moving boundary condition and in the forcing term. 
+    It regulates how strongly the solution changes in the spatial direction.
+    \item $\beta$: Present in both boundary conditions and in the forcing term, it defines how quickly the steady-state is reached.
+\end{itemize}
+So, $\mu = [\alpha_0, \varepsilon, \omega, \delta, \beta]$ and $\abs*{\mu} = 5$.
+
+\subsubsection{MFP-2: Unsteady for All Times}
+Our second problem will be built such that we depart from an initial profile and that a steady state is never reached. 
+
+For $\omega_f \in \mathbb{R}^{+}$, let the function $\tilde{f}(t)$ be
+\begin{subequations}
+    \begin{align}
+        \tilde{f}(t) &= \cos{(\omega_f t)}, \\ 
+        \tilde{f}'(t) &= -\omega_f \sin{(\omega_f t)}.
+    \end{align}    
+\end{subequations}
+The shape of the time function $\tilde{f}(t)$,
+\begin{equation*}
+    \begin{cases}
+    \tilde{f}(0) = 1, \\ 
+    \left\|\tilde{f}(t)\right\| < \infty, \\ 
+    \nexists \lim_{t \rightarrow \infty} \tilde{f}(t),
+    \end{cases}
+\end{equation*}
+ensures that we start from an initial profile at the beginning of the simulation,
+\begin{equation}
+    u_e(x,0) = \tilde{u}(x),
+\end{equation}
+and that we never reach a steady-state solution due to the oscillatory nature of $\tilde{f}$.
+
+Again, the explicit expression for the forcing term is obtained from Equations~\eqref{eq:1d_fom_mfp_forcing_term} and \eqref{eq:1d_fom_mfp_diffusion_term},
+\begin{equation}
+    \begin{split}
+        f(x,t) &= -\omega_f \sin{(\omega_f t)}(1+\delta^2 x^2) \\ 
+        &- \delta^2 \alpha_0(1 + \varepsilon x^2) \cos{(\omega_f t)}.
+    \end{split}
+\end{equation}
+
+The boundary condition values, to be used to build the lifting term in Equation~\eqref{eq:1d_fom_dirichlet_lifting}, are obtained from Equations~\eqref{eq:1d_fom_mfp_boundary_conditions},
+\begin{subequations}
+    \begin{align}
+        b_0(t) &= \cos{(\omega_f t)}, \\
+        b_L(t) &= \cos{(\omega_f t)}\left(1 + \delta^2 L^{2}(t)\right).
+    \end{align}
+\end{subequations}
+
+Collecting all the parameters used to define problem MFP-2, we find:
+\begin{itemize}
+    \item $\alpha_0$: constant diffusion constant. 
+    \item $\varepsilon$: present in the diffusion coefficient, it determines how sensitive $\alpha(x)$ is to spatial variations. 
+    \item $\omega$: Present in the definition of the moving domain, it defines how quickly the domain boundary moves.
+    \item $\delta$: present in the moving boundary condition and in the forcing term. 
+    It regulates how strongly the solution changes in the spatial direction.
+    \item $\omega_f$: Present in both boundary conditions and in the forcing term, it defines how quickly the solution changes in time.
+\end{itemize}
+So, $\mu = [\alpha_0, \varepsilon, \omega, \delta, \omega_f]$ and $\abs*{\mu} = 5$.
+
+
+%\newpage
+% \printbibliography
+
+\end{document}

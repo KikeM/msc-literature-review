@@ -17,16 +17,23 @@
 
 \externaldocument[M-]{main}
 
+
 \usepackage[backend=biber,style=ieee]{biblatex} 
 \bibliography{bibliography.bib} %your file created using JabRef
 
 % https://tex.stackexchange.com/questions/246/when-should-i-use-input-vs-include
 % \input{nomenclature.tex}
+\DeclareMathOperator{\sspn}{span}
+\newcommand{\spn}[1]{\sspn\left(#1\right)}
+
+
 
 \begin{document}
 
+\onecolumn
+
 % paper title
-\title{Reduced Order Models \\ With Moving Domains}
+\title{Reduced Basis Method \\ With Deforming Domains \\ \large{MWE: Linear Heat Equation}}
 
 % author names 
 \author{Enrique Millán Valbuena \\ \normalsize{463 426 8}}% <-this % stops a space
@@ -39,28 +46,27 @@
 \maketitle
 
 \begin{abstract}
-   The research objective is to build a Reduced Order Model (ROM) for a two-dimensional parametrized unsteady PDE with a moving boundary:
-   \begin{itemize}
-      \item Heat diffusion problem.
-      \item (Bonus) Graetz convection-diffusion problem.
-   \end{itemize}
-   Both the main body of the PDE and the geometrical definition of the moving boundary will be parametrized.
+   The research objective is to build a Reduced Order Model (ROM) for a parametrized one-dimensional heat equation with a deforming boundary.
 
-   A concise description of the reducing procedure is provided, together with a priori convergence rates for basis size estimation and a posteriori error estimators to certify the use of the Reduced Order Model.
-   Numerical examples to showcase computational costs and implementation details are designed, implemented and validated with the Manufactured Solutions Method. 
+   The main goal is to have a simple problem to define and tackle all the implementation details of the reduction procedure, 
+   to later on solve an actual problem with industrial or clinical application. 
+
+   Both the main body of the PDE, the geometrical definition of the boundary and the boundary conditions will be parametrized.
+   
+   % A concise description of the reducing procedure is provided, together with a priori convergence rates for basis size estimation and a posteriori error estimators to certify the use of the Reduced Order Model.
+   % Numerical examples to showcase computational costs and implementation details are designed, implemented and validated with the Manufactured Solutions Method. 
 \end{abstract}
 
 \begin{IEEEkeywords}
     Reduced Order Model, Moving Domain, FEM, DEIM, POD, Galerkin-Projection
 \end{IEEEkeywords}
-    
+\tableofcontents
+\twocolumn
 
-% \section*{Literature Review}
-% \subfile{literature_review/literature.tex}
+\newpage
 
-% \newpage
-% \section*{Research Structure}
-% \subfile{research_project/research.tex}
-\subfile{research_project/graph_layout.tex}
+\subfile{research_project/heat_linear_1d_fom.tex}
+\newpage
+\subfile{research_project/heat_linear_1d_rom.tex}
 
 \end{document}
