@@ -1,5 +1,5 @@
 % \documentclass[a4paper, technote, compsoc]{IEEEtran}
-\documentclass[../main.tex]{subfiles}
+\documentclass[../1_heat_equation.tex]{subfiles}
 
 \newcommand{\rbV}{\ensuremath{\mathbb{V}}}
 \newcommand{\rbVT}{\ensuremath{\rbV^T}}
@@ -50,21 +50,21 @@ This allows us to establish the following relation between the problem solution 
     \label{eq:1d_rom_heat_equation_projection_relation}
     \vb{\hat{u}}_h = \rbV \vb{\hat{u}}_N.
 \end{equation}
-The entries of the $\rbV$ matrix represent the projection coefficients of the global basis unto the local one. 
+The entries of the $\rbV$ matrix represent the coefficients of the global basis representation in the FE basis. 
 % Each column of $\mathbb{V}$ represents the projection of the problem-based function $\psi_i(x)$ in terms of all the nodal basis functions $\varphi_j(x)$,
-% \begin{equation}
-    %     \psi_i(x) = \sum_j \left[\mathbb{V}\right]_{ji}\varphi_j(x) 
-    % \end{equation}
+\begin{equation}
+    \psi_i(x) = \sum_j \left[\mathbb{V}\right]_{ji}\varphi_j(x) 
+\end{equation}
 
 \subsubsection{Discrete Reduced Problem Assembly}
 In theory, to assemble the reduced problem operators, one could actually compute the inner products defined in Equations~\eqref{eq:1d_fom_linear_system_operators} with these new basis functions $\psi_i(x)$.
-In practice, it is more convenient to project the existing FOM operators with matrix-matrix and matrix-vector products into the reduced space, 
+In practice, it is more convenient to project the algebraic FOM operators with matrix-matrix and matrix-vector products into the reduced space, 
 \begin{subequations}
     \label{eq:1d_rom_linear_system_operators}
     \begin{align}
         \vb{M}_{N}^{n+1} &= \rbVT \vb{M}_{h}^{n+1} \rbV, \\
         \vb{A}_{N}^{n+1} &= \rbVT \vb{A}_{h}^{n+1} \rbV, \\
-        \vb{F}_{\vb{\hat{u}}_N}^{N} &= \rbVT \vb{F}_{\vb{\hat{u}}_h}^{n}, \\
+        %\vb{F}_{\vb{\hat{u}}_N}^{N} &= \rbVT \vb{F}_{\vb{\hat{u}}_h}^{n}, \\
         \vb{F}_{N}^{n+1} &= \rbVT \vb{F}_{h}^{n+1},  \\
         \vb{F}_{{g,N}}^{n+1} &= \rbVT \vb{F}_{{g,h}}^{n+1},
     \end{align}
@@ -91,6 +91,24 @@ If we collect terms and factor out the unknowns we get a linear system, this tim
         \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
     \end{align}
 \end{subequations}
+
+\subsubsection*{Time-Discretization Forcing Term}
+The forcing term $\vb{F}_{\vb{\hat{u}}_h}^{n}$ due to the time discretization has been intentionally left out in the previous section.
+We could naively project it too, 
+\begin{equation}
+    \vb{F}_{\vb{\hat{u}}_N}^{N} = \rbVT \vb{F}_{\vb{\hat{u}}_h}^{n},
+\end{equation}
+but this would force us to reconstruct the FE vector of the ROM at each time-step, making the integration cumbersome.
+To go around this issue, we can exploit the algebraic representation of $\vb{F}_{\vb{\hat{u}}_h}^{n}$, given in Equation~\eqref{eq:1d_fom_forcing_term_time_mass_matrix} in terms of the mass matrix. 
+Consequently, the forcing term due to the time discretization takes the following form in the ROM:
+\begin{equation}
+    \vb{F}_{\vb{\hat{u}}_N}^{n} = 
+    \begin{cases}
+        \vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n}, &\text{BDF-1} \\
+        \frac{1}{2}\vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n}
+        - \frac{3}{4}\vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n-1}, &\text{BDF-2}
+    \end{cases}
+\end{equation}
 
 \subsubsection{Boundary and Initial Conditions}
 The computation of the initial condition~$\vb{\hat{u}}_{N,0}$ is to be done in two steps. 
@@ -306,9 +324,8 @@ If we collect terms and factor out the unknowns we get a linear system, in the r
 Each of the operators present in the problem, $\vb{M}_N, \vb{A}_N, \vb{F}_N \qqtext{and} \vb{F}_{g,N}$ will have associated an operator basis and will require the solution of the interpolation problem \eqref{eq:1d_rom_heat_equation_interpolation_problem} to be solved for each timestep and parameter value.
 Although this could still seem like a costly procedure, if the operators are actually reduceable, the number of basis functions $Q_m, Q_a, Q_f, Q_{f,g}$ should be small, and thus way simpler problems than assembling the whole operator and the carrying out the projection. 
 
-Note that the vector $\vb{F}_{\vb{\hat{u}}_N}^{n}$ is not approximated.
-The projection of the previous solution is directly obtained in the reduced space.
-HOW?
+% Note that the vector $\vb{F}_{\vb{\hat{u}}_N}^{n}$ is not approximated.
+% The projection of the previous solution is directly obtained in the reduced space.
 
 Once the reduced homogeneous solution $\hat{u}^{m}_N(x)$ is obtained with approximated operators, it can be brought back to the original space $V_h$ via Equation~\eqref{eq:1d_rom_heat_equation_projection_relation}, and then add on top of it the FE representation of the Dirichlet lifting, to obtain the final solution,
 \begin{equation}
