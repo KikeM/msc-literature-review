@@ -1,0 +1,245 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+\section{Method of Manufactured Solutions}
+\label{sec:1d_fom_toy_problem}
+
+For completeness, we define two specific problems:
+\begin{itemize}
+    \item MFP-1: Reach a Steady-State Solution from Zero.
+    \item MFP-2: Unsteady-State for All Times.
+\end{itemize}
+For the above we give explicit forcing terms, boundary and initial conditions.
+They are derived departing from a known solution
+\begin{equation}
+    u_e(x,t) = \tilde{f}(t) \tilde{u}(x),
+\end{equation}
+which we trim according to the implementations we want to exercise.
+Although this step could be seen like a loss of time, since we are not dealing with an actual problem of industrial or clinical application, it has many benefits.
+It gives us a known benchmark against which we can compare numerical solutions.
+This can not only help us find bugs in the implementation, but also certify the expected convergence rates in terms of mesh and timestep sizes.
+Later on, when we deal with an equation whose solution is unknown, we can be assured that the code we have written actually solves the equations written out on paper. 
+
+To simplify our equations, we chose~$\tilde{u}(x)$ such that
+\begin{equation}
+    \frac{\partial^2\tilde{u}}{\partial x^2} = C.
+\end{equation}
+For $\delta\in\mathbb{R}$, this can be achieved with 
+\begin{equation}
+    \tilde{u}(x) = 1 + \delta^2 x^2, \rightarrow C = 2 \delta^2.
+\end{equation}
+We set a spatial-dependent diffusion term $\alpha(x)$ with a small deviation from a fixed value,
+\begin{equation}
+    \label{eq:1d_fom_mfp_diffusion_term}
+    \alpha(x) = \alpha_0(1 + \varepsilon x^2),
+\end{equation}
+with $\alpha_0, \varepsilon \in \mathbb{R}^{+}$ and $\varepsilon \ll 1$.
+If $\varepsilon=0$, $\alpha(x) = \alpha_0$ for the whole domain.
+
+% Note that this manufactured solution is separable to a point, since $x = x(t)$.
+% Thus we have 
+% \begin{equation}
+%     u_e(x,t) = u_e(x(t), t) = u_e(t).
+% \end{equation}
+% However, it is useful to split it in space and time, since one can study properties for a fixed location $x_0$ or a fixed time value, provided the location always exists within the moving domain, i.e., $x_0 \in [0, L(t)] \, \forall t$.
+
+Our toy model is useful in exercising all the discretized operators and necessary skills to tackle the challenges the reduction of a problem alike presents. 
+
+\subsection{Boundary and Initial Conditions}
+The boundary conditions are obtained by evaluating the function $u_e(x,t)$ at the domain endpoints, namely 
+\begin{subequations}
+    \label{eq:1d_fom_mfp_boundary_conditions}
+    \begin{align}
+        b_0(t) &= u_e(0,t) = \tilde{f}(t) \tilde{u}(0) = \tilde{f}(t), \\
+        b_L(t) &= u_e(L,t) = \tilde{f}(t) \tilde{u}(L) = \tilde{f}(t)\left(1 + \delta^2L^2(t)\right).
+    \end{align}
+\end{subequations}
+We get the initial condition from an evaluation of $u_e(x,t)$ at time zero, namely
+\begin{equation}
+    u_0(x) := u_e(x,0) = \tilde{f}(0) \tilde{u}(x).
+\end{equation}
+
+\subsection{Forcing Term}
+The strong formulation forcing term $f(x,t)$ from which we depart is computed by introducing~$u_e(x,t)$ into the PDE, which leads to
+\begin{subequations}
+    \label{eq:1d_fom_mfp_forcing_term}
+    \begin{align}
+        f(x,t) &= \tilde{f}'(t) \tilde{u}(x) - \alpha(x) \tilde{f}(t) \tilde{u}''(x), \\
+        f(x,t) &= \tilde{f}'(t) \tilde{u}(x) - 2 \alpha(x) \delta^2 \tilde{f}(t).
+    \end{align}
+\end{subequations}
+Since we did not obtain $u_e(x,t)$ from any reasoning related to the body of the PDE, 
+the forcing term is not identically zero.
+This was precisely our goal, to obtain a forcing term which would lead the solution of the PDE to be $u_e(x,t)$. 
+
+\subsubsection{Forcing Due to Lifting}
+We recall that the FE problem we solve is the one corresponding to the homogeneous solution of the problem. 
+
+Therefore, in order to implement these problems we need to define the exact expression of $f_g$.
+From Equation~\eqref{eq:1d_fom_weak_formulation_homogeneous} we get that the forcing term linked to the lifting of the Dirichlet boundary conditions has the following form,
+\begin{align}
+    f_{g,1} &= - \frac{\partial g}{\partial t}, \\
+    f_{g,2} &= - \left(\alpha(x) \grad g\right).
+\end{align}
+Since the lifting $g$ is the linear combination of both boundary conditions, Equation~\eqref{eq:1d_fom_dirichlet_lifting},
+\begin{equation}
+    g(x,t) = b_L(t) \left(\frac{x}{L}\right) + b_0(t) \left(\frac{L - x}{L}\right),
+\end{equation}
+we get that the forcing term $f_g$ becomes the combination of
+\begin{subequations}
+    \begin{align}
+        \grad g &= \frac{b_L(t) - b_0(t)}{L}, \\
+        \pdv{g}{t} &= b'_L(t) \left(\frac{x}{L}\right) 
+        + b'_0(t) \left(\frac{L - x}{L}\right) \\
+        &+ \left(b_0(t) - b_L(t)\right) \left(\frac{x}{L(t)}\right)\left(\frac{L'(t)}{L(t)}\right) \nonumber.
+    \end{align}
+\end{subequations}
+We observe how the time derivate of the lifting function corresponds to the interpolation of the time derivatives and an additional term which takes into account the moving boundary speed.
+
+The time derivatives of the boundary conditions are derived from Equations~\eqref{eq:1d_fom_mfp_boundary_conditions}, 
+\begin{subequations}
+    \begin{align}
+        b'_0(t) &= \tilde{f}'(t), \\
+        b'_L(t) &= \tilde{f}'(t)\left(1 + \delta^2L^2(t)\right) + 2\tilde{f}(t) \delta^2 L(t)L'(t).
+    \end{align}
+\end{subequations}
+The expression for $\tilde{f}'(t)$ will be different for each manufactured problem.
+Note that the second summand of~$b'_L(t)$ vanishes if~$L(t)$ is constant, i.e. $L'(t)=0$.  
+
+\subsection{Time Deforming Mesh}
+The movement of the rightmost side $L(t)$ of the domain is defined with a harmonic function, 
+\begin{equation}
+    L(t) = L_0 \left[1 - \sin\left(\omega t\right)\right],
+\end{equation}
+where the frequency $\omega$ will be our geometrical parameter.
+If we want the domain to reduce its size by a factor $n$
+\begin{equation}
+    L(t_f) = n L_0, \quad 0 < n < 1,
+\end{equation}
+the end time $t_f$ of our simulation should be
+\begin{equation}
+    t_f = \frac{1}{\omega} \arcsin\left(1 - n\right).
+\end{equation}
+
+
+% Overall, the problem has been parametrized with three parameters, 
+% \begin{enumerate}
+%     \item $\alpha(x)$: diffusion coefficient.
+%     \item $U_L$: value at the moving boundary.
+%     \item $\omega$: moving boundary displacement frequency.
+% \end{enumerate}
+% In a way, $\omega$ is a proxy of the boundary velocity, since 
+% \begin{equation}
+%     L'(t) \sim L_0 \cdot \omega.
+% \end{equation}
+% We see that despite the simplicity of the problem, we capture the three type of possible parametrizations a real problem can have: model, boundary values and geometry.
+
+\subsection{MFP-1: Reach a Steady-State Solution from Zero}
+Our first problem will be built such that a zero initial condition is given, and that a steady state solution is reached. 
+
+For $\beta \in \mathbb{R}^{+}$, let the function $\tilde{f}(t)$ be
+\begin{subequations}
+    \begin{align}
+        \tilde{f}(t) &= 1 - e^{-\beta t}, \label{eq:1d_fom_mfp_1_time_function}\\
+        \tilde{f}'(t) &= \beta e^{-\beta t}.
+    \end{align}
+\end{subequations}
+The shape of the time function $\tilde{f}(t)$,
+\begin{equation*}
+    \begin{cases}
+    \tilde{f}(0) = 0, \\ 
+    \lim_{t \rightarrow \infty} \tilde{f}(t) = 1,
+    \end{cases}
+\end{equation*}
+ensures that we reach a steady state solution for large time values,
+\begin{equation}
+    \lim_{t\rightarrow \infty} u_e(x,t) = \tilde{u}(x),
+\end{equation}
+and that we have a null initial condition.
+
+If we define the number $f_\infty$ to be smaller than unity, but very close to it, $f_\infty \sim 1$, we can estimate the final simulation time to arrive to the steady-state solution by solving for $t$ in Equation~\eqref{eq:1d_fom_mfp_1_time_function},
+\begin{equation}
+    t_f \simeq - \frac{1}{\beta} \ln(1 - f_\infty).
+\end{equation}
+The larger $\beta$, the quicker the steady-state arrives, but also the smaller the discrete timestep $\Delta t$ will have to be to capture correctly the time evolution of the system.
+
+The explicit expression for the forcing term is obtained from Equations~\eqref{eq:1d_fom_mfp_forcing_term} and \eqref{eq:1d_fom_mfp_diffusion_term},
+\begin{equation}
+    \begin{split}
+        f(x,t) &= \beta e^{-\beta t} (1+\delta^2 x^2) \\
+        &- 2 \delta^2 \alpha_0(1 + \varepsilon x^2) \left(1 - e^{-\beta t}\right).    
+    \end{split}
+\end{equation}
+
+The boundary condition values, to be used to build the lifting term in Equation~\eqref{eq:1d_fom_dirichlet_lifting}, are obtained from Equations~\eqref{eq:1d_fom_mfp_boundary_conditions},
+\begin{subequations}
+    \begin{align}
+        b_0(t) &= 1 - e^{-\beta t}, \\
+        b_L(t) &= \left(1 - e^{-\beta t}\right)\left(1 + \delta^2 L^{2}(t)\right).
+    \end{align}
+\end{subequations}
+
+Collecting all the parameters used to define problem MFP-1, we find:
+\begin{itemize}
+    \item $\alpha_0$: constant diffusion constant. 
+    \item $\varepsilon$: present in the diffusion coefficient, it determines how sensitive $\alpha(x)$ is to spatial variations. 
+    \item $\omega$: Present in the definition of the moving domain, it defines how quickly the domain boundary moves.
+    \item $\delta$: present in the moving boundary condition and in the forcing term. 
+    It regulates how strongly the solution changes in the spatial direction.
+    \item $\beta$: Present in both boundary conditions and in the forcing term, it defines how quickly the steady-state is reached.
+\end{itemize}
+So, $\mu = [\alpha_0, \varepsilon, \omega, \delta, \beta]$ and $\abs*{\mu} = 5$.
+
+\subsection{MFP-2: Unsteady for All Times}
+Our second problem will be built such that we depart from an initial profile and that a steady state is never reached. 
+
+For $\omega_f \in \mathbb{R}^{+}$, let the function $\tilde{f}(t)$ be
+\begin{subequations}
+    \begin{align}
+        \tilde{f}(t) &= \cos{(\omega_f t)}, \\ 
+        \tilde{f}'(t) &= -\omega_f \sin{(\omega_f t)}.
+    \end{align}    
+\end{subequations}
+The shape of the time function $\tilde{f}(t)$,
+\begin{equation*}
+    \begin{cases}
+    \tilde{f}(0) = 1, \\ 
+    \left\|\tilde{f}(t)\right\| < \infty, \\ 
+    \nexists \lim_{t \rightarrow \infty} \tilde{f}(t),
+    \end{cases}
+\end{equation*}
+ensures that we start from an initial profile at the beginning of the simulation,
+\begin{equation}
+    u_e(x,0) = \tilde{u}(x),
+\end{equation}
+and that we never reach a steady-state solution due to the oscillatory nature of $\tilde{f}$.
+
+Again, the explicit expression for the forcing term is obtained from Equations~\eqref{eq:1d_fom_mfp_forcing_term} and \eqref{eq:1d_fom_mfp_diffusion_term},
+\begin{equation}
+    \begin{split}
+        f(x,t) &= -\omega_f \sin{(\omega_f t)}(1+\delta^2 x^2) \\ 
+        &- \delta^2 \alpha_0(1 + \varepsilon x^2) \cos{(\omega_f t)}.
+    \end{split}
+\end{equation}
+
+The boundary condition values, to be used to build the lifting term in Equation~\eqref{eq:1d_fom_dirichlet_lifting}, are obtained from Equations~\eqref{eq:1d_fom_mfp_boundary_conditions},
+\begin{subequations}
+    \begin{align}
+        b_0(t) &= \cos{(\omega_f t)}, \\
+        b_L(t) &= \cos{(\omega_f t)}\left(1 + \delta^2 L^{2}(t)\right).
+    \end{align}
+\end{subequations}
+
+Collecting all the parameters used to define problem MFP-2, we find:
+\begin{itemize}
+    \item $\alpha_0$: constant diffusion constant. 
+    \item $\varepsilon$: present in the diffusion coefficient, it determines how sensitive $\alpha(x)$ is to spatial variations. 
+    \item $\omega$: Present in the definition of the moving domain, it defines how quickly the domain boundary moves.
+    \item $\delta$: present in the moving boundary condition and in the forcing term. 
+    It regulates how strongly the solution changes in the spatial direction.
+    \item $\omega_f$: Present in both boundary conditions and in the forcing term, it defines how quickly the solution changes in time.
+\end{itemize}
+So, $\mu = [\alpha_0, \varepsilon, \omega, \delta, \omega_f]$ and $\abs*{\mu} = 5$.
+
+\end{document}
