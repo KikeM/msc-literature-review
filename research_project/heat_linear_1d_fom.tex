@@ -86,8 +86,11 @@ By application of the chain rule we get
 \end{equation}
 from where we get the necessary modification to be done to the strong form (\ref{eq:1d_fom_strong_pde}) of the PDE, 
 \begin{equation}
-    \left.\frac{\partial u}{\partial t}\right|_{x} - w \pdv{u}{x} - \alpha \Delta u = f
+    \left.\frac{\partial u}{\partial t}\right|_{\aleX} - w \pdv{u}{x} - \alpha \Delta u = f
 \end{equation}
+
+\subsubsection*{Geometric Conservation Laws}
+
 
 \subsubsection{Weak Formulation}
 Since we will be working with the Galerkin procedure to solve PDEs, 
@@ -114,7 +117,7 @@ where $V$ is a suitable Hilbert space,
     \end{align}
 \end{subequations}
 We have exploited the integration by parts rule to lower by one the derivative degree of the laplacian operator.
-This is the reason to call this the \emph{weak form}, since the differentiability of the highest operator has been reduced.
+% This is the reason to call this the \emph{weak form}, since the differentiability of the highest operator has been reduced.
 
 \subsubsection{Dirichlet Lifting}
 \label{sec:1d_fom_heat_equation_dirichlet_lifting}
@@ -131,7 +134,7 @@ There are two conditions to be met by the lifting of the boundary conditions:
     \item To reach the prescribed values at the boundary nodes.
     \item To be sufficiently smooth within the domain.
 \end{enumerate}
-In a one-dimensional setting, the definition of a lifting function $g(x,t)$ is straigtforward, with a simple linear interpolation:
+In a one-dimensional setting, the definition of a lifting function $g(x,t)$ is straigtforward, with a simple linear interpolation of the boundary values:
 \begin{equation}
     \label{eq:1d_fom_dirichlet_lifting}
     g(x,t) = b_L(t) \left(\frac{x}{L}\right) + b_0(t) \left(\frac{L - x}{L}\right).
@@ -143,7 +146,7 @@ In a one-dimensional setting, the definition of a lifting function $g(x,t)$ is s
 %         g(L,t) &= b_L(t) \left(\frac{L}{L}\right) + b_0(t) \left(\frac{L - L}{L}\right) = b_L(t).
 %     \end{align*}
 % \end{subequations}
-The smoothness condition is reached thanks to the linearity and smoothness of the interpolation functions.
+% The smoothness condition is reached thanks to the linearity and smoothness of the interpolation functions.
 
 In higher dimensional settings this procedure is valid too. 
 However, due to the arbitrary shape the domain can take, the construction of the lifting function becomes more laborious.
@@ -231,13 +234,13 @@ With this approximation of the time derivative, we get the following semi-discre
         \label{eq:1d_fom_weak_formulation_semidiscrete_time}
         \inner{\hat{u}^{n+1}}{v} 
         - \Delta t \inner{w \grad \hat{u}^{n+1}}{v} 
-        + \Delta t \inner{\alpha \grad \hat{u}^{n+1}}{\grad v} &= \nonumber \\ 
+        + \Delta t \inner{\alpha \grad \hat{u}^{n+1}}{\grad v} = \nonumber \\ 
         \inner{\hat{u}^{n}}{v} 
         + \Delta t \inner{f^{n+1}}{v} \nonumber \\
         + \Delta t \inner{f_{g,1}^{n+1}}{v} + \Delta t \inner{f_{g,2}^{n+1}}{\grad v}, \\
-        \hat{u}^{n+1}(0) &= 0, \\
-        \hat{u}^{n+1}(L\left(t^{n+1}\right)) &= 0, \\
-        \hat{u}^{0}(x) &= \hat{u}_0(x).
+        \hat{u}^{n+1}(0) = 0, \\
+        \hat{u}^{n+1}(L\left(t^{n+1}\right)) = 0, \\
+        \hat{u}^{0}(x) = \hat{u}_0(x).
     \end{align}
 \end{subequations}
 The forcing term $\inner{\hat{u}^{n}}{v}$ is an interesting one.
