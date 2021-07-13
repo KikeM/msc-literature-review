@@ -1,5 +1,8 @@
 \documentclass[../main.tex]{subfiles}
 
+\newcommand{\alemap}{\ensuremath{\mathcal{A}}}
+\newcommand{\aleX}{\ensuremath{\mathcal{X}}}
+
 \begin{document}
 
 \section{Method of Manufactured Solutions}
@@ -60,6 +63,56 @@ We get the initial condition from an evaluation of $u_e(x,t)$ at time zero, name
     u_0(x) := u_e(x,0) = \tilde{f}(0) \tilde{u}(x).
 \end{equation}
 
+\subsection{ALE Ingredients}
+There are two kind of moving meshes: one that keeps fixed the domain length and simply moves the interior nodes; and one that moves the mesh according to a scaling law that changes the domain length.
+
+\subsubsection{Fixed Length}
+An adaptive mesh technique would want to move the mesh nodes according to some feature of the solution or its gradients. 
+In this case, despite having a fixed domain, $L=L_0$, the interior nodes would move, leading to an ALE formulation.
+The mapping and mesh velocity would be 
+\begin{subequations}
+    \begin{align}
+        \alemap(\aleX, t) &= \aleX - k \sin(\frac{2\pi \aleX}{L_0}) \sin(\omega t), \\
+        w(\aleX, t) &= - \omega k \sin(\frac{2\pi \aleX}{L_0}) \cos (\omega t)
+    \end{align}
+\end{subequations}
+The drawback of this mapping is that we need to solve a non-linear equation,
+\begin{equation}
+    \left(\aleX -x \right) - k \sin(2\pi \aleX) \sin \left(\frac{2\pi t}{T}\right) = 0,
+\end{equation}
+to obtain $\aleX = \aleX(x,t)$ to compute the mesh velocity in physical coordinates, $w(x,t)$, which is the one that needs to be provided to the weak form in the actual calculation of the solution at the algebraic level.
+
+\subsubsection{Changing Length}
+The alternative scenario is one were the domain length is not fixed, $L=L(t)$.
+The movement of the rightmost side~$L(t)$ is defined with a harmonic function, 
+\begin{subequations}
+    \begin{align}
+        L(t) &= L_0 \left[1 - \sin\left(\omega t\right)\right], \\
+        L'(t) &= - L_0 \omega \cos(\omega t).
+    \end{align}
+\end{subequations}
+where the frequency $\omega$ will be our geometrical parameter.
+The mapping and mesh velocity are
+\begin{subequations}
+    \begin{align}
+        \alemap(\aleX, t) &= \left(\frac{\aleX}{L_0}\right) L(t), \\
+        w(\aleX, t) &= \left(\frac{\aleX}{L_0}\right) L'(t), \\
+        w(x, t) &= \left(\frac{1}{L_0}\right) L'(t) {L_0} \left(\frac{x}{L(t)}\right) =
+        L'(t)\left(\frac{x}{L(t)}\right)
+    \end{align}
+\end{subequations}
+In this scaled moving domain it is simpler to compute the mesh velocity in physical coordinates, since we do not need to solve a non-linear equation to obtain $\aleX = \aleX(x,t)$. 
+
+We could decide to stop the simulation when the domain has stretched by a factor $n$.
+If so, we have to compute the final time $t_f$,
+\begin{equation}
+    L(t_f) = n L_0, \quad 0 < n < 1,
+\end{equation}
+so that the end time $t_f$ of our simulation should be
+\begin{equation}
+    t_f = \frac{1}{\omega} \sin^{-1}\left(1 - n\right).
+\end{equation}
+
 \subsection{Forcing Term}
 The strong formulation forcing term $f(x,t)$ from which we depart is computed by introducing~$u_e(x,t)$ into the PDE, which leads to
 \begin{subequations}
@@ -79,8 +132,8 @@ We recall that the FE problem we solve is the one corresponding to the homogeneo
 Therefore, in order to implement these problems we need to define the exact expression of $f_g$.
 From Equation~\eqref{eq:1d_fom_weak_formulation_homogeneous} we get that the forcing term linked to the lifting of the Dirichlet boundary conditions has the following form,
 \begin{align}
-    f_{g,1} &= - \frac{\partial g}{\partial t}, \\
-    f_{g,2} &= - \left(\alpha(x) \grad g\right).
+    f_{g,1} &= - \frac{\partial g}{\partial t} + w \pdv{g}{x}, \\
+    f_{g,2} &= - \alpha \pdv{g}{x}.
 \end{align}
 Since the lifting $g$ is the linear combination of both boundary conditions, Equation~\eqref{eq:1d_fom_dirichlet_lifting},
 \begin{equation}
@@ -89,13 +142,14 @@ Since the lifting $g$ is the linear combination of both boundary conditions, Equ
 we get that the forcing term $f_g$ becomes the combination of
 \begin{subequations}
     \begin{align}
-        \grad g &= \frac{b_L(t) - b_0(t)}{L}, \\
-        \pdv{g}{t} &= b'_L(t) \left(\frac{x}{L}\right) 
-        + b'_0(t) \left(\frac{L - x}{L}\right) \\
-        &+ \left(b_0(t) - b_L(t)\right) \left(\frac{x}{L(t)}\right)\left(\frac{L'(t)}{L(t)}\right) \nonumber.
+        \pdv{g}{x} &= \frac{b_L(t) - b_0(t)}{L}, \\
+        \pdv{g}{t} &= b'_L(t) \left(\frac{x}{L}\right) + b'_0(t) \left(\frac{L - x}{L}\right)
+        .
+        %, \\ 
+        % w \pdv{g}{x} &= \frac{b_0(t) - b_L(t)}{L(t)} \left(\frac{x}{L(t)}\right) L'(t).
     \end{align}
 \end{subequations}
-We observe how the time derivate of the lifting function corresponds to the interpolation of the time derivatives and an additional term which takes into account the moving boundary speed.
+% We observe how the time derivate of the lifting function corresponds to the interpolation of the time derivatives and an additional term which takes into account the moving boundary speed.
 
 The time derivatives of the boundary conditions are derived from Equations~\eqref{eq:1d_fom_mfp_boundary_conditions}, 
 \begin{subequations}
@@ -107,20 +161,6 @@ The time derivatives of the boundary conditions are derived from Equations~\eqre
 The expression for $\tilde{f}'(t)$ will be different for each manufactured problem.
 Note that the second summand of~$b'_L(t)$ vanishes if~$L(t)$ is constant, i.e. $L'(t)=0$.  
 
-\subsection{Time Deforming Mesh}
-The movement of the rightmost side $L(t)$ of the domain is defined with a harmonic function, 
-\begin{equation}
-    L(t) = L_0 \left[1 - \sin\left(\omega t\right)\right],
-\end{equation}
-where the frequency $\omega$ will be our geometrical parameter.
-If we want the domain to reduce its size by a factor $n$
-\begin{equation}
-    L(t_f) = n L_0, \quad 0 < n < 1,
-\end{equation}
-the end time $t_f$ of our simulation should be
-\begin{equation}
-    t_f = \frac{1}{\omega} \arcsin\left(1 - n\right).
-\end{equation}
 
 
 % Overall, the problem has been parametrized with three parameters, 
