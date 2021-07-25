@@ -1,42 +1,59 @@
-% \documentclass[a4paper, technote, compsoc]{IEEEtran}
-\documentclass[../1_heat_equation.tex]{subfiles}
+\documentclass[../../thesis.tex]{subfiles}
+
 
 \newcommand{\rbV}{\ensuremath{\mathbb{V}}}
 \newcommand{\rbVT}{\ensuremath{\rbV^T}}
 \newcommand{\epspod}{\ensuremath{\varepsilon_\text{POD}}}
 
+\newcommand{\inner}[2]{\left<#1, #2\right>}
+\newcommand{\alemap}{\ensuremath{\mathcal{A}}}
+\newcommand{\dt}{\ensuremath{\Delta t}}
+\newcommand{\pexp}{\ensuremath{\frac{2\gamma}{\left(\gamma-1\right)}}}
+\newcommand{\aleX}{\ensuremath{\mathcal{X}}}
+\newcommand{\Ah}[1]{\ensuremath{\vb{#1}^{n+1}_h}}
+\newcommand{\Ahn}[1]{\ensuremath{\vb{#1}^{n}_h}}
+
 \begin{document}
 
-\section{Reduced Order Model: Heat Equation}
-We present now the formulation for the Reduced Order Model (ROM) of our FE problem.
-Our aim is to be able to, for any unseen parameter value, assemble and solve a smaller problem in terms of the involved algebraic operators dimensions.
+\section{Reduced Order Model}
+For any unseen parameter value, our aim is to be able to assemble and solve a smaller algebraic problem, 
+and yet to obtain a solution close enough to that of the Full Order Model.
+% We present now the formulation for the Reduced Order Model (ROM).
 In order to do so, first we need to obtain certain algebraic structures which capture the essence of the problem at hand.
+
+% Offline phase
 We do so by sampling the original problem at certain parameter values and processing snaphsots of the solution and the operators, obtained from the solution of the FOM problem.
 This is called the \emph{offline phase}.
-
+% Online phase
 Later on, we exploit these static structures to build reduced operators which capture the dynamics of the problem sufficiently well, solve a smaller algebraic system and then recover the solution in the original mesh variables, in order to postprocess it.
 This is called the \emph{online phase}.
 
 % Then, we should be able to map back the solution to the original dimension $N_h$, since it is the geometrical space where solution plots on the original mesh are meaningful. 
 
-We will use the Reduced Basis Method (RB) to construct an ad-hoc problem-based basis to represent our ROM, and the Discrete Empirical Interpolation Method (DEIM) and its matrix version (MDEIM) to build suitable approximations of the algebraic operators involved. 
+We will use the Reduced Basis Method (RB) to construct an ad-hoc problem-based basis to represent our ROM;
+the Discrete Empirical Interpolation Method (DEIM) and its matrix version (MDEIM) 
+to build suitable approximations of the algebraic operators involved. 
 
 The continuous reduced problem formulation is skipped since it will not be used. 
 % For completeness, it will be defined in the appendix along with relevant remarks.
 Therefore, we jump directly into the discrete problem.
-We recall that we are focused at reducing the problem for the homogeneous component $\hat{u}(x)$ of our solution, i.e., the weak formulation given by the system of equations~\eqref{eq:1d_fom_weak_formulation_homogeneous}.  
+We recall that we are focused at reducing the problem for 
+the homogeneous component $\hat{u}(x)$ of our solution, 
+that is, for the weak formulation given by the system of equations~\eqref{eq:1d_fom_weak_formulation_homogeneous}.  
 
-\subsection{Reduced Basis Method: A Naive Galerkin Approach}
+% -----------------------------------------------------------------------------
+\subsection{A Naive Galerkin Approach}
 We have included in the title the word \emph{naive} because we are going to define the reduction problem in a very blunt way,
 where many ineffiencies will show up.
-We do so to motivate the additional reduction procedures we will include later on, specially regarding the operators.
+We do so to motivate the operator reduction procedures we will include, 
+especially regarding the operators.
 
-In the reduced context, we use a finite space $V_N \subset V_h$, where we can represent the solution as the linear combination of a set of orthonormal\footnote{If they were not, we can always make them so via Gram-Schmidt.} problem-based basis functions~$\psi_i(x)$,
+In the reduced context, we use a finite space $V_N \subset V_h$, where we can represent the solution as the linear combination of a set of orthonormal\footnote{If they were not, we can always make them so via Gram-Schmidt.} \mbox{problem-based} basis functions~$\psi_i(x)$,
 \begin{equation}
-    \label{eq:1d_rom_heat_equation_rb_expansion}
+    \label{eq:1d_rom_burgers_rb_expansion}
     \hat{u}_N(x) = \sum_j^{N} \hat{u}_{N_j} \psi_j(x).
 \end{equation}
-These basis functions $\psi_i(x)$ have global support, since their goal is to capture the problem dynamics. 
+These basis functions~$\psi_i(x)$ have global support, since their goal is to capture the problem dynamics. 
 This is why we usually expect or desire to have $N \ll N_h$, since we want to reduce the number of basis functions we need to represent our solution. 
 
 To maintain focus and in favor of generality, let us assume at this point that the global basis functions are given, and that they are zero at the boundary.
@@ -44,54 +61,99 @@ We will give details on how to obtain them later on.
 
 \subsubsection{Reduced Space Projection}
 Since we can represent any function in terms of our FE basis functions~$\varphi_i(x)$, 
-we have a linear mapping between the problem-based functions and the nodal basis functions.
+we have a linear mapping between the problem-based functions~$\psi_i(x)$ and the nodal basis functions.
 This allows us to establish the following relation between the problem solution in the reduced and original spaces,
 \begin{equation}
-    \label{eq:1d_rom_heat_equation_projection_relation}
+    \label{eq:1d_rom_burgers_projection_relation}
     \vb{\hat{u}}_h = \rbV \vb{\hat{u}}_N.
 \end{equation}
-The entries of the $\rbV$ matrix represent the coefficients of the global basis representation in the FE basis. 
+The entries of the $\rbV$ matrix represent the coefficients of the global basis representation in the FE basis, 
 % Each column of $\mathbb{V}$ represents the projection of the problem-based function $\psi_i(x)$ in terms of all the nodal basis functions $\varphi_j(x)$,
 \begin{equation}
-    \psi_i(x) = \sum_j \left[\mathbb{V}\right]_{ji}\varphi_j(x) 
+    \psi_i(x) = \sum_j \left[\mathbb{V}\right]_{ji}\varphi_j(x).
 \end{equation}
 
+% -----------------------------------------------------------------------------
 \subsubsection{Discrete Reduced Problem Assembly}
-In theory, to assemble the reduced problem operators, one could actually compute the inner products defined in Equations~\eqref{eq:1d_fom_linear_system_operators} with these new basis functions $\psi_i(x)$.
-In practice, it is more convenient to project the algebraic FOM operators with matrix-matrix and matrix-vector products into the reduced space, 
+In theory, to assemble the reduced problem operators, 
+one could actually compute the inner products defined in Equations~\eqref{eq:1d_fom_linear_system_operators} 
+with these new basis functions $\psi_i(x)$.
+In practice, it is more convenient to project the algebraic FOM operators with \mbox{matrix-matrix} and \mbox{matrix-vector} products into the reduced space, 
 \begin{subequations}
     \label{eq:1d_rom_linear_system_operators}
     \begin{align}
-        \vb{M}_{N}^{n+1} &= \rbVT \vb{M}_{h}^{n+1} \rbV, \\
-        \vb{A}_{N}^{n+1} &= \rbVT \vb{A}_{h}^{n+1} \rbV, \\
-        %\vb{F}_{\vb{\hat{u}}_N}^{N} &= \rbVT \vb{F}_{\vb{\hat{u}}_h}^{n}, \\
-        \vb{F}_{N}^{n+1} &= \rbVT \vb{F}_{h}^{n+1},  \\
-        \vb{F}_{{g,N}}^{n+1} &= \rbVT \vb{F}_{{g,h}}^{n+1},
+        \vb{X}_{N}^{n+1}       &= \rbVT \vb{X}_{h}^{n+1} \rbV, \\
+        \vb{F}_{N}^{n+1}       &= \rbVT \vb{F}_{h}^{n+1}, 
+        % \vb{M}_{N}^{n+1}       &= \rbVT \vb{M}_{h}^{n+1} \rbV, \\
+        % \vb{A}_{N}^{n+1}       &= \rbVT \vb{A}_{h}^{n+1} \rbV, \\
+        % \vb{C}_{N}^{n+1}       &= \rbVT \vb{C}_{h}^{n+1} \rbV, \\
+        % \vb{     N}_{N}^{n+1}  &= \rbVT \vb{     N}_{h}^{n+1} \rbV, \\
+        % \vb{\hat{N}}_{N}^{n+1} &= \rbVT \vb{\hat{N}}_{h}^{n+1} \rbV, \\
+        % \vb{F}_{N}^{n+1}       &= \rbVT \vb{F}_{h}^{n+1},  \\
+        % \vb{F}_{{g,N}}^{n+1}   &= \rbVT \vb{F}_{{g,h}}^{n+1},
     \end{align}
 \end{subequations}
-since the assembly of matrices based on the FE basis is easily done in parallel due to their local support, 
+where $\vb{X}_{h}$ and $\vb{F}_{h}$ stand for each of the FOM operators (matrix and vector respectively).
+The assembly of matrices based on a FE basis can be easily done in parallel due to their local support, 
 whereas the integration of functions with global support is not necessarily computationally efficient.
+
 
 By doing so, we find the following ROM for the time evolution problem,
 \begin{subequations}
     \label{eq:1d_rom_weak_formulation_discrete}
     \begin{align}
-        \vb{M}_N \vb{\hat{u}}_{N}^{n+1} + \Delta t \vb{A}_N \vb{\hat{u}}_{N}^{n+1} &= \vb{F}^{n}_{\vb{\hat{u}}_N} \\
-        &+ \Delta t \vb{F}_N^{n+1} + \Delta t \vb{F}^{n+1}_{g, N}, \nonumber \\
-        \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
+        m_{\text{BDF}} \vb{M}^{n+1}_{N} \vb{\hat{u}}_{N}^{n+1}
+        + \dt \vb{C}^{n+1}_{N} \vb{\hat{u}}_{N}^{n+1}
+        + \dt \vb{A}^{n+1}_{N} \vb{\hat{u}}_{N}^{n+1}
+        \nonumber 
+        \\ 
+        + \dt \vb{\hat{N}}^{n+1}_{N} \vb{\hat{u}}_{N}^{n+1}
+        + \dt \left[\vb{N}^{n+1}_{N}\left(\vb{\hat{u}}_{N}^{n}\right)\right] \vb{\hat{u}}_{N}^{n+1}
+        \nonumber
+        \\
+        = \vb{F}_{\vb{\hat{u}}_{N}}^{n}
+        + \dt \vb{F}_{g,N}^{n+1},
+        \\
+        \vb{\hat{u}}_N^{0} = \vb{\hat{u}}_{N,0}.
     \end{align}
 \end{subequations}
+% \begin{subequations}
+%     \label{eq:1d_rom_weak_formulation_discrete}
+%     \begin{align}
+%         \vb{M}_N \vb{\hat{u}}_{N}^{n+1} + \Delta t \vb{A}_N \vb{\hat{u}}_{N}^{n+1} &= \vb{F}^{n}_{\vb{\hat{u}}_N} \\
+%         &+ \Delta t \vb{F}_N^{n+1} + \Delta t \vb{F}^{n+1}_{g, N}, \nonumber \\
+%         \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
+%     \end{align}
+% \end{subequations}
 If we collect terms and factor out the unknowns we get a linear system, this time in the reduced space, to be solved for each timestep to advance the solution,
+% \begin{subequations}
+%     \label{eq:1d_rom_linear_system_timestep}
+%     \begin{align}
+%         \vb{K}_N^{n+1} \vb{\hat{u}}_N^{n+1} &= \vb{b}_N^{n+1}, \\
+%         \vb{K}_N^{n+1} &= \vb{M}_{N}^{n+1} + \Delta t \vb{A}_{N}^{n+1}, \\
+%         \vb{b}_N^{n+1} &= \vb{F}_{\vb{\hat{u}}_N}^{n} + \Delta t \vb{F}_N^{n+1} + \Delta t \vb{F}_{g,N}^{n+1}, \\
+%         \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
+%     \end{align}
+% \end{subequations}
 \begin{subequations}
     \label{eq:1d_rom_linear_system_timestep}
     \begin{align}
-        \vb{K}_N^{n+1} \vb{\hat{u}}_N^{n+1} &= \vb{b}_N^{n+1}, \\
-        \vb{K}_N^{n+1} &= \vb{M}_{N}^{n+1} + \Delta t \vb{A}_{N}^{n+1}, \\
-        \vb{b}_N^{n+1} &= \vb{F}_{\vb{\hat{u}}_N}^{n} + \Delta t \vb{F}_N^{n+1} + \Delta t \vb{F}_{g,N}^{n+1}, \\
-        \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
+        \vb{K}_{N}^{n+1} \vb{\hat{u}}_{N}^{n+1} &= \vb{b}_{N}^{n+1}, 
+        \\
+        \vb{\hat{u}}_{N}^{0} &= \vb{\hat{u}}_{N,0},
+        \\
+        \vb{K}_{N}^{n+1} &= \Ah{M} + \dt \left[\Ah{A} + \Ah{B} \right. 
+        \nonumber 
+        \\
+                        &\left. + \Ah{\hat{N}} + \Ah{N}\left(\vb{\hat{u}}_{N}^{n}\right)\right],
+        \\
+        \vb{b}_{N}^{n+1} &= \vb{F}_{\vb{\hat{u}}_{N}}^{n} + \dt \vb{F}_{g,N}^{n+1}.
     \end{align}
 \end{subequations}
+All of the previous has the same algebraic pattern as the FOM problem.
+The only difference is the size of the operators, much smaller due to the small size of $N$. 
 
+% -----------------------------------------------------------------------------
 \subsubsection*{Time-Discretization Forcing Term}
 The forcing term $\vb{F}_{\vb{\hat{u}}_h}^{n}$ due to the time discretization has been intentionally left out in the previous section.
 We could naively project it too, 
@@ -99,22 +161,27 @@ We could naively project it too,
     \vb{F}_{\vb{\hat{u}}_N}^{N} = \rbVT \vb{F}_{\vb{\hat{u}}_h}^{n},
 \end{equation}
 but this would force us to reconstruct the FE vector of the ROM at each time-step, making the integration cumbersome.
-To go around this issue, we can exploit the algebraic representation of $\vb{F}_{\vb{\hat{u}}_h}^{n}$, given in Equation~\eqref{eq:1d_fom_forcing_term_time_mass_matrix} in terms of the mass matrix. 
-Consequently, the forcing term due to the time discretization takes the following form in the ROM:
+To go around this issue, we can exploit the algebraic representation of $\vb{F}_{\vb{\hat{u}}_h}^{n}$, 
+given in Equation~\eqref{eq:1d_fom_forcing_term_time_mass_matrix} in terms of the mass matrix. 
+The forcing term due to the time discretization takes the following form in the ROM:
 \begin{equation}
     \vb{F}_{\vb{\hat{u}}_N}^{n} = 
     \begin{cases}
-        \vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n}, &\text{BDF-1} \\
+        \vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n},                & \text{BDF-1},
+        \\
         \frac{1}{2}\vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n}
-        - \frac{3}{4}\vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n-1}, &\text{BDF-2}
+        - \frac{3}{4}\vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n-1}, & \text{BDF-2}.
     \end{cases}
 \end{equation}
+Again, these mimic the algebraic pattern obtained in the FOM.
 
+% -----------------------------------------------------------------------------
 \subsubsection{Boundary and Initial Conditions}
 The computation of the initial condition~$\vb{\hat{u}}_{N,0}$ is to be done in two steps. 
-First, the initial condition~$\vb{\hat{u}}_{h,0}$ in the FOM space needs to be computed as a FE vector by means of the techniques explained in Section~\ref{sec:1d_fom_projection_interpolation}.
-Then, to obtain~$\vb{\hat{u}}_{N,0}$, the FE representation $\vb{\hat{u}}_{h,0}$ needs to be projected unto the reduced space. 
-Since we are dealing with an orthonormal basis, we can use the matrix~$\rbV$ to project the FE vector departing from the \mbox{FOM-ROM} relation given in Equation~\eqref{eq:1d_rom_heat_equation_projection_relation},
+First, the initial condition~$\vb{\hat{u}}_{h,0}$ in the FOM space needs to be computed as a FE vector via interpolation or projection.
+% by means of the techniques explained in Section~\ref{sec:1d_fom_projection_interpolation}.
+Then, this FE representation $\vb{\hat{u}}_{h,0}$ needs to be projected unto the reduced space. 
+Since we are dealing with an orthonormal basis, we can use the matrix~$\rbV$ to project the FE vector departing from the \mbox{FOM-ROM} relation given in Equation~\eqref{eq:1d_rom_burgers_projection_relation},
 \begin{equation}
     \rbVT \vb{\hat{u}}_{h,0} = \underbrace{\rbVT \rbV}_{\mathbb{I}} \vb{\hat{u}}_{N,0} 
     \rightarrow 
@@ -124,33 +191,43 @@ Since we are dealing with an orthonormal basis, we can use the matrix~$\rbV$ to 
 Regarding the spatial boundary conditions, at this point of the naive reduction scheme, two facts come into play, which we first present and then put together:
 \begin{enumerate}
     \item The weak form has homogeneous boundary conditions.
-    \item The ad-hoc basis $\psi_i(x)$ take value zero at the boundaries.
+    \item The ad-hoc basis elements~$\psi_i(x)$ are zero at the boundaries,
+    \begin{equation*}
+        \psi_i(x) = 0 \quad \forall \, x \in \partial \Omega.
+    \end{equation*}
 \end{enumerate}
-These two facts imply that the projection of the operators, system of Equations~\eqref{eq:1d_rom_linear_system_operators}, does not break the original constraint of homogeneous boundary conditions;
-and that the linear expansion of the solution $\hat{u}_N(x)$ in the span of $V_N$, Equation~\eqref{eq:1d_rom_heat_equation_rb_expansion}, is always true.
+These two facts imply that the projection of the operators, Equation~\eqref{eq:1d_rom_linear_system_operators}, does not break the original constraint of homogeneous boundary conditions;
+and that the linear expansion of the solution~$\hat{u}_N(x)$ in the span of~$V_N$, Equation~\eqref{eq:1d_rom_burgers_rb_expansion}, is always true.
+\mytodo{There was a paper which discussed this kind of details regarding homogeneous boundary projection.}
 
-Once the reduced homogeneous solution $\hat{u}_N(x)$ is obtained, it can be brought back to the original space $V_h$ via Equation~\eqref{eq:1d_rom_heat_equation_projection_relation}, and then add on top of it the FE representation of the Dirichlet lifting, to obtain the final solution,
+Once the reduced homogeneous solution~$\hat{u}_N(x)$ is obtained, it can be brought back to the original space~$V_h$ via Equation~\eqref{eq:1d_rom_burgers_projection_relation}, and then add on top of it the FE representation of the Dirichlet lifting, to obtain the final solution,
 \begin{equation}
     u(x, t; \mu) \simeq u_h(t, \mu) = \rbV \hat{u}_N(t, \mu) + g_h(t,\mu).
 \end{equation}
 
-\subsubsection{Conclusions}
+% -----------------------------------------------------------------------------
+\subsubsection{Wind-Up for the Naive Reduction Scheme}
 At this point, the naive reduction scheme for the RB-ROM has been defined and explained.
-However, some aspects of it remain unattended:
-\begin{itemize}
-    \item The construction of the problem-based basis functions $\psi_i(x)$.
-    There are many methods to build them, and which combination of them we chose defines which reduction method we are applying, along with their advantages and requirements.
-    \item The \emph{offline-online decomposition}: to uncouple the usage of FOM operators in as much as possible from the integration of the ROM. 
-    Ideally, no FOM structures should be assembled during the online phase.
-    In this naive scheme, we are clearly not meeting such requirement, since we need to assemble all the FOM operators and then project them into $V_N$ \emph{for each timestep}.
-\end{itemize}
-Thus, some additional sections need to be brought up, in order to complete our definition of the reducing scheme.
-We now treat the construction of the basis functions, Section~\ref{sec:1d_rom_heat_equation_basis_construction}; and the approximation of the algebraic operators, Section~\ref{sec:1d_rom_heat_equation_system_approximation_deim}.
+However, some aspects of it remain unattended.
 
+The construction of the problem-based basis functions $\psi_i(x)$:
+there are many methods to build them, and which combination of them we choose 
+defines which reduction method we are applying, along with their advantages and requirements.
+
+The \emph{offline-online decomposition}: 
+that is, to uncouple the usage of FOM operators in as much as possible from the integration of the ROM. 
+Ideally, no FOM structures should be assembled during the online phase.
+In this naive scheme, we are clearly not meeting such requirement, since we need to assemble all the FOM operators and then project them \emph{for each timestep}.
+
+Hence, some additional sections need to be brought up, in order to complete our definition of the reducing scheme.
+We now treat the construction of the basis functions, Section~\ref{sec:1d_rom_burgers_basis_construction}; and the approximation of the algebraic operators, Section~\ref{sec:1d_rom_burgers_system_approximation_deim}.
+
+% -----------------------------------------------------------------------------
 \subsection{Reduced Basis Construction}
-\label{sec:1d_rom_heat_equation_basis_construction}
+\label{sec:1d_rom_burgers_basis_construction}
 Hereby we layout the details of the basis construction, that is, the definition of the $\psi_i(x)$ functions.
-There are many techniques to build such basis, but since we are laying out a toy problem, we explain an automatic and out-of-the-box technique: the nested POD approach. 
+There are many techniques to build such basis.
+We opt for an automatic and out-of-the-box technique: the nested POD approach. 
 
 On paper, the most simple basis anyone could come up with is a collection of solution snaphsots for different parameter values and timesteps, 
 \begin{align}
@@ -167,8 +244,9 @@ We can exploit this fact by using a compression algorithm, such as the Proper Or
 
 We call this the \emph{method of snapshots}. 
 
+% -----------------------------------------------------------------------------
 \subsubsection{POD Space Reduction}
-\label{sec:1d_rom_heat_equation_basis_construction_pod}
+\label{sec:1d_rom_burgers_basis_construction_pod}
 This section is left intentionally short for the moment.
 Many high quality references exist to explain what is the Proper Orthogonal Decomposition (POD), why does it work and which limitations does it have.
 
@@ -203,8 +281,9 @@ Alternatively to a prescribed error, one could directly ask for a prescribed num
     [\psi_i]_{i=1}^{N^{*}_{POD}} = POD\left([\varphi_i]_{i=1}^{N_S}, N^{*}_{POD}\right).
 \end{equation}
 
+% -----------------------------------------------------------------------------
 \subsubsection{Nested POD Basis Construction}
-\label{sec:1d_rom_heat_equation_basis_construction_nested}
+\label{sec:1d_rom_burgers_basis_construction_nested}
 A simple procedure to leverage the compression properties of the POD function, and the nested structure of our PDE with respect to time and the parameters; is to first build certain POD basis from the snapshots of the solution at different timesteps for a fixed parameter value,
 \begin{align*}
     \Psi_{\mu_0} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_0), \ldots, \hat{u}_h(t^T; \mu_0)\right]\right), \\
@@ -229,8 +308,9 @@ Naturally, more involved procedures exist to create the final basis $\Psi$, but 
 
 We leave this for later.
 
+% -----------------------------------------------------------------------------
 \subsection{System Approximation}
-\label{sec:1d_rom_heat_equation_system_approximation_deim}
+\label{sec:1d_rom_burgers_system_approximation_deim}
 Regarding the assembly of the reduced operators, if already during the offline stage, where the FOM problem is tackled, we had to assemble all the discrete operators for each timestep;
 during the online stage we have to additionally project them unto the reduced space too, as shown in Equations~\eqref{eq:1d_rom_linear_system_operators},
 increasing the overall cost of the integration procedure.
@@ -241,7 +321,7 @@ with the goal of speeding up the construction of the operators.
 We talk about \emph{parameter and time separable} problems, or the existence of an \emph{affine decomposition},
 when the spatial operators (bilinear or linear forms), which depend on time and parameter values, present the following functional form,
 \begin{equation}
-    \label{eq:1d_rom_heat_equation_separable_form_time_param}
+    \label{eq:1d_rom_burgers_separable_form_time_param}
     A_h(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q},
 \end{equation}
 where the coefficient functions are real-valued, \mbox{$\Theta_q^a(t, \mu) \in \mathbb{R}$}, and the operator basis elements $A_{h,q}$ are parameter-independent.
@@ -259,6 +339,7 @@ If we had such a decomposition, once we had computed the basis matrix \rbV, we c
 \end{equation}
 Since $A_{N, q}$ is fixed, provided that we had a way to evaluate each $\Theta_q^a(t, \mu)$, we would be able to build the reduced operator for a given parameter for each timestep without having to use any FOM operator. 
 
+% -----------------------------------------------------------------------------
 \subsubsection{Discrete Empirical Interpolation Method}
 Naturally, not many problems are likely to present a separable form as the one shown above.
 Even our simple linear heat equation problem, due to the time-deformation of the mesh, cannot be presented in such a form. 
@@ -266,11 +347,11 @@ Even our simple linear heat equation problem, due to the time-deformation of the
 To tackle this issue, we use the Discrete Empirical Interpolation Method (DEIM).
 This method is a numerical extension of its analytical sibling, the Empirical Interpolation Method (EIM).
 Basically, it mimicks the idea of creating a basis for the solution space, but this time centered around the operator space.
-By means of a nested POD as we explained in Section~\ref{sec:1d_rom_heat_equation_basis_construction_nested}, if we replace the solution snapshots with operator snapshots, we can build the static and problem-dependent basis $A_{h,q}$.
+By means of a nested POD as we explained in Section~\ref{sec:1d_rom_burgers_basis_construction_nested}, if we replace the solution snapshots with operator snapshots, we can build the static and problem-dependent basis $A_{h,q}$.
 
 Since we will be creating the operator basis with an approximation technique, an error is expected in the reconstruction of the actual operator, and so we introduce the notation $A_h^m(t, \mu)$ to reference the approximation of the operator via the (M)DEIM algorithm,
 \begin{equation}
-    \label{eq:1d_rom_heat_equation_system_approximation}
+    \label{eq:1d_rom_burgers_system_approximation}
     A_h(t, \mu) \simeq A_h^m(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q}.
 \end{equation}
 
@@ -280,15 +361,17 @@ Naturally, this idea leads to the concept of approximated reduced operators,
 \end{equation}
 which is the approximation of the reduced operators when the basis comes from an approximation of the operator snapshots. 
 
+% -----------------------------------------------------------------------------
 \subsubsection{Discussion on the Approximation Target}
 There are reasons to approximate $A_h$ instead of directly $A_N$, but I still need to wrap my head around them. 
 
+% -----------------------------------------------------------------------------
 \subsubsection{Evaluation of the Coefficient Functions}
 To evaluate the $\Theta_q^a(t, \mu)$ functions, we set and solve an interpolation problem;
 that is, 
 we enforce the approximation to actually match certain elements of the operator, 
 \begin{equation}
-    \label{eq:1d_rom_heat_equation_interpolation_problem}
+    \label{eq:1d_rom_burgers_interpolation_problem}
     [A_h(t, \mu)]_{k} = [A_h^m(t, \mu)]_{k} = \sum_q^{Q_a} \Theta_q^a(t, \mu) [A_{h, q}]_{k}
 \end{equation}
 for certain indices~$k \in \mathcal{I}_a$ within a collection of~$Q_a$ selected indices~$\mathcal{I}_a$.
@@ -296,11 +379,43 @@ The notation $[A_h(t, \mu)]_{k}$ stands for the value of the operator at the giv
 In the FE context it can be obtained by integrating the weak form locally.
 
 This leads to a system with the same number of unknowns as equations, where each $\Theta_q^a(t, \mu)$ is unknown.
-The indices $\mathcal{I}_a$ are selected during the offline stage, according to error reduction arguments of the separable form \eqref{eq:1d_rom_heat_equation_system_approximation},
+The indices $\mathcal{I}_a$ are selected during the offline stage, according to error reduction arguments of the separable form \eqref{eq:1d_rom_burgers_system_approximation},
 \begin{equation}
     e_a(t, \mu) = \norm{A_h(t, \mu) - A_h^m(t, \mu)}.
 \end{equation}
 
+% -----------------------------------------------------------------------------
+\subsubsection{Reduction of the Nonlinear Term}
+The basis for the nonlinear operator $C_h$ can be built in many ways,
+but there is one that will allows us to make it as rich as possible in an efficient
+way. 
+
+The nonlinearity of this operator comes from the fact that it depends on the solution 
+from previous timesteps. 
+Thus, one way to approach the reduction of this operator would be to collect 
+the operator snapshots during the offline phase of the FOM.
+The problem with this approach is that we would be tied by the parameter space 
+used for the reduced basis. 
+
+Instead, if we use the reduced basis, we could span a larger parameter space.
+We run the offline phase for the nonlinear operator once we have obtained the 
+reduced basis. 
+
+We use a nested POD approach again, althoguh this time we have three levels.
+
+We fix a parameter, then for each reduced basis element we collect as many snapshots
+as timesteps.
+Then we compress these snapshots to obtain a collateral basis, which we store.
+When we are done with all the elements in the reduced basis, 
+we have a collection of collateral basis, which we compress.
+This gives us a basis which contains all the information about the solution for 
+that parameter.
+We repeat this procedure for each parameter, thus obtaining a collateral basis 
+for each parameter.
+Finally, we compress these collateral basis to obtain the final collateral basis
+with information about the solution and the parameter space. 
+
+% -----------------------------------------------------------------------------
 \subsection{Hyper Reduced Basis Method}
 With an approximation of the reduced operators available, we can define yet another algebraic problem to integrate and obtain the reduced solution in time for a given parameter value,
 \begin{subequations}
@@ -321,27 +436,71 @@ If we collect terms and factor out the unknowns we get a linear system, in the r
         \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
     \end{align}
 \end{subequations}
-Each of the operators present in the problem, $\vb{M}_N, \vb{A}_N, \vb{F}_N \qqtext{and} \vb{F}_{g,N}$ will have associated an operator basis and will require the solution of the interpolation problem \eqref{eq:1d_rom_heat_equation_interpolation_problem} to be solved for each timestep and parameter value.
+Each of the operators present in the problem, $\vb{M}_N, \vb{A}_N, \vb{F}_N \qqtext{and} \vb{F}_{g,N}$ will have associated an operator basis and will require the solution of the interpolation problem \eqref{eq:1d_rom_burgers_interpolation_problem} to be solved for each timestep and parameter value.
 Although this could still seem like a costly procedure, if the operators are actually reduceable, the number of basis functions $Q_m, Q_a, Q_f, Q_{f,g}$ should be small, and thus way simpler problems than assembling the whole operator and the carrying out the projection. 
 
 % Note that the vector $\vb{F}_{\vb{\hat{u}}_N}^{n}$ is not approximated.
 % The projection of the previous solution is directly obtained in the reduced space.
 
-Once the reduced homogeneous solution $\hat{u}^{m}_N(x)$ is obtained with approximated operators, it can be brought back to the original space $V_h$ via Equation~\eqref{eq:1d_rom_heat_equation_projection_relation}, and then add on top of it the FE representation of the Dirichlet lifting, to obtain the final solution,
+Once the reduced homogeneous solution $\hat{u}^{m}_N(x)$ is obtained with approximated operators, it can be brought back to the original space $V_h$ via Equation~\eqref{eq:1d_rom_burgers_projection_relation}, and then add on top of it the FE representation of the Dirichlet lifting, to obtain the final solution,
 \begin{equation}
     u(x, t; \mu) \simeq u_h^{m}(t, \mu) = \rbV \hat{u}^{m}_N(t, \mu) + g_h(t,\mu).
 \end{equation}
 
-
+% -----------------------------------------------------------------------------
 \subsection{Certification of the Reduction Procedure}
-Should this have some dedicated paragraphs at the beginning?
-I think it should.
+Computation of error bounds between FOM and ROM without actually computing the FOM.
 
-TBD.
+\subsubsection{Sacrifical Mode}
+We can use two ROMs to estimate the error with respect to the FOM solution.
 
-\begin{itemize}
-    \item Computation of error bounds between FOM and ROM without actually computing the FOM.
-\end{itemize}
+\begin{equation}
+    \norm{u_h - \rbV_{N} u_N} = \norm{u_h - \rbV_{N+1} u_{N+1} + \rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}}.
+\end{equation}
+By the triangle inequality, we get
+\begin{equation}
+    \norm{u_h - \rbV_{N} u_N} \leq \norm{u_h - \rbV_{N+1} u_{N+1}} + \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}}.
+\end{equation}
+If we define the error function $e_N = \norm{u_h - \rbV_{N} u_N}$, 
+we get an upper bound of the desired error in terms of the sacrificial ROM error and the error between ROMs,
+\begin{equation}
+    e_N \leq e_{N+1} + \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}}.
+\end{equation}
+With sufficient ROB\footnote{Reduced Order Basis} elements, it should be safe to assert that the error made 
+with an extra mode should be smaller or equal to the one made without it,
+\begin{equation}
+    e_{N+1} \leq e_{N}.
+\end{equation}
+Thus, we get the following error bound,
+\begin{equation}
+    e_N \leq \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}}.
+\end{equation}
+It remains to determine how sharp this error estimate is.
+
+\subsubsection*{ROMs error: Implementation Details}
+The error between the two ROMs,
+\begin{equation}
+    \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}},
+\end{equation}
+can be expressed as a sum in terms of the ROB elements.
+Due to the hierarchical character of the ROB elements, $\rbV_{N+1}$ contains the same elements 
+up to $N$ as $\rbV_{N}$.
+Thus, the error between ROMs can be expressed like
+\begin{equation}
+    \begin{split}
+        \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}} 
+        = \\ 
+        \norm{u^{N+1}_{N+1} \psi_{N+1} + \sum_{j}^{N} (u^{N+1}_{j} - u^{N}_{j}) \psi_j}
+    \end{split}
+\end{equation}
+The difference between ROM coefficients $(u^{N+1}_{j} - u^{N}_{j})$ should be relatively small, 
+since it represents the difference between the two coefficients associated to the same mode.
+If they were notably different, it would mean that the dynamics between the original ROM and the one 
+carrying the sacrificial mode are different.
+Since the basis has a hierarchical character, this effect is unlikely to happen: 
+adding a mode should only refine the solution, not change how the previous modes are scaled.
+They are not strictly the same because the ROM system entries change if more modes are added to the basis,
+but again, they should do so in a way that somehow preserves dynamics.
 
 \printbibliography
 

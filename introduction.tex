@@ -1,0 +1,32 @@
+\documentclass[thesis.tex]{subfiles}
+
+
+\begin{document}
+\section{Introduction}
+When a painter sets out to paint, she will probably use most of the available basic colours.
+However, if she knew beforehand she was only going to paint landscapes, 
+she would fare well with a farsighted palette: greens, browns, blues, whites, etc.
+Such is the nature of Reduced Order Models, 
+to find a subset among the combinations of colours to represent the solution to the problem of interest.
+
+In this context, the basic colours are the classical mathematical Lagrangian finite element basis functions, 
+generic and with local support to represent most functions of interest.
+Instead, the landscape palette will be ad-hoc functions, with global support, good at capturing details only specific to landscapes.
+
+Additionally, she will not need all sorts of brushes, simply the ones with the right thickness and width for mountains and trees.
+The brushes represent the algebraic operators that arise from the finite element discretization.
+In a similar fashion as with the colours, we can find a subset of combinations of brushes that suit our problem.
+That is, we can find a basis for each algebraic operator to build them efficiently.
+
+Finally, since she is a vanguard painter, the domain of our problem, her canvas, will be allowed to change in time, as she paints.
+The landscape colours and brushes we select will need to take this into account.
+
+\mytodo{Mention that our goal is to avoid the computation of the jacobian matrix.}
+\mytodo{Mention that we will be using ALE formulation.}
+
+% Now that we have briefly stated the goal of our work
+
+% Because we will have a reduced basis for the solution \textit{and} the algebraic operators,
+% we say that we have an \textit{hyper}-reduced model, for all of its ingredients have assigned an ad-hoc representation basis.
+
+\end{document}

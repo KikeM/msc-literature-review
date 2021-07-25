@@ -1,0 +1,887 @@
+% \documentclass[a4paper, technote, compsoc]{IEEEtran}
+\documentclass[../../thesis.tex]{subfiles}
+
+\newcommand{\inner}[2]{\left<#1, #2\right>}
+\newcommand{\alemap}{\ensuremath{\mathcal{A}}}
+\newcommand{\dt}{\ensuremath{\Delta t}}
+\newcommand{\pexp}{\ensuremath{\frac{2\gamma}{\left(\gamma-1\right)}}}
+\newcommand{\aleX}{\ensuremath{\mathcal{X}}}
+\newcommand{\Ah}[1]{\ensuremath{\vb{#1}^{n+1}_h}}
+\newcommand{\Ahn}[1]{\ensuremath{\vb{#1}^{n}_h}}
+
+
+
+\begin{document}
+
+\section{One-Dimensional Gas Dynamics}
+\label{sec:1d_fom_heat_equation_full_order_model}
+The Full Order Model for the parametrized one-dimensional piston problem is derived.
+
+We depart from the compressible isentropic Navier Stokes equations to end up with a non-linear Burgers-like equation.
+Therefore, this problem contains all the necessary ingredients to show how the ROM behaves 
+in the presence of a non-linear term within a moving domain.
+
+The model will be derived in the continuous, semi-discrete and fully discrete contexts for a generic parametrization and forcing term.
+We shall use the Galerkin projection principle to find a weak form, which we later discretize using the Finite Element Method. 
+
+We define the vector $\vec{\mu} \in \mathcal{P}$ to collect all the parameters present in the formulation.
+Parameters will be present in the PDE's body, in the boundary conditions, or in the geometrical definition of the domain. 
+
+We deal with our problem within a deforming domain in time, whose movement is known and not part of the solution:
+\begin{equation*}
+    \Omega(t, \vec{\mu}) := \left\{x \in \mathbb{R} : x \in \left[0, L(t, \vec{\mu})\right]\right\}.
+\end{equation*}
+From now on, we drop the dependency on time and the parameters unless it is strictly necessary. 
+
+If the variational or Finite Element problem is not correctly stated in formal terms yet, we apologize in advance.
+These kind of language formalities take time to settle and this is still a draft. 
+The reader will be able to fill in any notational or definition gaps for the moment. 
+
+\subsection{Physical Derivation}
+The piston movement $L(t)$ is a real-valued smooth sinusoidal function,
+\begin{equation}
+    L(t) = L_0 \left[1 - \delta \left(1 - \cos \left(\omega t\right)\right)\right],
+\end{equation}
+where $\omega$ is the frequency at which it oscillates and $\delta \ll L_0$ is a scale variable to adjust how much it is displaced from its original position.
+The length $L_0$ is defined to keep physical dimensions sound, but it will remain fixed to $L_0=1$ for the remaining of the problem.
+
+To derive the equations of motion of the fluid inside the piston, 
+we depart from the conservation of mass, momentum and the isentropic relation between pressure and density,
+\begin{subequations}
+\begin{align}
+    \pdv{\rho}{t} + u \pdv{\rho}{x} + \rho \pdv{u}{x} &= 0, \\ 
+    \pdv{u}{t} + u \pdv{u}{x} + \frac{1}{\rho}\pdv{p}{x} &= 0, \\
+    p &= k \rho^{\gamma} \label{eq:isentropic_relation}. 
+\end{align}
+\end{subequations}
+Body forces and viscosity have been neglected for the sake of simplicity\footnote{Viscosity terms will be introduced later on for numerical stability.}.
+A difficulty we find in this system for the piston application is the determination of the boundary condition for density at the piston location.
+Ideally, we only want to solve an equation for the velocity, where boundary conditions are easy to set.
+
+To do so, we take the following steps:
+\begin{enumerate}
+    \item Remove the pressure gradient by means of the isentropic relation. 
+    \item Relate explicitly velocity~$u$ to density~$\rho$. %with a necessary compatibility condition.
+    \item Collect all the above into one equation in terms of velocity~$u$.
+\end{enumerate}
+
+\subsubsection*{Removal of the pressure gradient}
+To remove the pressure gradient, we start by taking derivatives in the isentropic relation (\ref{eq:isentropic_relation}):
+\begin{equation}
+    \pdv{p}{x} = k \gamma \rho^{\gamma-1} \pdv{\rho}{x}
+\end{equation}
+Then, we recognize that the coefficients $k \gamma \rho^{\gamma-1}$ multiplying the spatial derivative of density are in fact the squared speed of sound.
+From thermodynamics, the speed of sound~$a$ squared is the derivative of pressure with respect to density at constant entropy,
+\begin{equation}
+    a^2 = \left.\pdv{p}{\rho}\right|_S = k \gamma \rho^{\gamma-1}.
+\end{equation}
+Hence, the expression for the pressure gradients becomes
+\begin{equation}
+    \pdv{p}{x} = a^2 \pdv{\rho}{x},
+\end{equation}
+which can be plugged directly into the momentum equation. 
+The system becomes
+\begin{subequations}
+\begin{align}
+        \pdv{\rho}{t} + u \pdv{\rho}{x} + \rho \pdv{u}{x} &= 0, \\ 
+        \pdv{u}{t} + u \pdv{u}{x} + \frac{a^2}{\rho}\pdv{\rho}{x} &= 0, \\
+        a &= \sqrt{k \gamma} \rho^{\frac{\gamma-1}{2}}. 
+\end{align}
+\end{subequations}
+
+\subsubsection*{Compatibility Condition between $u$ and $\rho$}
+Our next step is to find a compatibility condition between the mass and momentum equations.
+We define $u:=\mathtt{V}(\rho)$, which, by application of the chain rule, leads to the following equalities between the derivatives of $u$ and $\rho$ :
+\begin{subequations}
+    \begin{align}
+        \pdv{u}{t} &= \mathtt{V}' \pdv{\rho}{t}, \\
+        \pdv{u}{x} &= \mathtt{V}' \pdv{\rho}{x},
+    \end{align}
+\end{subequations}
+where $\mathtt{V}'$ represents differentiation with respect to density.
+Introducing these relations into the mass and the momentum equations to remove $u$, we obtain
+\begin{subequations}
+    \begin{align}
+            \pdv{\rho}{t} + \pdv{\rho}{x} \left(\rho \mathtt{V}' + \mathtt{V}\right) &= 0, \\ 
+            \mathtt{V}' \pdv{\rho}{t} + \pdv{\rho}{x} \left(\mathtt{V} \mathtt{V}' + \frac{a^2}{\rho}\right) &= 0.
+    \end{align}
+\end{subequations}
+Since we have two equations for two unknowns, the system can only have a solution if the determinant is zero.
+\mytodo{Why does the determinant need to be zero for the compatibility condition?}
+\begin{equation}
+    \begin{vmatrix}
+        1 & \mathtt{V} + \rho \mathtt{V}'\\ 
+        \mathtt{V}' &  \mathtt{V}\mathtt{V}' + \frac{a^2}{\rho} 
+    \end{vmatrix}
+    = 0
+\end{equation}
+This determinant implies that
+\begin{equation}
+    \mathtt{V}' \left(\mathtt{V} + \frac{a^2}{\rho \mathtt{V}'} - \mathtt{V} - \rho \mathtt{V}'\right) = 0.
+\end{equation}
+The above equation has two possible solutions, either 
+\begin{equation}
+    \mathtt{V}'=0 \rightarrow \mathtt{V} = C,
+\end{equation} 
+which is the constant solution, valid but uninteresting, or 
+\begin{equation}
+    \frac{a^2}{\rho \mathtt{V}'} - \rho \mathtt{V}' = 0 \rightarrow \mathtt{V}' = \pm \frac{a}{\rho}.
+\end{equation}
+The $\pm$ signs come up because there are two travelling waves, one to each side of the domain.
+Since our piston is located at the right boundary of the domain, 
+we choose the $-$ sign so that waves propagate left, and continue our derivation.
+We can integrate~$\mathtt{V}'$ with respect to~$\rho$ to obtain a relation between the flow velocity~$u$ and the speed of sound~$a$:
+\begin{equation}
+    \mathtt{V} = - \int_{\rho_0}^{\rho} \frac{a}{\rho} d\rho 
+\end{equation}
+where $\rho_0$ is some reference density.
+At this point it is convenient to use this reference density~$\rho_0$ to remove the constant~$k$ from the expression of the speed of sound:
+\begin{subequations}
+    \begin{align}
+        a &= a(\rho) 
+        \rightarrow 
+        a_0 = a(\rho_0),
+        \\
+        a &= \sqrt{k \gamma} \rho^{\frac{\gamma-1}{2}} 
+        \rightarrow
+        a = a_0 \left(\frac{\rho}{\rho_0}\right)^{\frac{\gamma-1}{2}}.
+    \end{align}    
+\end{subequations}
+Plugging this expression into the integral, we get
+\begin{subequations}
+    \begin{align}
+        u = \mathtt{V} &= \frac{2a_0}{\gamma-1}\left(1 - \frac{a}{a_0}\right),
+        \\[2mm]
+        a &= a_0 - \frac{\gamma-1}{2}u. \label{eq:speed_of_sound_with_velocity}
+    \end{align}
+\end{subequations}
+
+\subsubsection{Burgers-like Equation}
+With all the above, we are now ready to obtain \textit{one} equation which contains the three departing ones.
+In the momentum equation we first substitute the space derivative of density,
+\begin{subequations}
+    \begin{align}
+        \pdv{u}{x} = \mathtt{V}' \pdv{\rho}{x} \rightarrow \pdv{\rho}{x} &= - \frac{\rho}{a} \pdv{u}{x},
+        \\[2mm]
+        \pdv{u}{t} + \left(u-a\right)\pdv{u}{x} &= 0.
+    \end{align}    
+\end{subequations}
+Then, we express the speed of sound in terms of velocity (\ref{eq:speed_of_sound_with_velocity}),
+which leads to a PDE containing a Burgers-like nonlinear term and 
+forced convection driven by the static speed of sound, 
+\begin{equation}
+    \pdv{u}{t} + \frac{\gamma+1}{2}u \pdv{u}{x} - a_0\pdv{u}{x} = 0.
+\end{equation}
+This PDE, together with its boundary conditions and the boundary's prescribed movement, represents the mathematical model of interest for our work. 
+
+\subsubsection{Complete Determination of Flow Variables}
+Although we now have \textit{one} equation which accounts for mass conservation and the isentropic relation between pressure and density, we still have three variables. 
+Computing density, pressure and the speed of sound in space and time still remains useful: 
+verification of mass conservation, computation of the force exerted by the fluid at the piston, or any other secondary derivations.
+
+Since the speed of sound~$a$ is defined as a function of~$u$ in Equation (\ref{eq:speed_of_sound_with_velocity}),
+once the latter is given, we can obtain density~$\rho$ and pressure~$p$ as a function of flow velocity~$u$:
+\begin{subequations}
+    \begin{align}
+        \rho &= \rho_0 \left(\frac{a}{a_0}\right)^{\frac{2}{\gamma-1}},
+        \\
+        p    &= p_0 \left(\frac{\rho}{\rho_0}\right)^{\gamma},
+        \\[2mm]
+        \left(\frac{a}{a_0}\right) &= 1 - \frac{\gamma-1}{2}\left(\frac{u}{a_0}\right), 
+        \\[2mm]
+        \left(\frac{\rho}{\rho_0}\right) &= \left(1 - \frac{\gamma-1}{2}\left(\frac{u}{a_0}\right)\right)^{\frac{2}{\gamma-1}},
+        \label{eq:density_as_a_function_of_speed}
+        \\[2mm]
+        \left(\frac{p}{p_0}\right) &= \left(1 - \frac{\gamma-1}{2}\left(\frac{u}{a_0}\right)\right)^{\frac{2\gamma}{\left(\gamma-1\right)}}.
+    \end{align}
+\end{subequations}
+
+% -----------------------------------------------------------------------------
+\subsubsection{Mass Conservation}
+Before we present the complete problem and its numerical solution, we comment 
+on the integral equation for mass conservation.
+This relation will not be used for the solution of the system, but it is a 
+healthy check to perform after the calculation, to make sure we have 
+correctly integrated problem.
+Mass conservation is the least of requirements we demand from fluid motion.
+
+For a control volume whose boundary moves with the piston, 
+the integral expression for mass conservation is
+\begin{equation}
+    \frac{d}{dt}\int_{\Omega_t} \rho d\Omega 
+    + \int_{\partial\Omega_t} \rho \left(\vec{u} - \vec{u}_c\right) \cdot \vec{n} dS = 0
+\end{equation}
+At the piston location the flow moves with the piston, $\vec{u} = \vec{u}_c$, 
+so the boundary integral vanishes. 
+There is no flux through the walls either, so the only contribution left is the outflow.
+At this location, the scalar product of the velocity and normal vectors is 
+negative\footnote{Although we expect the flow to leave the domain at this point, 
+which means a negative magnitude, this products needs to be done taking 
+the variables positive in the direction of the axes.}, which implies
+\begin{equation}
+    \frac{d}{dt}\int_{0}^{L(t)} \rho(x,t) dx - \rho(0,t) u(0,t) = 0.
+    \label{eq:integral_mass_conservation}
+\end{equation}
+If we introduce the expression of density in terms of velocity from 
+Equation~(\ref{eq:density_as_a_function_of_speed}), we get
+\begin{equation}
+\begin{split}
+        \frac{d}{dt}\int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}\left(\frac{u(x,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}} dx 
+        \\
+        - u(0,t) \left(1 - \frac{\gamma-1}{2}\left(\frac{u(0,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}}  = 0.
+\end{split}
+\end{equation}
+To ease our task at verifying this equation, we rather calculate the integral term for each time step
+\begin{equation}
+    I(t) = \int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}\left(\frac{u(x,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}} dx,
+\end{equation}
+and only then compute time derivatives, which can be done with a second order finite difference scheme.
+% \begin{equation}
+%     \frac{d}{dt}I(t) := I'(t) \simeq \frac{I\left(t^{n+1}\right) - I\left(t^{n}\right)}{\dt}.
+% \end{equation}
+Then we can compute numerically the mass defect $MD(t)$ between the time derivative of volume variation
+and mass outflow at the open boundary,
+\begin{equation}
+    MD(t) = I'(t) - u(0,t) \left(1 - \frac{\gamma-1}{2}\left(\frac{u(0,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}}.
+    \label{eq:mass_conservation_check}
+\end{equation}
+We shall verify to which degree of accuracy this relation is honoured by our numerical scheme.
+
+\mytodo{Formulate mass conservation as a FOM functional to be computed with the ROM basis.}
+
+\subsubsection{Interesting Physical Quantities}
+In the craft of building reduced order models, it is certainly interesting to measure and study the error between the full and reduced solutions. 
+However, in practical applications, one is often more concerned about aggregated magnitudes derived from raw flow variables, such as maximum flow, pressure gradients across channels, etc. 
+A comparison between the full order and reduced order aggregated magnitudes will shed light on the quality and reproducibility of the reduction scheme.
+
+We consider two magnitudes of interest:
+\begin{enumerate}
+    \item The outflow at the boundary.
+    \item The pressure gradient across the channel.
+\end{enumerate}
+The outflow at the boundary $F_L(t)$ is given by
+\begin{subequations}
+    \begin{align}
+        F_L(t) &= u(0,t) \rho(0,t),
+        \label{eq:outflow_at_the_boundary}
+        \\  
+        F_L(t) &= u(0,t) \rho_0 \left(1 - \frac{\gamma-1}{2}\left(\frac{u(x,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}}
+    \end{align}
+\end{subequations}
+
+The pressure gradient across the channel is the difference between pressure at the piston and at the outflow boundary,
+\begin{subequations}
+    \begin{align}
+        \Delta_L p(t) &= - \frac{p(0,t) - p(L(t),t)}{L(t)},
+        \label{eq:channel_pressure_gradient} 
+        \\ 
+        \Delta_L p(t) &= 
+        - \frac{p_0}{L(t)} 
+        \left[
+            \left(1 - \frac{\gamma-1}{2}\left(\frac{u(0,t)}{a_0}\right)\right)^{\pexp}
+        \right.
+        \\ 
+        & - 
+        \left.
+            \left(1 - \frac{\gamma-1}{2}\left(\frac{u(L,t)}{a_0}\right)\right)^{\pexp}
+        \right]
+        . \nonumber
+    \end{align}
+\end{subequations}
+We have defined it so that when the piston is moving forward, pushing the gas out of the chamber, the piston pressure gradient is defined positive.
+
+\subsection{Continuous Formulation}
+We continue with the definition of the problem in the continuous setting: 
+a differential model given by a PDE and its boundary condition, referred to as {strong formulation}; 
+and its weak formulation derived with the Galerkin principle.
+
+We introduce the ALE formulation, to account for the movement of the mesh.
+Then, we will introduce a scaling to work with non-dimensional variables.
+This will complete the strong formulation.
+
+Then, once we have obtained a weak formulation via the Galerkin projection principle,
+we will introduce a Dirichlet lifting of the boundary conditions.
+To solve the FOM this is not mandatory, since the boundary conditions can be 
+directly tweaked into the right-hand side of the algebraic vectors.
+However, it is a paramount step for the construction of our reduced space,
+to ensure the basis serves all boundary parametrizations.
+
+\subsubsection{Strong Formulation}
+At this point of the derivation, we allow ourselves to introduce a diffusion term which was not present in the physical derivation of the model.
+The viscosity value will be small enough so that it disappears with the mesh size,
+
+\mytodo{Review diffusion coefficient value for mesh consistency.}
+\begin{equation}
+    \varepsilon \sim \left(\Delta x\right)^2. 
+\end{equation}
+
+Thus, the differential model in the physical space is given by the following PDE, boundary and initial conditions,
+\begin{subequations}
+    \begin{align}
+        \left.\frac{\partial u}{\partial t}\right|_{x} 
+        + \frac{\partial u}{\partial x}\left(\frac{\gamma+1}{2}u - a_0\right) 
+        - \varepsilon \pdv[2]{u}{x} &= 0, \label{eq:1d_fom_strong_pde} \\
+        % \frac{\partial u}{\partial x}(0, t) &= 0, \\
+        u(L, t) &= L'(t). 
+    \end{align}
+\end{subequations}
+At the left boundary, we will impose a natural ouflow condition.
+At the right boundary, the moving piston, a Dirichlet condition sets the flow velocity equal to the one of the moving wall,
+
+\mytodo{Natural outflow condition means evaluating the weak form at the boundary.
+This is compatible with the small diffusion coefficient.
+This is equivalent to imposing an homogeneous Neumann boundary condition.
+}
+\begin{equation}
+    L'(t) = - \delta L_0 \omega \sin(\omega t).
+\end{equation}
+The notation $\left.\frac{\partial u}{\partial t}\right|_{x}$ indicates that the derivative takes place in the physical moving domain. 
+This is relevant for the ALE formulation, which we explain in the following section. 
+
+\subsubsection{ALE Formulation}
+Despite the fact that we will be solving the problem in the physical moving domain, 
+we still need the two basic ingredients stemming at the root of the ALE method:
+\begin{itemize}
+    \item A smooth mapping between domains.
+    \item A mesh velocity vector.
+\end{itemize}
+
+We introduce the ALE mapping $\alemap$ that connects a point in the fixed reference domain $\mathcal{X}$ with a point in the physical domain $x$:
+\begin{subequations}
+    \begin{align}
+        x &= \alemap(\aleX, t), \\
+        \aleX &= \alemap^{-1}(x, t),
+    \end{align}
+\end{subequations}
+which we assume to be regular enough.
+
+We define the mesh velocity as the time derivative of the spatial coordinate, which will coincide with the time derivative of the ALE map:
+\begin{equation}
+    w(x,t) = \pdv{x}{t} = \pdv{\alemap}{t} \ (x, t) = \pdv{\alemap}{t} \ (\alemap^{-1} (\aleX,t), t).
+\end{equation}
+
+\subsubsection*{Time-Derivative in the Reference Domain}
+Since the equations are going to be solved in the physical domain, we need to adjust the time derivative in the physical domain 
+$\left(\left.\frac{\partial u}{\partial t}\right|_{x}\right)$, 
+so that it takes into account the movement of the mesh nodes.
+By application of the chain rule we get
+\begin{equation}
+    \left.\frac{\partial u}{\partial t}\right|_{\aleX} = 
+    \left.\frac{\partial u}{\partial t}\right|_{x} + w \pdv{u}{x},
+\end{equation}
+from where we get the necessary modification to be done to the strong form (\ref{eq:1d_fom_strong_pde}) of the PDE, 
+\begin{equation}
+    \left.\frac{\partial u}{\partial t}\right|_{\aleX} 
+    + \left(\frac{\gamma+1}{2}\right) u \frac{\partial u}{\partial x} 
+    - \left(a_0 + w\right)\frac{\partial u}{\partial x} 
+    - \varepsilon \pdv[2]{u}{x} = 0.
+\end{equation}
+An additional convective term shows up, to take into account the movement of the nodes.
+We will show in the results section how, if we remove this term, mass is no longer conserved.
+\mytodo{Quote paper with FSI piston.}
+\mytodo{Define ALE map and mesh velocity for the piston problem.}
+
+% -----------------------------------------------------------------------------
+\subsubsection{Nondimensional Equations}
+Finally, as it is a good practice, 
+we carry out a non-dimensionalization of the velocity and the spatial coordinate,
+\begin{subequations}
+    \begin{align}
+        \tilde{x} = \frac{x}{L_0}, \qquad \tilde{u} = \frac{u}{a_0},
+    \end{align}
+\end{subequations}
+with respect to the static speed of sound~$a_0$ and the piston's initial length~$L_0$.
+This leads to the PDE and boundary condition
+\begin{subequations}
+    \begin{align}
+        \pdv{\tilde{u}}{t} 
+        + \left(\frac{\gamma+1}{2}\right)\left(\frac{a_0}{L_0}\right) \tilde{u} \pdv{\tilde{u}}{\tilde{x}}
+        - \left(\frac{\varepsilon}{L_0^2}\right) \pdv[2]{\tilde{u}}{\tilde{x}}
+        \nonumber
+        \\[2mm]
+        - \left(\frac{a_0}{L_0}\right)\left(1 + \frac{w}{a_0}\right)\pdv{\tilde{u}}{\tilde{x}}
+         &= 0, 
+        \\[2mm]
+        \tilde{u}(L(t),t) = \frac{L'(t)}{a_0} &= b_L(t).
+    \end{align}    
+\end{subequations}
+For the sake of clear notation, we condense the coefficients 
+% which multiply the function and its derivatives,
+\begin{subequations}
+    \begin{align}
+        b_0    &= \frac{a_0}{L_0} \left(\frac{\gamma+1}{2}\right), 
+        \\[2mm]
+        b_L(t) &= - \frac{\delta L_0 \omega}{a_0} \sin(\omega t),
+        \\[2mm]
+        c(x,t) &= \left(\frac{a_0}{L_0}\right)\left(1 - \frac{w}{a_0}\right),
+    \end{align}
+\end{subequations}
+and drop the $\tilde{u}$ notation to prevent an overloaded notation.
+
+The coefficient $\left(\frac{\delta L_0 \omega}{a_0}\right)$ multiplying the boundary condition
+is the relation between the piston motion and the static speed of sound\footnote{a proxy for the average speed at which information propagates.}.
+As we will see in the results section, this coefficient will be the one driving the response of the fluid to the motion of the piston.
+The larger it is, the stronger the nonlinear response will become. 
+We shall exploit this fact to build our reduced space, by sampling smartly through the parameter space.
+
+With all of this done, we obtain a familiar PDE structure with diffusion, linear and non-linear convection terms:
+\begin{equation}
+    \left.\frac{\partial u}{\partial t}\right|_{\aleX} 
+    + b_0 u \frac{\partial u}{\partial x} 
+    - c(x,t)\frac{\partial u}{\partial x} 
+    - \varepsilon  \pdv[2]{u}{x} = 0.
+\end{equation}
+Before moving on to the derivation of the weak formulation, we apply the scaling to the mass conservation and derived variables expressions.
+
+\subsubsection{Mass Conservation}
+If this rescaling is applied, Equation~(\ref{eq:mass_conservation_check}) for mass conservation needs to be updated, 
+to take into account the fact that the velocity variable is now scaled with the speed of sound.
+\begin{subequations}
+    \begin{align}
+        I(t) &= \int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}u(x,t)\right)^{\frac{2}{\gamma-1}} dx, 
+        \\
+        MC(t) &= I'(t) - a_0 u(0,t) \left(1 - \frac{\gamma-1}{2}u(0,t)\right)^{\frac{2}{\gamma-1}}.
+    \end{align}    
+\end{subequations}
+
+\subsubsection{Derived Variables}
+The derived magnitudes of interest, Equations~(\ref{eq:channel_pressure_gradient}) and~(\ref{eq:outflow_at_the_boundary}), have to be rescaled too:
+The outflow at the boundary $F_L(t)$ is given by
+\begin{equation}
+    F_L(t) = a_0 \rho_0 u(0,t) \rho(0,t).
+\end{equation}
+
+The pressure gradient across the channel is the difference between pressure at the piston and at the outflow boundary,
+\begin{equation}
+    \Delta_L p(t) = - \frac{p(0,t) - p(L(t),t)}{L(t)}. 
+\end{equation}
+We have defined it so that when the piston is moving forward, pushing the gas out of the chamber, the piston pressure gradient is defined positive.
+% \subsubsection*{Geometric Conservation Laws}
+
+\subsubsection{Weak Formulation}
+Since we will be working with the Galerkin procedure to solve PDEs, 
+we define the $L^2(\Omega)$ inner product to transform the strong formulation into a weak, variational one,
+\begin{equation}
+    %\inner{u}{v}_{(t, \mu)} = \int_{\Omega(t, \mu)} uv\ d\Omega.
+    \inner{u}{v} = \int uv\ d\Omega.
+\end{equation}
+This inner product induces the so called \emph{eyeball} norm, since it checks if two functions look alike,
+\begin{equation}
+    % \norm{f-g}_{(t, \mu)}  = \sqrt{\int_{\Omega(t, \mu)} (f - g)^2\ d\Omega}.
+    \norm{f-g}  = \sqrt{\int (f - g)^2\ d\Omega}.
+\end{equation}
+Eventually, we will also be interested in other norms, such as the $H^1(\Omega)$ norm, which captures the differences in the gradients too.
+This is important when computing stress-related values from the solved field.
+
+With this inner product, we project the residual of the strong formulation onto a given fuction $v \in V$,
+where $V$ is a suitable Hilbert space,
+\mytodo{Is this the right way to formulate a weak form?}
+\begin{subequations}
+    \begin{align}
+        \label{eq:1d_fom_weak_formulation}
+        \inner{\frac{\partial u}{\partial t}}{v} 
+        \textcolor{NavyBlue}{+ \inner{b_0 u \grad u}{v}}
+        \nonumber \\ 
+        \textcolor{Purple}{- \inner{c \grad u}{v}} 
+        \textcolor{OliveGreen}{+ \inner{\varepsilon \grad u}{\grad v}} 
+        &= 0,  
+        \\
+        u(x, 0) &= 0, 
+        \\
+        u(L, t) &= b_L(t), 
+        \\
+        b_L(t) &= - \frac{\delta L_0 \omega}{a_0} \sin \omega t.
+    \end{align}
+\end{subequations}
+% The outflow Neumann condition has been taken into account, but since it is homogeneously zero, it does not show up. 
+The natural boundary condition, which for this problems translates into an homogeneous Neumann condition,
+has already been taken into account in the integration by parts procedure of the diffusion term. 
+
+\subsubsection{Dirichlet Lifting}
+\label{sec:1d_fom_heat_equation_dirichlet_lifting}
+For reasons that will become apparent later, it is preferable to work with a homogeneous problem in the Dirichlet boundary conditions.
+
+To obtain so, we introduce a \emph{lifting} $g(x,t)$ of the Dirichlet boundary conditions.
+We express the solution of our problem like the linear combination of the solution of the homogeneous problem and the lifting function:
+\begin{equation}
+    \label{eq:1d_fom_homogeneous_plus_lifting}
+    u(x,t) = \hat{u}(x,t) + g(x,t).
+\end{equation}
+There are two conditions to be met by the lifting of the boundary conditions:
+\begin{enumerate}
+    \item To reach the prescribed values at the boundary nodes.
+    \item To be sufficiently smooth within the domain.
+\end{enumerate}
+In a one-dimensional setting, the definition of a lifting function $g(x,t)$ is straigtforward, with a simple linear interpolation of the boundary values:
+\begin{equation}
+    \label{eq:1d_fom_dirichlet_lifting}
+    g(x,t) = b_L(t) \left(\frac{x}{L}\right)
+\end{equation}
+% We verify that the function reaches the prescribed values at the boundaries,
+% \begin{subequations}
+%     \begin{align*}
+%         g(0,t) &= b_L(t) \left(\frac{0}{L}\right) + b_0(t) \left(\frac{L}{L}\right) = b_0(t), \\
+%         g(L,t) &= b_L(t) \left(\frac{L}{L}\right) + b_0(t) \left(\frac{L - L}{L}\right) = b_L(t).
+%     \end{align*}
+% \end{subequations}
+% The smoothness condition is reached thanks to the linearity and smoothness of the interpolation functions.
+
+In higher dimensional settings this procedure is valid too. 
+However, due to the arbitrary shape the domain can take, the construction of the lifting function becomes more laborious.
+We shall skip that for the moment, since we are dealing with a one-dimensional problem, where we can build analytically the extension of the boundary conditions. 
+
+Introducing the lifting breakdown \eqref{eq:1d_fom_homogeneous_plus_lifting} into the weak formulation \eqref{eq:1d_fom_weak_formulation},
+we find additional forcing terms and PDE terms, due to the cross-product between the function and its derivative, 
+\begin{equation}
+    u \pdv{u}{x} = \left(\hat{u} + g\right)\left(\pdv{\hat{u}}{x} + \pdv{g}{x}\right).
+\end{equation}
+Taking this into account, we find the following \textit{lifted} weak formulation,
+\begin{subequations}
+    % \label{eq:1d_fom_weak_formulation_homogeneous}
+    \begin{align}
+        \inner{\frac{\partial \hat{u}}{\partial t}}{v} \textcolor{Purple}{- \inner{c \grad \hat{u}}{v}} \textcolor{OliveGreen}{+ \inner{\varepsilon \grad \hat{u}}{\grad v}} \nonumber\\
+        \textcolor{NavyBlue}{+ \inner{b_0 g \grad \hat{u}}{v}
+        + \inner{b_0 \hat{u} \grad g}{v}} \nonumber\\
+        \textcolor{NavyBlue}{+ \inner{b_0 \hat{u} \grad \hat{u}}{v}} \nonumber\\
+        = 
+        - \inner{\frac{\partial g}{\partial t}}{v} \textcolor{Purple}{+ \inner{c \grad g}{v}} \textcolor{OliveGreen}{- \inner{\varepsilon \grad g}{\grad v}} \nonumber\\ 
+        \textcolor{NavyBlue}{- \inner{b_0 g \grad g}{v}},
+    \end{align}
+\end{subequations}
+where we have reorganized the terms to show in order: linear dependency with the solution, terms due to cross-product effects, and finally the actual non-linearity.
+
+Thanks to the lifting, we find the homogenization of the boundary conditions for all time $t$,
+\begin{subequations}
+    \begin{align}
+        \hat{u}(L, t) = 0,
+    \end{align}
+\end{subequations}
+and recall that the initial condition should be modified accordingly to the homogeneous problem definition, 
+\begin{subequations}
+    \begin{align}
+    u(x,0) &= \hat{u}(x,0) + g(x,0), \\ 
+    \hat{u}_0(x):= \hat{u}(x,0) &= u(x,0) - g(x,0). 
+    \end{align}
+\end{subequations}
+At this point, we have defined the continuous problem for the one-dimensional piston in a moving domain.
+\mytodo{Did I modify correctly my initial condition in the code?}
+
+\subsection{Semi-Discrete Formulation: Time-Discretization}
+The continuous solution changes in two dimensions: space and time.
+Eventually, we need to discretize them both, but we can do so incrementally.
+
+First, we discretize in time. 
+To do so, we need to build an approximation for the time derivate, $\left(\frac{\partial \hat{u}}{\partial t}\right)$.
+There is a complete body of knowledge devoted to this step of the numerical scheme.
+\mytodo{Cite works on time discretization.} 
+
+Briefly, there is a trade-off between computational effort and stability in terms of the resulting matrices.
+For our needs, we opt for the maximization of stability, so we chose what is called an semi-implicit scheme, 
+which is potentially stable, in exchange for a more dense linear system to be solved.
+
+The procedure is the following: a polynomial interpolation of the function $u(x,t)$ is built, 
+using the solution at previous timesteps, $\left\{u(x,t^{n}), u(x,t^{n-1}), \ldots\right\}$.
+Then, the interpolant's derivative at time $t^{n+1}$ is used as an approximation of the actual derivative.
+The accuracy of the scheme (and also its complexity) is determined by the number of previous timesteps used in the interpolation. 
+
+In the coming sections, we define two implicit schemes of order one and two, BDF-1 (also known as Backwards Euler), and BDF-2, respectively.
+Throughout our simulations we will use the BDF-2 scheme, but since it uses two points from the past, 
+it cannot be used at the beginning of the simulation. 
+That is where the BDF-1 comes into play, to obtain $u(x,t^1)$.
+Additionally, studying the BDF-1 scheme is still useful, to understand the implications of time discretization. 
+In terms of notation, from now on we use
+\begin{equation}
+    \hat{u}^n := \hat{u}(x,t^n)
+\end{equation}
+to define a function in space evaluated at time $t^n$.
+
+\subsubsection{Semi-Implicit Scheme}
+As a final note, we point out that according to each problem needs or complexities, sometimes a convergent scheme can be obtained even if certain equation terms are treated explicitly.
+This trick can be used in problems such as the Navier-Stokes equations, where going fully implicit leads to a non-linear algebraic system. 
+If the nonlinear convective term is treated semi-implicitly, one recovers a linear system, and yet reaches a satisfactory numerical solution.
+
+Additionally, as we shall see further down in the reduced model, we will be able to assemble the reduced non-linear operator with the MDEIM procedure.
+If for the evaluation of the nonlinear we used $u^{n+1}$, we would have a non-linear system which could be solved with a Newton-Rapshon iterative method.
+Although this method is certainly the most robust, it is not efficient. 
+
+Thus, we opt for the approximation of its effect by considering the \textit{convection velocity} at time $t$, instead of time $t^{n+1}$,
+\begin{equation}
+    \inner{b_0 \hat{u} \grad \hat{u}}{v}^{n+1} \simeq \inner{b_0 \hat{u}^{n} \grad \hat{u}^{n+1}}{v}.
+\end{equation}
+With this strategy we obtain a semi-implicit scheme, which can be treated as a linear system.
+
+\subsubsection{BDF-1}
+\mytodo{Update BDF-1 proof, it is done with the heat equation. Should I move this to an appendix? Should I simplify this to be equation-independent?}
+To derive the BDF-1 scheme, we start by evaluating our weak formulation at time $t^{n+1}$, where the solution is unknown,
+\begin{equation}
+    \begin{split}
+        \inner{\frac{\partial \hat{u}}{\partial t}}{v}^{n+1} 
+        - \inner{w \grad \hat{u}}{v}^{n+1} 
+        + \inner{\varepsilon \grad \hat{u}}{\grad v}^{n+1} =  \\
+        + \inner{f}{v}^{n+1} + \inner{f_{g,1}}{v}^{n+1} + \inner{f_{g,2}}{\grad v}^{n+1}.
+    \end{split}
+\end{equation}
+Then, we construct our interpolation polynomial using only one previous timestep from the past, 
+\begin{align}
+    \hat{u}(x,t) &\simeq I_1(t) := 
+    \hat{u}^{n+1}\left( \frac{t-t^{n}}{\dt}  \right)
+    + \hat{u}^{n}\left(\frac{t^{n+1}-t}{\dt}\right), \\
+    \left.\frac{\partial\hat{u}}{\partial t}\right|^{n+1} &\simeq \frac{d I_1(t)}{dt} = \frac{\hat{u}^{n+1} - \hat{u}^{n}}{\dt}
+\end{align}
+With this approximation of the time derivative, we get the following semi-discrete weak formulation, 
+% \begin{subequations}
+%     \begin{align}
+%         \label{eq:1d_fom_weak_formulation_semidiscrete_time}
+%         \inner{\hat{u}^{n+1}}{v} 
+%         - \dt \inner{w \grad \hat{u}^{n+1}}{v} 
+%         + \dt \inner{\varepsilon \grad \hat{u}^{n+1}}{\grad v} = \nonumber \\ 
+%         \inner{\hat{u}^{n}}{v} 
+%         + \dt \inner{f^{n+1}}{v} \nonumber \\
+%         + \dt \inner{f_{g,1}^{n+1}}{v} + \dt \inner{f_{g,2}^{n+1}}{\grad v}, \\
+%         \hat{u}^{n+1}(0) = 0, \\
+%         \hat{u}^{n+1}(L\left(t^{n+1}\right)) = 0, \\
+%         \hat{u}^{0}(x) = \hat{u}_0(x).
+%     \end{align}
+% \end{subequations}
+\begin{subequations}
+    \label{eq:1d_fom_weak_formulation_homogeneous}
+    \begin{align}
+        \inner{\hat{u}^{n+1}}{v} 
+        - \dt \inner{c \grad \hat{u}^{n+1}}{v} 
+        + \dt \inner{\varepsilon \grad \hat{u}^{n+1}}{\grad v} \nonumber\\
+        + \dt\left(\inner{b_0 \hat{u}^{n+1} \grad g^{n+1}}{v}\right. 
+        + \left.\inner{b_0 g^{n+1} \grad \hat{u}^{n+1}}{v}\right) \nonumber\\
+        + \inner{b_0 \hat{u} \grad \hat{u}}{v}^{n+1} \nonumber\\
+        = 
+        \inner{\hat{u}^{n}}{v} 
+        - \dt \inner{\frac{\partial g^{n+1}}{\partial t}}{v} \nonumber \\
+        - \dt \inner{b_0 g^{n+1} \grad g^{n+1}}{v} 
+        - \dt \inner{\varepsilon \grad g^{n+1}}{\grad v} \nonumber\\ 
+        + \dt \inner{c^{n+1} \grad g^{n+1}}{v}
+    \end{align}
+\end{subequations}
+
+\mytodo{Include BDF-2 discrete scheme.}
+
+Note that the problem is still continuous in space, but no longer in time.
+
+% \subsubsection{BDF-2}
+% To derive the BDF-2 scheme, again, we start by evaluating our weak formulation at time $t^{n+1}$, where the solution is unknown,
+% \begin{equation}
+%     \begin{split}
+%         \inner{\frac{\partial \hat{u}}{\partial t}}{v}^{n+1} + \inner{\varepsilon(x) \grad \hat{u}}{\grad v}^{n+1} = \inner{f}{v}^{n+1} \\
+%         + \inner{f_{g,1}}{v}^{n+1} + \inner{f_{g,2}}{\grad v}^{n+1}.
+%     \end{split}
+% \end{equation}
+% Then, we construct our interpolation polynomial using two previous timestamps from the past, 
+% \begin{align}
+%     \hat{u}(x,t) &\simeq I_2(t) := 
+%       \varepsilon_1 \hat{u}^{n+1} 
+%     + \varepsilon_2 \hat{u}^{n}
+%     + \varepsilon_3 \hat{u}^{n-1}, \\
+%     \left.\frac{\partial\hat{u}}{\partial t}\right|^{n+1} &\simeq \frac{d I_2(t)}{dt} = 
+%     \frac{\frac{3}{4}\hat{u}^{n+1} - \frac{1}{2}\hat{u}^{n} + \frac{1}{4}\hat{u}^{n-1}}{\dt}
+% \end{align}
+% With this approximation of the time derivative, we get the following semi-discrete weak formulation, 
+% \begin{subequations}
+%     \begin{align}
+%         \label{eq:1d_fom_weak_formulation_semidiscrete_time_bdf2}
+%         \frac{3}{4}\inner{\hat{u}^{n+1}}{v} + \dt \inner{\varepsilon(x) \grad \hat{u}^{n+1}}{\grad v} &= \\
+%           \frac{1}{2}\inner{\hat{u}^{n}}{v}
+%         - \frac{1}{4}\inner{\hat{u}^{n-1}}{v} \nonumber \\
+%         + \dt \inner{f^{n+1}}{v} \nonumber \\
+%         + \dt \inner{f_{g,1}^{n+1}}{v} + \dt \inner{f_{g,2}^{n+1}}{\grad v}, \nonumber \\
+%         \hat{u}^{n+1}(0) &= 0, \\
+%         \hat{u}^{n+1}(L\left(t^{n+1}\right)) &= 0, \\
+%         \hat{u}^{0}(x) &= \hat{u}_0(x).
+%     \end{align}
+% \end{subequations}
+% Note how the only changes between both discretizations are the forcing terms due to the previous solutions and the leading coefficient multipliying the inner product of the desired unknown solution $\hat{u}^{n+1}$. 
+
+\subsection{Discrete Problem: Space and Time Discretization}
+To complete our discretization, we define a finite functional space $V_h \subset V$, where we can represent the solution as the linear combination of a set of Finite Elements (FE) basis functions $\varphi_i(x)$ with local support,
+\begin{align}
+    \hat{u}^{n}(x) \simeq \hat{u}_h^n(x) &= \sum_j^{N_h} \hat{u}_{h_j}^n \varphi_j(x), \\
+    \vb{\hat{u}}_h^{n} &= \left[\hat{u}_{h_j}^n\right].
+\end{align}
+In this discrete setting, we define the FE vector $\vb{\hat{u}}_h^{n}$ to be the collection of coefficients~$[\hat{u}_{h_j}^n]$ which multiply the basis functions.
+In the FE context, these coincide with the values of the function at each node.
+
+Applying the Galerkin principle to solve PDEs, we enforce the orthogonality of the residual to the functional space $V_h$. 
+%This is equivalent to enforcing the orthogonality to each basis function of the space, 
+%so we get an algebraic system with the same number of unknowns as equations.
+Because the domain changes with time, 
+% even if we are solving a linear system, 
+both the matrices and the vectors change for each timestep,
+\begin{subequations}
+    \label{eq:1d_fom_linear_system_operators}
+    \begin{align}
+        \left[\vb{M}_{h}^{n+1}\right]_{ij}           &= m_{\text{BDF}} \inner{\varphi_j}{\varphi_i}, 
+        \\
+        \left[\vb{A}_{h}^{n+1}\right]_{ij}           &= \inner{\varepsilon \grad \varphi_j}{\grad \varphi_i}, 
+        \\
+        \left[\vb{C}_{h}^{n+1}\right]_{ij}           &= -\inner{c \grad \varphi_j}{\varphi_i}, 
+        \\
+        \left[\vb{N}_{h}^{n+1}\right]_{ij}           &= b_0 \inner{u^{n} \grad \varphi_j}{\varphi_i}, 
+        \\
+        \left[\vb{\hat{N}}_{h}^{n+1}\right]_{ij}     &= b_0 \left(\inner{g \grad \varphi_j}{\varphi_i} + \inner{\varphi_j \grad g}{\varphi_i}\right), 
+        \\
+        \left[\vb{F}_{{g,h}}^{n+1}\right]_{i}        &= -\inner{\pdv{g}{t} + b_0 g \grad g - c \grad g}{\varphi_i} \nonumber
+        \\
+                                                     &  -\inner{\varepsilon \grad g}{\grad \varphi_i},
+        \label{eq:1d_fom_linear_system_operators_fg}
+        \\ 
+        \left[\vb{F}_{\vb{\hat{u}}_h}^{n}\right]_{i} &= 
+            \begin{cases}
+                \inner{\hat{u}_h^{n}}{\varphi_i}, &\text{BDF-1},
+                \\
+                \frac{1}{2}\inner{\hat{u}_h^{n}}{\varphi_i}
+                - \frac{3}{4}\inner{\hat{u}_h^{n-1}}{\varphi_i}, &\text{BDF-2}.
+            \end{cases}
+    \end{align}
+\end{subequations}
+This leads to the following algebraic system:
+\begin{subequations}
+    \begin{align}
+        \label{eq:1d_fom_weak_formulation_discrete}
+        m_{\text{BDF}} \vb{M}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
+        + \dt \vb{C}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
+        + \dt \vb{A}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
+        \nonumber 
+        \\ 
+        + \dt \vb{\hat{N}}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
+        + \dt \left[\vb{N}^{n+1}_h\left(\vb{\hat{u}}_{h}^{n}\right)\right] \vb{\hat{u}}_{h}^{n+1} 
+        \nonumber
+        \\ 
+        = \vb{F}_{\vb{\hat{u}}_h}^{n}
+        + \dt \vb{F}_{g,h}^{n+1}, \\
+        \vb{\hat{u}}_h^{0} = \vb{\hat{u}}_{h,0}.
+    \end{align}
+\end{subequations}
+The spatial boundary conditions are encoded within the matrices and the vectors. 
+The initial condition is obtain via interpolation or projection.
+The assembly of the forcing terms given in Equation \eqref{eq:1d_fom_linear_system_operators_fg}
+are to be done with the FE vector representations of the functional expressions of each of the terms $f$ and $f_g$, to be obtained by projection or interpolation.
+
+The parameter $m_{\text{BDF}}$ determines the time integration scheme used,
+\begin{equation}
+    m_{\text{BDF}} = 
+    \begin{cases}
+    1, &\text{BDF-1},
+    \\    
+    \frac{3}{4}, &\text{BDF-2}.
+    \end{cases}
+\end{equation}
+Regarding the forcing due to previous timesteps, $\left(\vb{F}_{\vb{\hat{u}}_h}^{n}\right)$, 
+although for the FOM model we could compute the inner products at each timestep, 
+for the Reduced Order Model we will exploit an algebraic expression of these expressions.
+It can be expressed as the product between the mass matrix and the FE representation of the previous solution(s), 
+\begin{equation}
+    \label{eq:1d_fom_forcing_term_time_mass_matrix}
+    \vb{F}_{\vb{\hat{u}}_h}^{n}= 
+    \begin{cases}
+        \vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n},                &\text{BDF-1},
+        \\
+        \frac{1}{2}\vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n}
+        - \frac{3}{4}\vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n-1}, &\text{BDF-2}.
+    \end{cases}
+\end{equation}
+We point out how the timestep $\dt$ has been intentionally left out of the discrete operators definition.
+There are two reasons to back this decision:
+\begin{enumerate}
+    \item Conceptually, each discrete operator encodes a spatial model, in terms of a differential operator or the presence of a forcing term.
+    The timestep $\dt$ shows up because we first discretized the continuous problem in time. 
+    Had we gone the other way around, discretizing the problem in space in the first place, we would have found a system of ODEs with the previously defined spatial operators. 
+    \item When we leverage the system approximation reduction technique, we will not want to have there the presence of the timestep.
+    The reduced model could use a different timestep, or the snapshots for different $\mu$ values could be collected for different timestep values.
+\end{enumerate}
+% The computation of the discrete initial condition $\vb{\hat{u}}_{h,0}$ is addressed in Section~\ref{sec:1d_fom_projection_interpolation}.
+
+If we collect terms and factor out the unknowns, we get a compact linear system to be solved at each timestep to advance the solution,
+\begin{subequations}
+    \begin{align}
+        \label{eq:1d_fom_linear_system_timestep}
+        \vb{K}_h^{n+1} \vb{\hat{u}}_h^{n+1} &= \vb{b}_h^{n+1}, 
+        \\
+        \vb{\hat{u}}_h^{0} &= \vb{\hat{u}}_{h,0},
+        \\
+        \vb{K}_h^{n+1} &= \Ah{M} + \dt \left[\Ah{A} + \Ah{B} \right. 
+        \nonumber 
+        \\
+                        &\left. + \Ah{\hat{N}} + \Ah{N}\left(\vb{\hat{u}}_{h}^{n}\right)\right],
+        \\
+        \vb{b}_h^{n+1} &= \vb{F}_{\vb{\hat{u}}_h}^{n} + \dt \vb{F}_{g,h}^{n+1}.
+    \end{align}
+\end{subequations}
+
+% \subsubsection{FE Representation of the Initial Condition}
+% \label{sec:1d_fom_projection_interpolation}
+% The initial condition in time $\hat{u}_0(x)$ needs to be expressed in terms of the basis functions $\varphi_i(x)$ to obtain the FE vector~$\vb{\hat{u}}_{h,0}$.
+% There are two ways to compute the values of this FE vector:
+% \begin{itemize}
+%     \item Interpolation.
+%     \item Projection.
+% \end{itemize}
+
+% \subsubsection*{Interpolation}
+% Since we are dealing with a nodal basis\footnote{We recall a nodal basis is one where each node of the mesh has a basis function assigned, 
+% such that the value of the coefficient which multiplies each basis function corresponds to the value of the function at that node.}, 
+% the interpolation procedure simply assigns to each vector entry the value of the function at the node corresponding to that entry.
+
+% In a sense, it is what we have done with the lifting of the boundary conditions in Section~\ref{sec:1d_fom_heat_equation_dirichlet_lifting}.
+% Since we are dealing with a nodal basis, we can express the lifting FE vector~$\vb{g}_h$ as a linear combination of the FE basis functions,
+% \begin{equation}
+%     g(x,t) \simeq g_h(x,t) = \sum_i^{N_h} g_{h_i}(t) \varphi_i(x),
+% \end{equation}
+% where each coefficient $\vb{g}_h = [g_{h_i}]$ is the value taken by the analytical interpolation of the boundary conditions given in Equation~\eqref{eq:1d_fom_dirichlet_lifting}. 
+
+% \subsubsection*{Projection}
+% Instead, the projection procedure aims at solving the approximation problem
+% \begin{equation}
+%     \hat{u}^{0}_h(x) = \sum_j^{N_h} \hat{u}_{h_i}^0 \varphi_j(x) = \hat{u}_0(x)
+% \end{equation}
+% with a variational approach within $V_h$. 
+% That is, the approximation error is set to be orthogonal to the function space $V_h$, yielding the weak formulation
+% \begin{equation}
+%     \inner{\hat{u}^{0}_h(x)}{v} = \inner{\hat{u}_0(x)}{v}, \, \forall \, v \in V_h,
+% \end{equation}
+% which leads to a linear system of equations if we enforce the orthogonality to each basis function,
+% \begin{subequations}
+%     \begin{align}
+%         \label{eq:projection_equation}
+%         \vb{M}_{h} \vb{\hat{u}}_{h,0} &= \vb{p}_h, \\
+%         \left[\vb{M}_{h}\right]_{ij} &= \inner{\varphi_j}{\varphi_i}, \\
+%         \left[\vb{p}_{h}\right]_{i} &= \inner{\hat{u}_0(x)}{\varphi_i}.
+%     \end{align}
+% \end{subequations}
+
+% In practice, the projection method is to be used, because even within the FE context we might not have a nodal basis (this would be the case if exotic function spaces are used).
+
+% However, when the Method of Manufactured Solutions is being used to certify the code implementation, only the interpolation procedure will allow us to reach machine accuracy when computing the error.
+
+\subsubsection{Wind-Up for the Full Order Problem}
+With all of the above, the generic Finite Element Method for the one-dimensional piston problem is defined.
+
+The problem has been explained within three levels of abstraction: continuous with strong and weak formulations, semi-discrete in time and fully discretized in time and space.
+An semi-implicit time discretization scheme is used, to obtain a sufficiently stable algebraic system.
+\mytodo{How does the semi-discretization play with the stability of the system?} 
+
+A lifting of the Dirichlet boundary conditions has been introduced, which lead to the appearence of an additional forcing term and the homogenization of the boundary conditions.
+Hence, we will focus in the solution of an homogeneous boundary value problem.
+This fact will prove useful when we get into the implementation details of the reduction procedure.
+
+\subsection{Deformation of the Space-Time Domain}
+TBD.
+
+Comment on how in the $(x,t)$ domain we actually have a deforming domain. 
+
+This could be solved with space-time FE, but it involves complex tensor products. 
+
+Explain how what we have done is a good approximation of the latter.
+
+\subsection{Generalized Transformation}
+If the domain is made fixed, 
+how does the equation change?
+What would be the expression of the algebraic system?
+
+\end{document}

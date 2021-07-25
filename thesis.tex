@@ -1,5 +1,6 @@
-\documentclass[a4paper, technote, compsoc]{IEEEtran}
+\documentclass[a4paper, technote, compsoc, draft]{IEEEtran}
 %\documentclass[a4paper]{article}
+
 
 \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
 \usepackage[utf8]{inputenc} % allow utf-8 input
@@ -10,10 +11,12 @@
 \usepackage{graphicx}  %needed to include png, eps figures
 \usepackage{mwe}
 \usepackage{url} % correct bad hyphenation here
-\usepackage{xcolor}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{todonotes}
 \usepackage{xr}
 \usepackage{subfiles}
 \usepackage{physics}
+\usepackage{epigraph}
 
 \externaldocument[M-]{main}
 
@@ -25,11 +28,14 @@
 
 \DeclareMathOperator{\sspn}{span}
 \newcommand{\spn}[1]{\sspn\left(#1\right)}
+\newcommand{\mytodo}[1]{\todo[inline, color=green!20, inlinewidth=\columnwidth]{#1}}
 
 \begin{document}
 
+\onecolumn
+
 % paper title
-\title{Reduced Order Models \\ With Moving Domains}
+\title{Skipping The Jacobian \\[5mm] \large{Hyperreduced Order Models For Moving Domains}}
 
 % author names 
 \author{Enrique Millán Valbuena \\ \normalsize{463 426 8}}% <-this % stops a space
@@ -42,28 +48,48 @@
 \maketitle
 
 \begin{abstract}
-   The research objective is to build a Reduced Order Model (ROM) for a two-dimensional parametrized unsteady PDE with a moving boundary:
-   \begin{itemize}
-      \item Heat diffusion problem.
-      \item (Bonus) Graetz convection-diffusion problem.
-   \end{itemize}
-   Both the main body of the PDE and the geometrical definition of the moving boundary will be parametrized.
-
+   We build a Reduced Order Model (ROM) for a one-dimensional gas dynamics problem:
+   a moving piston.
+   The main body of the PDE, the geometrical definition of the moving boundary, 
+   and the boundary conditions are parametrized.
    A concise description of the reducing procedure is provided, together with a priori convergence rates for basis size estimation and a posteriori error estimators to certify the use of the Reduced Order Model.
    Numerical examples to showcase computational costs and implementation details are designed, implemented and validated with the Manufactured Solutions Method. 
 \end{abstract}
 
 \begin{IEEEkeywords}
-    Reduced Order Model, Moving Domain, FEM, DEIM, POD, Galerkin-Projection
+    Reduced Order Model, Moving Domain, FEM, DEIM, POD, Galerkin projection
 \end{IEEEkeywords}
-    
 
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\newpage
+\listoftodos
+
+\subfile{foreword.tex}
+\newpage
+\subfile{executive.tex}
+
+\newpage
+\twocolumn
+
+\subfile{introduction.tex}
 % \section*{Literature Review}
 % \subfile{literature_review/literature.tex}
 
 % \newpage
 % \section*{Research Structure}
 % \subfile{research_project/research.tex}
-\subfile{research_project/graph_layout.tex}
+% \subfile{research_project/graph_layout.tex}
+\newpage
+\subfile{research_project/piston/burgers_1d_fom.tex}
+\newpage
+\subfile{research_project/piston/burgers_1d_rom.tex}
+\newpage
+\subfile{research_project/piston/burgers_1d_results.tex}
+
+\appendix
+\newpage
+\subfile{research_project/piston/piston_movement.tex}
 
 \end{document}
