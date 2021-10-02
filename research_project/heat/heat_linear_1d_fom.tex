@@ -1,22 +1,20 @@
 % \documentclass[a4paper, technote, compsoc]{IEEEtran}
-\documentclass[../main.tex]{subfiles}
+\documentclass[../../main.tex]{subfiles}
 
 \newcommand{\inner}[2]{\left<#1, #2\right>}
 \newcommand{\alemap}{\ensuremath{\mathcal{A}}}
 \newcommand{\aleX}{\ensuremath{\mathcal{X}}}
-\newcommand{\Ah}[1]{\ensuremath{\vb{#1}^{n+1}_h}}
-\newcommand{\Ahn}[1]{\ensuremath{\vb{#1}^{n}_h}}
-
 
 \begin{document}
 
-\section{Full Order Model: Burgers Equation}
+\section{Full Order Model: Heat Equation}
 \label{sec:1d_fom_heat_equation_full_order_model}
-The Full Order Model for the parametrized one-dimensional non-linear Burgers-like equation is derived.
-This problem is a good benchmark to show how the ROM behaves with in the presence of a non-linear term within a moving domain.
+The Full Order Model for the parametrized one-dimensional linear heat equation is derived.
+Due to its simplicity, this problem is not the focus of the thesis, yet it serves well to set a benchmark and test our ideas and implementations without the noise and effort required by non-linear terms.
 
 The model will be derived in the continuous, semi-discrete and fully discrete contexts for a generic parametrization and forcing term.
 We shall use the Galerkin projection principle to find a weak form, which we later discretize using the Finite Element Method. 
+At the end of the document two specific problems will be presented, to implement and test the solver and reduction algorithms. 
 
 If the variational or Finite Element problem is not correctly stated in formal terms yet, we apologize in advance.
 These kind of language formalities take time to settle and this is still a draft. 
@@ -40,18 +38,22 @@ and its weak formulation derived with the Galerkin principle.
 The differential model that captures heat transfer for a function~$u = u(x,t)$ is given by the following PDE, boundary and initial conditions,
 \begin{subequations}
     \begin{align}
-        \left.\frac{\partial u}{\partial t}\right|_{x} + a_0 \frac{\partial u}{\partial x}\left(\frac{\gamma+1}{2}u - 1\right) - \alpha \Delta u &= 0, \label{eq:1d_fom_strong_pde}\\
-        \frac{\partial u}{\partial x}(0, t) &= 0, \\
-        u(L, t) &= b_L(t), \\
-        u(x, 0) &= 0.
+        \left.\frac{\partial u}{\partial t}\right|_{x} - \alpha \Delta u &= f(x, t; \mu), \label{eq:1d_fom_strong_pde}\\
+        u(0, t) &= b_0(t; \mu), \\
+        u(L, t) &= b_L(t; \mu), \\
+        u(x, 0) &= u_0(x; \mu),
     \end{align}
 \end{subequations}
-At the left boundary, $x=0$, we have a natural ouflow condition with a Neumann condition.
-At the right boundary moving boundary, $x=L(t)$, a Dirichlet condition sets the flow velocity equal to the moving wall,
-\begin{equation}
-    b_L(t) = -\frac{L_0 \omega}{a_0} \cos \omega t.
-\end{equation}
+where we assume all the terms to be present in their non-dimensional form with respect to the original problem. 
 The notation $\left.\frac{\partial u}{\partial t}\right|_{x}$ indicates that the derivative takes place in the physical moving domain. 
+
+We have the boundary conditions and the forcing term to depend on time and the parameter vector without loss of generality.
+Again, from now on we drop the dependency to have a clear notation.
+
+For the one-dimensional scenario, the Laplacian operator reduces to the simple expression of the second derivative,
+\begin{equation}
+    \Delta u = \frac{\partial^2 u}{\partial x^2}.
+\end{equation}
 
 \subsubsection{ALE Formulation}
 Despite the fact that we will be solving the problem in the physical moving domain, 
@@ -84,25 +86,11 @@ By application of the chain rule we get
 \end{equation}
 from where we get the necessary modification to be done to the strong form (\ref{eq:1d_fom_strong_pde}) of the PDE, 
 \begin{equation}
-    \left.\frac{\partial u}{\partial t}\right|_{\aleX} 
-    + a_0 \left(\frac{\gamma+1}{2}\right) u \frac{\partial u}{\partial x} 
-    - \left(a_0 + w\right)\frac{\partial u}{\partial x} 
-    - \alpha \Delta u = 0.
-\end{equation}
-For the sake of clear notation, we aggregate the coefficients which multiply the function and its derivatives,
-\begin{align}
-    b_0 = a_0 \left(\frac{\gamma+1}{2}\right), \\
-    c(x,t) = a_0 + w(x,t),
-\end{align}
-so that we obtain a familiar PDE structure with diffusion, convection and non-linear convection terms:
-\begin{equation}
-    \left.\frac{\partial u}{\partial t}\right|_{\aleX} 
-    + b_0 u \frac{\partial u}{\partial x} 
-    - c(x,t)\frac{\partial u}{\partial x} 
-    - \alpha \Delta u = 0.
+    \left.\frac{\partial u}{\partial t}\right|_{\aleX} - w \pdv{u}{x} - \alpha \Delta u = f
 \end{equation}
 
-% \subsubsection*{Geometric Conservation Laws}
+\subsubsection*{Geometric Conservation Laws}
+
 
 \subsubsection{Weak Formulation}
 Since we will be working with the Galerkin procedure to solve PDEs, 
@@ -122,13 +110,12 @@ where $V$ is a suitable Hilbert space,
 \begin{subequations}
     \begin{align}
         \label{eq:1d_fom_weak_formulation}
-        \inner{\frac{\partial u}{\partial t}}{v} + \inner{b_0 u \grad u}{v} - \inner{c \grad u}{v} \nonumber \\ 
-        + \inner{\alpha \grad u}{\grad v} &= 0,  \\
+        \inner{\frac{\partial u}{\partial t}}{v} - \inner{w \grad u}{v} + \inner{\alpha \grad u}{\grad v} &= \inner{f}{v} \\
+        u(0, t) &= b_0(t), \\
         u(L, t) &= b_L(t), \\
-        u(x, 0) &= 0.
+        u(x, 0) &= u_0(x).
     \end{align}
 \end{subequations}
-The outflow Neumann condition has been already included, but since it takes value zero, it does not show up. 
 We have exploited the integration by parts rule to lower by one the derivative degree of the laplacian operator.
 % This is the reason to call this the \emph{weak form}, since the differentiability of the highest operator has been reduced.
 
@@ -150,7 +137,7 @@ There are two conditions to be met by the lifting of the boundary conditions:
 In a one-dimensional setting, the definition of a lifting function $g(x,t)$ is straigtforward, with a simple linear interpolation of the boundary values:
 \begin{equation}
     \label{eq:1d_fom_dirichlet_lifting}
-    g(x,t) = b_L(t) \left(\frac{x}{L}\right)
+    g(x,t) = b_L(t) \left(\frac{x}{L}\right) + b_0(t) \left(\frac{L - x}{L}\right).
 \end{equation}
 % We verify that the function reaches the prescribed values at the boundaries,
 % \begin{subequations}
@@ -166,26 +153,20 @@ However, due to the arbitrary shape the domain can take, the construction of the
 We shall skip that for the moment, since we are dealing with a one-dimensional problem, where we can build the extension of the boundary conditions analytically. 
 
 Introducing the lifting breakdown \eqref{eq:1d_fom_homogeneous_plus_lifting} into the weak formulation \eqref{eq:1d_fom_weak_formulation},
-we find several additional forcing terms and some additional PDE terms, due to product-like non-linearity, 
-\begin{equation}
-    \left(\hat{u} + g\right)\left(\pdv{\hat{u}}{x} + \pdv{g}{x}\right).
-\end{equation}
-Taking this into account, we find the following \textit{lifted} weak formulation,
+we find an additional forcing term,
 \begin{subequations}
     \label{eq:1d_fom_weak_formulation_homogeneous}
     \begin{align}
-        \inner{\frac{\partial \hat{u}}{\partial t}}{v} - \inner{c \grad \hat{u}}{v} + \inner{\alpha \grad \hat{u}}{\grad v} \nonumber\\
-        + \inner{b_0 g \grad \hat{u}}{v} 
-        + \inner{b_0 \hat{u} \grad g}{v} \nonumber\\
-        + \inner{b_0 \hat{u} \grad \hat{u}}{v} \nonumber\\
-        = 
-        - \inner{\frac{\partial g}{\partial t}}{v} - \inner{b_0 g \grad g}{v} - \inner{\alpha \grad g}{\grad v} \nonumber\\ 
-        + \inner{c \grad g}{v}
+        \inner{\frac{\partial \hat{u}}{\partial t}}{v} - \inner{w \grad \hat{u}}{v} + \inner{\alpha \grad \hat{u}}{\grad v} &= \nonumber \\  
+        \inner{f}{v} + \inner{f_{g,1}}{v} + \inner{f_{g,2}}{\grad v}, \\
+        f_{g,1} = - \frac{\partial g}{\partial t} + w \pdv{g}{x}, \\
+        f_{g,2} = - \alpha \pdv{g}{x},
     \end{align}
 \end{subequations}
 and the homogenization of the boundary conditions for all time $t$,
 \begin{subequations}
     \begin{align}
+        \hat{u}(0, t) &= 0, \\
         \hat{u}(L, t) &= 0, \\
         \hat{u}(x, 0) &= \hat{u}_0(x),
     \end{align}
@@ -248,76 +229,59 @@ Then, we construct our interpolation polynomial using only one previous timestam
     \left.\frac{\partial\hat{u}}{\partial t}\right|^{n+1} &\simeq \frac{d I_1(t)}{dt} = \frac{\hat{u}^{n+1} - \hat{u}^{n}}{\Delta t}
 \end{align}
 With this approximation of the time derivative, we get the following semi-discrete weak formulation, 
-% \begin{subequations}
-%     \begin{align}
-%         \label{eq:1d_fom_weak_formulation_semidiscrete_time}
-%         \inner{\hat{u}^{n+1}}{v} 
-%         - \Delta t \inner{w \grad \hat{u}^{n+1}}{v} 
-%         + \Delta t \inner{\alpha \grad \hat{u}^{n+1}}{\grad v} = \nonumber \\ 
-%         \inner{\hat{u}^{n}}{v} 
-%         + \Delta t \inner{f^{n+1}}{v} \nonumber \\
-%         + \Delta t \inner{f_{g,1}^{n+1}}{v} + \Delta t \inner{f_{g,2}^{n+1}}{\grad v}, \\
-%         \hat{u}^{n+1}(0) = 0, \\
-%         \hat{u}^{n+1}(L\left(t^{n+1}\right)) = 0, \\
-%         \hat{u}^{0}(x) = \hat{u}_0(x).
-%     \end{align}
-% \end{subequations}
 \begin{subequations}
-    \label{eq:1d_fom_weak_formulation_homogeneous}
     \begin{align}
-        \inner{\hat{u}^{n+1}}{v} - \Delta t\inner{c \grad \hat{u}^{n+1}}{v} + \Delta t\inner{\alpha \grad \hat{u}^{n+1}}{\grad v} \nonumber\\
-        + \Delta t\left(\inner{b_0 \hat{u}^{n+1} \grad g^{n+1}}{v}\right. 
-        + \left.\inner{b_0 g^{n+1} \grad \hat{u}^{n+1}}{v}\right) \nonumber\\
-        + \inner{b_0 \hat{u} \grad \hat{u}}{v}^{n+1} \nonumber\\
-        = 
-        \inner{\hat{u}^{n}}{v} - \Delta t \inner{\frac{\partial g^{n+1}}{\partial t}}{v} \nonumber \\
-        - \Delta t \inner{b_0 g^{n+1} \grad g^{n+1}}{v} - \Delta t \inner{\alpha \grad g^{n+1}}{\grad v} \nonumber\\ 
-        + \Delta t \inner{c^{n+1} \grad g^{n+1}}{v}
+        \label{eq:1d_fom_weak_formulation_semidiscrete_time}
+        \inner{\hat{u}^{n+1}}{v} 
+        - \Delta t \inner{w \grad \hat{u}^{n+1}}{v} 
+        + \Delta t \inner{\alpha \grad \hat{u}^{n+1}}{\grad v} = \nonumber \\ 
+        \inner{\hat{u}^{n}}{v} 
+        + \Delta t \inner{f^{n+1}}{v} \nonumber \\
+        + \Delta t \inner{f_{g,1}^{n+1}}{v} + \Delta t \inner{f_{g,2}^{n+1}}{\grad v}, \\
+        \hat{u}^{n+1}(0) = 0, \\
+        \hat{u}^{n+1}(L\left(t^{n+1}\right)) = 0, \\
+        \hat{u}^{0}(x) = \hat{u}_0(x).
     \end{align}
 \end{subequations}
-If the nonlinear term were to be computed at $t+1$, we would have a non-linear system which we would have to solve via a Newton-Rapshon iterative method.
-However, we can also approximate its effect by only considering one of the functions $u$ at time $t+1$ and the other one at $t$:
-\begin{align}
-    \inner{b_0 \hat{u} \grad \hat{u}}{v}^{n+1} &\simeq \inner{b_0 \hat{u}^{n} \grad \hat{u}^{n+1}}{v}, \\
-    \inner{b_0 \hat{u} \grad \hat{u}}{v}^{n+1} &\simeq \inner{b_0 \hat{u}^{n+1} \grad \hat{u}^{n}}{v}.
-\end{align}
-With this trick we obtain again a linear system.
-Additionally, as we shall see further down in the reduced model, we will be able to assemble the reduced non-linear operator with the MDEIM procedure.
+The forcing term $\inner{\hat{u}^{n}}{v}$ is an interesting one.
+This inner product is done at time $t^{n+1}$, but the solution $\hat{u}^{n}$ belongs to the previous time. 
+In a way, it is a sort of $L^2$ projection of the previous solution into the current domain.
+DEVELOP. 
 
 Note that the problem is still continuous in space, but no longer in time.
 
-% \subsubsection{BDF-2}
-% To derive the BDF-2 scheme, again, we start by evaluating our weak formulation at time $t^{n+1}$, where the solution is unknown,
-% \begin{equation}
-%     \begin{split}
-%         \inner{\frac{\partial \hat{u}}{\partial t}}{v}^{n+1} + \inner{\alpha(x) \grad \hat{u}}{\grad v}^{n+1} = \inner{f}{v}^{n+1} \\
-%         + \inner{f_{g,1}}{v}^{n+1} + \inner{f_{g,2}}{\grad v}^{n+1}.
-%     \end{split}
-% \end{equation}
-% Then, we construct our interpolation polynomial using two previous timestamps from the past, 
-% \begin{align}
-%     \hat{u}(x,t) &\simeq I_2(t) := 
-%       \alpha_1 \hat{u}^{n+1} 
-%     + \alpha_2 \hat{u}^{n}
-%     + \alpha_3 \hat{u}^{n-1}, \\
-%     \left.\frac{\partial\hat{u}}{\partial t}\right|^{n+1} &\simeq \frac{d I_2(t)}{dt} = 
-%     \frac{\frac{3}{4}\hat{u}^{n+1} - \frac{1}{2}\hat{u}^{n} + \frac{1}{4}\hat{u}^{n-1}}{\Delta t}
-% \end{align}
-% With this approximation of the time derivative, we get the following semi-discrete weak formulation, 
-% \begin{subequations}
-%     \begin{align}
-%         \label{eq:1d_fom_weak_formulation_semidiscrete_time_bdf2}
-%         \frac{3}{4}\inner{\hat{u}^{n+1}}{v} + \Delta t \inner{\alpha(x) \grad \hat{u}^{n+1}}{\grad v} &= \\
-%           \frac{1}{2}\inner{\hat{u}^{n}}{v}
-%         - \frac{1}{4}\inner{\hat{u}^{n-1}}{v} \nonumber \\
-%         + \Delta t \inner{f^{n+1}}{v} \nonumber \\
-%         + \Delta t \inner{f_{g,1}^{n+1}}{v} + \Delta t \inner{f_{g,2}^{n+1}}{\grad v}, \nonumber \\
-%         \hat{u}^{n+1}(0) &= 0, \\
-%         \hat{u}^{n+1}(L\left(t^{n+1}\right)) &= 0, \\
-%         \hat{u}^{0}(x) &= \hat{u}_0(x).
-%     \end{align}
-% \end{subequations}
-% Note how the only changes between both discretizations are the forcing terms due to the previous solutions and the leading coefficient multipliying the inner product of the desired unknown solution $\hat{u}^{n+1}$. 
+\subsubsection{BDF-2}
+To derive the BDF-2 scheme, again, we start by evaluating our weak formulation at time $t^{n+1}$, where the solution is unknown,
+\begin{equation}
+    \begin{split}
+        \inner{\frac{\partial \hat{u}}{\partial t}}{v}^{n+1} + \inner{\alpha(x) \grad \hat{u}}{\grad v}^{n+1} = \inner{f}{v}^{n+1} \\
+        + \inner{f_{g,1}}{v}^{n+1} + \inner{f_{g,2}}{\grad v}^{n+1}.
+    \end{split}
+\end{equation}
+Then, we construct our interpolation polynomial using two previous timestamps from the past, 
+\begin{align}
+    \hat{u}(x,t) &\simeq I_2(t) := 
+      \alpha_1 \hat{u}^{n+1} 
+    + \alpha_2 \hat{u}^{n}
+    + \alpha_3 \hat{u}^{n-1}, \\
+    \left.\frac{\partial\hat{u}}{\partial t}\right|^{n+1} &\simeq \frac{d I_2(t)}{dt} = 
+    \frac{\frac{3}{4}\hat{u}^{n+1} - \frac{1}{2}\hat{u}^{n} + \frac{1}{4}\hat{u}^{n-1}}{\Delta t}
+\end{align}
+With this approximation of the time derivative, we get the following semi-discrete weak formulation, 
+\begin{subequations}
+    \begin{align}
+        \label{eq:1d_fom_weak_formulation_semidiscrete_time_bdf2}
+        \frac{3}{4}\inner{\hat{u}^{n+1}}{v} + \Delta t \inner{\alpha(x) \grad \hat{u}^{n+1}}{\grad v} &= \\
+          \frac{1}{2}\inner{\hat{u}^{n}}{v}
+        - \frac{1}{4}\inner{\hat{u}^{n-1}}{v} \nonumber \\
+        + \Delta t \inner{f^{n+1}}{v} \nonumber \\
+        + \Delta t \inner{f_{g,1}^{n+1}}{v} + \Delta t \inner{f_{g,2}^{n+1}}{\grad v}, \nonumber \\
+        \hat{u}^{n+1}(0) &= 0, \\
+        \hat{u}^{n+1}(L\left(t^{n+1}\right)) &= 0, \\
+        \hat{u}^{0}(x) &= \hat{u}_0(x).
+    \end{align}
+\end{subequations}
+Note how the only changes between both discretizations are the forcing terms due to the previous solutions and the leading coefficient multipliying the inner product of the desired unknown solution $\hat{u}^{n+1}$. 
 
 \subsection{Discrete Problem}
 To complete our discretization, we define a finite functional space $V_h \subset V$, where we can represent the solution as the linear combination of a set of Finite Elements (FE) basis functions $\varphi_i(x)$ with local support,
@@ -333,14 +297,9 @@ This is equivalent to enforcing the orthogonality to each basis function of the 
 \begin{subequations}
     \begin{align}
         \label{eq:1d_fom_weak_formulation_discrete}
-        \vb{M}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
-        - \Delta t \vb{B}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
-        + \Delta t \vb{A}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} \nonumber \\ 
-        + \Delta t \vb{\hat{C}}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
-        + \Delta t \vb{C}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} \\ 
-        = \vb{M}^{n+1}_h \vb{\hat{u}}_{h}^{n}
-        + \Delta t \vb{F}_{g,h}^{n+1}, \nonumber \\
-        \vb{\hat{u}}_h^{0} = \vb{\hat{u}}_{h,0}.
+        \vb{M}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} + \Delta t \vb{A}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} &= \vb{F}^{n}_{\vb{\hat{u}}_h} \\
+        &+ \Delta t \left(\vb{F}_h^{n+1} + \vb{F}_{g,h}^{n+1}\right), \nonumber \\
+        \vb{\hat{u}}_h^{0} &= \vb{\hat{u}}_{h,0}.
     \end{align}
 \end{subequations}
 The spatial boundary conditions are encoded within the matrices and the vectors. 
@@ -351,9 +310,8 @@ If we collect terms and factor out the unknowns, we get a linear system to be so
     \begin{align}
         \label{eq:1d_fom_linear_system_timestep}
         \vb{K}_h^{n+1} \vb{\hat{u}}_h^{n+1} &= \vb{b}_h^{n+1}, \\
-        \vb{K}_h^{n+1} &= \Ah{M} + \Delta t \left(\Ah{A} - \Ah{B}\right. \nonumber\\
-                       &+ \left.\Ah{\hat{C}} + \Ah{C}\right), \\
-        \vb{b}_h^{n+1} &= \Ah{M} \Ah{\hat{u}} + \Delta t \vb{F}_{g,h}^{n+1}, \\
+        \vb{K}_h^{n+1} &= \vb{M}_{h}^{n+1} + \Delta t \vb{A}_{h}^{n+1}, \\
+        \vb{b}_h^{n+1} &= \vb{F}_{\vb{\hat{u}}_h}^{n} + \Delta t \left(\vb{F}_h^{n+1} + \vb{F}_{g,h}^{n+1}\right), \\
         \vb{\hat{u}}_h^{0} &= \vb{\hat{u}}_{h,0}.
     \end{align}
 \end{subequations}
@@ -361,23 +319,13 @@ Because the domain changes with time, even if we are solving a linear system, bo
 \begin{subequations}
     \label{eq:1d_fom_linear_system_operators}
     \begin{align}
-        \left[\vb{M}_{h}^{n+1}\right]_{ij}       &= m_{\text{BDF}} \inner{\varphi_j}{\varphi_i}, \\
-        \left[\vb{A}_{h}^{n+1}\right]_{ij}       &= \inner{\alpha \grad \varphi_j}{\grad \varphi_i}, \\
-        \left[\vb{B}_{h}^{n+1}\right]_{ij}       &= \inner{c \grad \varphi_j}{\varphi_i}, \\
-        \left[\vb{\hat{C}}_{h}^{n+1}\right]_{ij} &= b_0 \left(\inner{g \grad \varphi_j}{\varphi_i} + \inner{\varphi_j \grad g}{\varphi_i}\right), \\
-        \left[\vb{F}_{{g,h}}^{n+1}\right]_{i}    &= -\inner{\pdv{g}{t}+b_0 g \grad g - c \grad g}{\varphi_i} \nonumber\\
-                                                 &  -\inner{\alpha \grad g}{\grad \varphi_i}. \label{eq:1d_fom_linear_system_operators_fg}
+        \left[\vb{M}_{h}^{n+1}\right]_{ij} &= m_{\text{BDF}} \inner{\varphi_j}{\varphi_i}  \\
+        \left[\vb{A}_{h}^{n+1}\right]_{ij} &= -\inner{w \grad \varphi_j}{\varphi_i} + \inner{\alpha \grad \varphi_j}{\grad \varphi_i} \\
+        \left[\vb{F}_{h}^{n+1}\right]_{i} &= \inner{f^{n+1}}{\varphi_i}, \label{eq:1d_fom_linear_system_operators_f} \\
+        \left[\vb{F}_{{g,h}}^{n+1}\right]_{i} &= \inner{f_{g,1}^{n+1}}{\varphi_i} + \inner{f_{g,2}^{n+1}}{\grad \varphi_i}, \label{eq:1d_fom_linear_system_operators_fg}
     \end{align}
 \end{subequations}
-Nonlinear matrices can be represented with two approximations,
-\begin{subequations}
-    \label{eq:1d_fom_nonlinear_system_operators}
-    \begin{align}
-        \left[\vb{C}_{h}^{n+1}\right]_{ij} &= b_0 \inner{u^{n} \grad \varphi_j}{\varphi_i}, \\
-        \left[\vb{C}_{h}^{n+1}\right]_{ij} &= b_0 \inner{\varphi_j \grad u^{n}}{\varphi_i}, 
-    \end{align}
-\end{subequations}
-The assembly of the forcing terms given in Equation \eqref{eq:1d_fom_linear_system_operators_fg}
+The assembly of the forcing terms given in Equations~\eqref{eq:1d_fom_linear_system_operators_f} and \eqref{eq:1d_fom_linear_system_operators_fg}
 are to be done with the FE vector representations of the functional expressions of each of the terms $f$ and $f_g$, to be obtained by projection or interpolation, as explained in Section~\ref{sec:1d_fom_projection_interpolation}.
 
 The change in time is implied in the inner product, which is defined for a domain that changes in time. 
