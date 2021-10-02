@@ -48,16 +48,28 @@
 \maketitle
 
 \begin{abstract}
-   We build a Reduced Order Model (ROM) for a one-dimensional gas dynamics problem:
-   a moving piston.
-   The main body of the PDE, the geometrical definition of the moving boundary, 
-   and the boundary conditions are parametrized.
-   A concise description of the reducing procedure is provided, together with a priori convergence rates for basis size estimation and a posteriori error estimators to certify the use of the Reduced Order Model.
-   Numerical examples to showcase computational costs and implementation details are designed, implemented and validated with the Manufactured Solutions Method. 
+   We present a Reduced Order Model (ROM) for a one-dimensional gas dynamics problem:
+   the moving piston.
+   The main body of the PDE, 
+   the geometrical definition of the moving boundary, 
+   and the boundary conditions themselves are parametrized.
+   The Full Order Model is obtained with a Galerkin semi-implicit Finite Element discretization.
+   The Reduced Basis to express the solution is obtained with the classical POD technique.
+   To overcome the explicit use of the jacobian transformation, 
+   typical in the context of moving domains,
+   a system approximation technique is used.
+   The (Matrix) Discrete Empirical Interpolation Method, (M)DEIM, allows us
+   to work with a weak form defined in the physical domain whilst maintaining an
+   efficient assembly for the algebraic operators, 
+   despite their evolution with every timestep.
+   All in all, our approach to the construction of the Reduced Order Model is purely algebraic and makes no use of Full Order structures, 
+   achieving a perfect \textit{offline-online} split.
+   A concise description of the reducing procedure is provided, together with a posteriori error estimations to certify the Reduced Order Model.
+   Numerical examples to showcase computational costs and implementation details are designed, implemented and validated with the Manufactured Solutions Method.
 \end{abstract}
 
 \begin{IEEEkeywords}
-    Reduced Order Model, Moving Domain, FEM, DEIM, POD, Galerkin projection
+    Reduced Order Model, Gas Dynamics, Moving Piston, Deforming Mesh, Galerkin, FEM, DEIM, MDEIM, POD
 \end{IEEEkeywords}
 
 \setcounter{tocdepth}{2}
