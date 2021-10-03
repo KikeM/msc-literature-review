@@ -13,10 +13,54 @@
 
 \begin{document}
 
-\section{Results}
+\section{FOM Calibration}
+
+\subsection{Artificial Viscosity}
+\label{sec:results_artificial_viscosity}
+As stated before, we included an artificial viscosity term in the final formulation,
+to go around the need for more involved stabilization schemes such as SUPG\footnote{
+Note that we could have used the same hyperreduction scheme,
+since the approach is purely algebraic.} 
+methods or others alike.
+
+A value needs to be choosen for the viscosity constant, $\varepsilon$.
+Initially, it was set to be the square of the mesh size, 
+\begin{equation*}
+    \varepsilon \sim (\Delta x)^2 \sim 10^{-6}.
+\end{equation*}
+However, a parametric sweep for different viscosity values showed that
+this value, 
+no matter how small, was introducing measurable damping into the system.
+
+The actual value that seems correct, keeping the system stable whilst purely convective (at least for the time-scale for which we are solving) seems to be a much smaller one,
+\begin{equation}
+    \varepsilon \sim 10^{-10}.
+\end{equation}
+In Figure~\ref{fig:artificial_viscosity_comparison} we present a comparison for these two viscosity values.
+We show the motion of the fluid at the outflow and a phase plot, to ease the analysis of the correlation between the weak shock wave at the outflow and the piston motion.
+The smallest viscosity value, $(10^{-10})$ leads to a convection-like phase plot; 
+the shape of the input is distorted but the maximum and mimimum values honored, and the same path is repeated over and over.
+Instead, the solution with a higher viscosity value (or at least the one that we thought would do the job) shows a diffusive pattern, reducing the extrema and changing its path on every pass.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1.0\columnwidth]{research_project/piston/figures/artificial_viscosity/artificial_viscosity_comparison.png}
+    \caption{Artificial viscosity comparison.
+    (Top) Outflow velocities for two different values of the viscosity term.
+    In dashed, the piston motion, to help in the visualization of the nonlinear distortion.
+    (Bottom) Phase plot between the piston motion (x-axis) and the response at the outflow (y-axis) for the same artificial viscosity values.
+    Due to the creation of a weak shock wave, the piston motion is distorted.
+    However, only the smallest viscosity value ($10^{-10}$) presents a stable phase plot, going over and over the same path. 
+    }
+    \label{fig:artificial_viscosity_comparison}
+\end{figure}
+Luckily, the complete reduction scheme\footnote{
+    Namely snapshot SVD compression and interpolation coefficients calculation.
+}
+seems to withstand such a small numerical viscosity term without incurring into round-off errors\footnote{If there were, we could always reduce the plain vanilla Laplace operator $\int \grad u \cdot \grad v \, \text{d}\Omega$ and scale it by $\varepsilon$ right before solving the system.}.
 
 \subsection{Parameter Range}
-Our very first task is to determine an acceptable range to sample each parameter.
+For the construction of the reduced basis we are randomly sampling the parameter space.
+Hence, we need to determine an acceptable range for each parameter.
 
 To do so, we sample a large space and visually check each of the solutions.
 Visual inspection reveals that certain solutions contain wiggles when a shock wave occurs, see Figure~\ref{fig:smooth_vs_wiggled}.
@@ -50,7 +94,7 @@ In such model we would expect the piston motion to be perfectly convected toward
 But due to the presence of the nonlinear term, we know this will not be the case.
 Hence, we suggest and use as a nonlinearity metric $\eta$ the ratio between the time between two peaks at the ouflow and the piston,
 \begin{equation}
-    \eta := T / T_0,
+    \eta := \frac{T}{T_0},
 \end{equation}
 where $T$ and $T_0$ are respectively defined as
 \begin{subequations}
@@ -60,17 +104,16 @@ where $T$ and $T_0$ are respectively defined as
         T   &:= t^{\text{out}}_{+} - t^{\text{out}}_{-}.
     \end{align}
 \end{subequations}
-The symbols $t^{(\cdot)}_{+}$ and $t^{(\cdot)}_{-}$ denote the first positive and the second\footnote{We take the second negative peak and not the first one to remove any possible distortion due to the initial transient from rest to movement.} negative peaks in the velocity function at their respective locations.
+The symbols $t^{(\cdot)}_{+}$ and $t^{(\cdot)}_{-}$ denote the first positive and the second\footnote{We take the second negative peak and not the first one to remove any possible distortion due to the initial transient from rest to harmonic movement.} negative peaks in the velocity function at their respective locations.
 
 The closer $\eta$ is to one, the more linear the response is.
-As it tends to zero, the response is become nonlinear, since a shock wave is building up at the outflow;
+As it tends to zero, the response is becoming nonlinear, 
+since a shock wave is building up at the outflow;
 \begin{align*}
     &\eta \sim 1 : \text{Linear response}, 
     \\
     &\eta \rightarrow 0 : \text{Nonlinear response}.
 \end{align*}
-
-
 In Figure~\ref{fig:wiggle_correlation} we show the response of the system for different parametrization values, alongside with the forcing $u_p$ and nonlinearity measure $\eta$. 
 We have manually tagged which combinations present wiggles.
 There are several observations to be made about this pair plot.
@@ -78,14 +121,14 @@ There are several observations to be made about this pair plot.
 First of all, looking the raw parameters $a_0, \omega$ and $\delta$, we observe how 
 none of them individually explain how nonlinear the response of the system will be.
 There is certainly a trend, low values of $a_0$ and large values of $\delta$ and $\omega$ contain wiggles (as shown by the density plots). 
-However, points with low values of $a_0$ belong to the set without wiggles. 
+However, points with low values of $a_0$ belong to the set without wiggles too. 
 Therefore, it must be the combination of them which explains the existence of wiggles.
 
-Indeed, when we look at the correlation between~$u_p$ and~$\eta$, we observe a linear trend between them: the higher the forcing, the stronger the nonlinearity in the response.
+When we look at the correlation between~$u_p$ and~$\eta$, we observe a linear trend between them: the higher the forcing, the stronger the nonlinearity in the response.
 And clearly, beyond a threshold in the forcing, the system seems to break and most solutions contain wiggles.
-This critical value~$u_M$ seems to be in the neighborhood of~$u_M \sim 0.4$. 
+This critical value~$u_M$ for the forcing seems to be in the neighborhood of~$u_M \sim 0.4$. 
 
-With this information available (and after running some tests) we choose the following ranges for our parameters:
+With this empirical study of the system's response (and after running some tests) we choose the following ranges for our parameters:
 \begin{table}[h]
     \centering
     \caption{Acceptable parameter range for random sampling. This configuration should prevent the existence of wiggles at the outflow.}
@@ -112,8 +155,13 @@ With this information available (and after running some tests) we choose the fol
 \end{figure}
 \twocolumn
 
-% Please add the following required packages to your document preamble:
-% \usepackage{booktabs}
+
+
+
+
+
+
+
 
 
 

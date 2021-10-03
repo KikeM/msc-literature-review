@@ -1,7 +1,7 @@
 \documentclass[a4paper, technote, compsoc, draft]{IEEEtran}
 %\documentclass[a4paper]{article}
 
-
+\usepackage[toc,page,titletoc]{appendix}
 \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
 \usepackage[utf8]{inputenc} % allow utf-8 input
 \usepackage{amsmath}
@@ -54,22 +54,31 @@
    the geometrical definition of the moving boundary, 
    and the boundary conditions themselves are parametrized.
    The Full Order Model is obtained with a Galerkin semi-implicit Finite Element discretization.
+   To stabilize the system, an artificial viscosity term is included.
    The Reduced Basis to express the solution is obtained with the classical POD technique.
    To overcome the explicit use of the jacobian transformation, 
    typical in the context of moving domains,
    a system approximation technique is used.
    The (Matrix) Discrete Empirical Interpolation Method, (M)DEIM, allows us
-   to work with a weak form defined in the physical domain whilst maintaining an
+   to work with a weak form defined in the physical domain (and hence the physical weak formulation)
+   whilst maintaining an
    efficient assembly for the algebraic operators, 
    despite their evolution with every timestep.
-   All in all, our approach to the construction of the Reduced Order Model is purely algebraic and makes no use of Full Order structures, 
-   achieving a perfect \textit{offline-online} split.
-   A concise description of the reducing procedure is provided, together with a posteriori error estimations to certify the Reduced Order Model.
-   Numerical examples to showcase computational costs and implementation details are designed, implemented and validated with the Manufactured Solutions Method.
+   All in all, our approach to the construction of the Reduced Order Model is purely algebraic
+   and makes no use of Full Order structures in its resolution, 
+   thus achieving a perfect \textit{offline-online} split.
+   A concise description of the reducing procedure is provided, 
+   together with a posteriori error estimations, obtained via model truncation,
+   to certify the Reduced Order Model.
+   Numerical examples to showcase computational costs and implementation details are designed, 
+   implemented and validated with the Manufactured Solutions Method.
 \end{abstract}
 
 \begin{IEEEkeywords}
-    Reduced Order Model, Gas Dynamics, Moving Piston, Deforming Mesh, Galerkin, FEM, DEIM, MDEIM, POD
+    Reduced Order Model, 
+    Moving Piston, Deforming Mesh, 
+    Galerkin, (M)DEIM, POD, 
+    Model Truncation
 \end{IEEEkeywords}
 
 \setcounter{tocdepth}{2}
@@ -98,10 +107,11 @@
 \newpage
 \subfile{research_project/piston/burgers_1d_rom.tex}
 \newpage
-\subfile{research_project/piston/burgers_1d_results.tex}
+\subfile{research_project/piston/burgers_1d_calibration.tex}
 
-\appendix
-\newpage
-\subfile{research_project/piston/piston_movement.tex}
+\begin{appendices}
+    \newpage
+    \subfile{research_project/piston/piston_movement.tex}
+\end{appendices}
 
 \end{document}

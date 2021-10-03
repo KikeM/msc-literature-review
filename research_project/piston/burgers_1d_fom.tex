@@ -307,13 +307,15 @@ However, it is a paramount step for the construction of our reduced space,
 to ensure the basis serves all boundary parametrizations.
 
 \subsubsection{Strong Formulation}
-At this point of the derivation, we allow ourselves to introduce a diffusion term which was not present in the physical derivation of the model.
-The viscosity value will be small enough so that it disappears with the mesh size,
+At this point of the derivation, we allow ourselves to introduce an artificial viscosity term which was not present in the physical derivation of the model.
+The viscosity value $\varepsilon$ will be small enough so that it does not remove energy from the system,
+while keeping it sufficiently stable. 
+More on this in Section~\ref{sec:results_artificial_viscosity} in the Results section.
 
-\mytodo{Review diffusion coefficient value for mesh consistency.}
-\begin{equation}
-    \varepsilon \sim \left(\Delta x\right)^2. 
-\end{equation}
+% \mytodo{Review diffusion coefficient value for mesh consistency.}
+% \begin{equation}
+%     \varepsilon \sim \left(\Delta x\right)^2. 
+% \end{equation}
 
 Thus, the differential model in the physical space is given by the following PDE, boundary and initial conditions,
 \begin{subequations}
@@ -322,7 +324,9 @@ Thus, the differential model in the physical space is given by the following PDE
         + \frac{\partial u}{\partial x}\left(\frac{\gamma+1}{2}u - a_0\right) 
         - \varepsilon \pdv[2]{u}{x} &= 0, \label{eq:1d_fom_strong_pde} \\
         % \frac{\partial u}{\partial x}(0, t) &= 0, \\
-        u(L, t) &= L'(t). 
+        u(L, t) &= L'(t),
+        \\
+        u(x, 0) &= 0. 
     \end{align}
 \end{subequations}
 At the left boundary, we will impose a natural ouflow condition.
