@@ -701,7 +701,7 @@ Note that the problem is still continuous in space, but no longer in time.
 % \end{subequations}
 % Note how the only changes between both discretizations are the forcing terms due to the previous solutions and the leading coefficient multipliying the inner product of the desired unknown solution $\hat{u}^{n+1}$. 
 
-\subsection{Discrete Problem: Space and Time Discretization}
+\subsection{Discrete Problem: Space Discretization}
 To complete our discretization, we define a finite functional space $V_h \subset V$, where we can represent the solution as the linear combination of a set of Finite Elements (FE) basis functions $\varphi_i(x)$ with local support,
 \begin{align}
     \hat{u}^{n}(x) \simeq \hat{u}_h^n(x) &= \sum_j^{N_h} \hat{u}_{h_j}^n \varphi_j(x), \\
@@ -873,18 +873,18 @@ A lifting of the Dirichlet boundary conditions has been introduced, which lead t
 Hence, we will focus in the solution of an homogeneous boundary value problem.
 This fact will prove useful when we get into the implementation details of the reduction procedure.
 
-\subsection{Deformation of the Space-Time Domain}
+
+\subsection{How to Work on a Fixed Domain}
+
+\subsubsection{Jacobian Transformation}
+How would the system change if we wanted to solve our equations in a fixed domain?
+What would be the expression of the algebraic system?
+
+\subsubsection{Space-Time Finite Elements}
 TBD.
 
 Comment on how in the $(x,t)$ domain we actually have a deforming domain. 
-
 This could be solved with space-time FE, but it involves complex tensor products. 
-
 Explain how what we have done is a good approximation of the latter.
-
-\subsection{Generalized Transformation}
-If the domain is made fixed, 
-how does the equation change?
-What would be the expression of the algebraic system?
 
 \end{document}
