@@ -58,6 +58,42 @@ Luckily, the complete reduction scheme\footnote{
 }
 seems to withstand such a small numerical viscosity term without incurring into round-off errors\footnote{If there were, we could always reduce the plain vanilla Laplace operator $\int \grad u \cdot \grad v \, \text{d}\Omega$ and scale it by $\varepsilon$ right before solving the system.}.
 
+\subsection{BDF Scheme Convergence Rates}
+\mytodo{This requires a more detailed investigation.}
+The next concept we are going to look at to check the quality of our simulation is 
+the convergence rate for the two time-integration schemes, BDF-1 and BDF-2, see Figure~\ref{fig:bdf_convergence_rates}.
+
+For some reason, the BDF-2 scheme does not decrease at the expected rate of 2.
+Nevertheless, since for the calculation of the mass defect figure a space integral and a time derivative are used, 
+this could reveal a weakness in this specific calculation, 
+rather than a bug in the overall simulation.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/convergence_rates_mass.png}
+    \caption{Convergence rates for mass defect.
+    The BDF-1 scheme decreases at the expected rate, whereas the BDF-2 does not.
+    This could be due to the calculation procedure for the mass defect and not to a bug in the calculation itself.}
+    \label{fig:bdf_convergence_rates}
+\end{figure}
+
+It is worthy pointing out how the BDF-2 scheme is actually superior to the BDF-1 scheme 
+for most of the period, as we can see from Figure~\ref{fig:bdf_1_mass_plot} and \ref{fig:bdf_2_mass_plot}. 
+However, for some reason yet unknown, in the neighborhood of the shock wave creation, mass preservation decreases,
+rising up the average error.  
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/mass_FOM_8_bdf_1.png}
+    \caption{(BDF-1, $dt\sim 10^{-4}$).
+    Mass conservation, visual comparison (top) and numerical error (bottom).}
+    \label{fig:bdf_1_mass_plot}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/mass_FOM_8_bdf_2.png}
+    \caption{(BDF-2, $dt\sim 10^{-4}$).
+    Mass conservation, visual comparison (top) and numerical error (bottom).}    \label{fig:bdf_2_mass_plot}
+\end{figure}
+
 \subsection{Parameter Range}
 For the construction of the reduced basis we are randomly sampling the parameter space.
 Hence, we need to determine an acceptable range for each parameter.
@@ -77,6 +113,7 @@ so they must be due to the fact that the shock wave is becoming thinner than the
 \end{figure}
 To prevent these unrealistic solutions from polluting our reference solutions, we
 need to determine a safety margin in the sampling range prevent using a parametrization for which wiggles will take place.
+
 
 \subsubsection{System Forcing And Nonlinear Response}
 On the one hand, when we think about the equations and their response, we could hint at the fact that shock wave strength will be driven by the magnitude of the piston's velocity.
