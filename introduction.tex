@@ -21,6 +21,119 @@ That is, we can find a basis for each algebraic operator to build them efficient
 Finally, since she is a vanguard painter, the domain of our problem, her canvas, will be allowed to change in time, as she paints.
 The landscape colours and brushes we select will need to take this into account.
 
+\subsection{Literature Review}
+\mytodo{Under construction ...}
+
+From  \cite{2016_CertifiedReducedBasisMethodsParametrizedPDE_Hesthaven}:
+\begin{quotation}
+    The central idea of the reduced basis approach is the identification of a suitable problem-dependent basis to effectively represent parametrized solutions to partial differential equations.
+\end{quotation}
+
+\begin{itemize}
+    \item Difference between local and global support.
+    \item Decomposition techniques.
+\end{itemize}
+
+\subsection*{Needs}
+We aim at obtaining efficiently the solution of parametrized parabolic PDEs with moving boundaries in time.
+Others have solved a problem with a moving mesh in time, but only using DEIM \cite{2018_podDeimReducedOrderModelDeformingMeshAeroelasticApplications_Donfrancesco}.
+
+% index-based computational domain in order to deal with deforming grid.
+
+\begin{itemize}
+    \item Build a ROM system equivalent to the FEM discretization of the weak form of the PDE.
+    \begin{itemize}
+        \item Solve the ROM for each time-step and project back to physical domain.
+        \item Functional evaluation of the solution.
+    \end{itemize}
+    \item Do not assemble and project any high fidelity operators to build the ROM operators.
+    \begin{itemize}
+        \item Sampling strategies across the parameter space are crucial.
+            \begin{itemize}
+                \item Ensure convergence of the reduced basis.
+                \item Computational efficiency.
+            \end{itemize}
+        \item Create a POD-basis for:
+        \begin{itemize}
+            \item The solution space.
+            \item Each operator, matrix or vector, of the system.
+            \item The "snapshots method" is used \cite{1987_turbulenceDynamicsCoherentStructures_Sirovich, 2003_podBasedReducedOrderModelsWithDeformingGrids_anttonen}.
+        \end{itemize}
+        \item Parameter Separability of the ROM operators:
+        \begin{equation*}
+            A(\mu, t) = \sum_q \theta_q(\mu, t) A_q
+        \end{equation*}
+        % \item Greedy sampling techniques are similar in objective to, but very different in approach from, the more well-known methods of proper orthogonal decomposition (POD). How are they different?
+    \end{itemize}
+    \item Certify the ROM solution with a posteriori error bounds.
+\end{itemize}
+
+\subsection*{Scope}
+\begin{itemize}
+    \item Prescribed deformation of the domain at the boundary:
+    \begin{itemize}
+        \item No FSI problem to be solved.
+        \item Separable geometrical and time parametrization of the domain deformation.
+        \item Interpolate deformation through the mesh with a Laplacian operator for each time-step (to ensure smoothness).
+    \end{itemize}
+    \item Linear operators:
+    \begin{itemize}
+        \item Heat equation. See \cite{2009_reducedBasisMethodsAPosterioriErrorEstimatorsHeatTransferProblems_Rozza}, parametrized domain but constant in time.
+        \item Include a non-linear term (bonus). 
+        \item Convection-diffusion with known velocity field (bonus). 
+    \end{itemize}
+
+    How to deal with inhomogeneous boundary conditions, \cite{2007_ReducedOrderModelingTimeDependentPDEsMultipleParametersBoundaryData_gunzburger}.
+    \begin{itemize}
+        \item Lifting function:
+        \begin{itemize}
+            \item Split the solution into arbitrary function honoring Dirichlet b.c. + solution to the homogeneous problem.
+            \begin{equation*}
+                u = u_D + \hat{u}
+            \end{equation*}
+            \item The homogeneous problem is reduced.
+            \item The lifting operators (they arise from the application of the operators upon $u_D$) are reduced. 
+        \end{itemize}
+    \end{itemize}
+
+\end{itemize}
+\subsection*{What Others Have Done}
+\begin{itemize}
+    \item POD-Galerkin projection.
+    \item Operators reduction:
+    \begin{itemize}
+        \item (DEIM) Vector reduction and interpolation \cite{2010_nonlinearModelReductionDeim_chaturantabut}.
+        \item (MDEIM) Matrix reduction and interpolation \cite{2015_efficientModelReductionParametrizedSystemsMatrixDeim_Negri}.
+        \item Reduction of non-linear operators \cite{2018_podDeimReducedOrderModelDeformingMeshAeroelasticApplications_Donfrancesco}.
+    \end{itemize}
+    \item Possible problem parametrizations: 
+    \begin{itemize}
+        \item Geometrical deformation of the domain.
+        \item PDE coefficients.
+        \item Boundary conditions.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{What We Intend To Do}
+
+\begin{itemize}
+    \item Validate code/bounds with a non-parametrized time deforming mesh.
+    \item Reduce a parametrized time-deforming mesh. This includes creating a reduced model for the domain deformation problem too.
+\end{itemize}
+
+\subsection*{Error Bounds}
+Means to certify the construction of the RB model: a posteriori error bounds.
+
+They should be:
+\begin{enumerate}
+    \item Computable (they often use continuity and coercivity constants).
+    \item Rigorous (i.e. provable).
+    \item Effective/Sharp (they should not arbitrarily overestimate the error).
+\end{enumerate}
+
+Adapt \cite{2005_aPosterioriErrorBoundsReducedBasisApproximationsParametrizedParabolicPde_Grepl,
+2015_efficientModelReductionParametrizedSystemsMatrixDeim_Negri} for time-changing domains.
+
 \mytodo{Mention that our goal is to avoid the computation of the jacobian matrix.}
 \mytodo{Mention that we will be using ALE formulation.}
 

@@ -14,16 +14,27 @@
 \begin{document}
 
 \section{FOM Calibration}
+This section is devoted to present the Full Order Model in action.
+Certain parameters need to tweaked and defined,
+along with consistency checks to validate the simulation.
+
+In Section~\ref{sec:fom_calibration_artificial_viscosity} we show the effects of artificial viscosity,
+in Section~\ref{sec:fom_calibration_bdf_convergence_rates} we explore the differences 
+between BDF-1 and BDF-2 time integration schemes;
+and finally in Section~\ref{sec:fom_calibration_system_forcing} we show how
+certain combinations within the parameter space produce unfeasible solutions, 
+and so we explain how to sample within the feasible range.
 
 \subsection{Artificial Viscosity}
-\label{sec:results_artificial_viscosity}
-As stated before, we included an artificial viscosity term in the final formulation,
-to go around the need for more involved stabilization schemes such as SUPG\footnote{
+\label{sec:fom_calibration_artificial_viscosity}
+As stated previously in the document, 
+we included an artificial viscosity term in the final formulation
+to go around the need for more involved stabilization schemes, such as SUPG\footnote{
 Note that we could have used the same hyperreduction scheme,
 since the approach is purely algebraic.} 
 methods or others alike.
 
-A value needs to be choosen for the viscosity constant, $\varepsilon$.
+A value needs to be choosen for the viscosity constant~$\varepsilon$.
 Initially, it was set to be the square of the mesh size, 
 \begin{equation*}
     \varepsilon \sim (\Delta x)^2 \sim 10^{-6}.
@@ -41,7 +52,7 @@ We show the motion of the fluid at the outflow and a phase plot, to ease the ana
 The smallest viscosity value, $(10^{-10})$ leads to a convection-like phase plot; 
 the shape of the input is distorted but the maximum and mimimum values honored, and the same path is repeated over and over.
 Instead, the solution with a higher viscosity value (or at least the one that we thought would do the job) shows a diffusive pattern, reducing the extrema and changing its path on every pass.
-\begin{figure}[t]
+\begin{figure}[!h]
     \centering
     \includegraphics[width=1.0\columnwidth]{research_project/piston/figures/artificial_viscosity/artificial_viscosity_comparison.png}
     \caption{Artificial viscosity comparison.
@@ -59,6 +70,7 @@ Luckily, the complete reduction scheme\footnote{
 seems to withstand such a small numerical viscosity term without incurring into round-off errors\footnote{If there were, we could always reduce the plain vanilla Laplace operator $\int \grad u \cdot \grad v \, \text{d}\Omega$ and scale it by $\varepsilon$ right before solving the system.}.
 
 \subsection{BDF Scheme Convergence Rates}
+\label{sec:fom_calibration_bdf_convergence_rates}
 \mytodo{This requires a more detailed investigation.}
 The next concept we are going to look at to check the quality of our simulation is 
 the convergence rate for the two time-integration schemes, BDF-1 and BDF-2, see Figure~\ref{fig:bdf_convergence_rates}.
@@ -114,8 +126,8 @@ so they must be due to the fact that the shock wave is becoming thinner than the
 To prevent these unrealistic solutions from polluting our reference solutions, we
 need to determine a safety margin in the sampling range prevent using a parametrization for which wiggles will take place.
 
-
 \subsubsection{System Forcing And Nonlinear Response}
+\label{sec:fom_calibration_system_forcing}
 On the one hand, when we think about the equations and their response, we could hint at the fact that shock wave strength will be driven by the magnitude of the piston's velocity.
 This variable, although time dependent, is scaled by the combination of the speed of sound,
 piston frequency and displacement, 
@@ -184,21 +196,13 @@ With this empirical study of the system's response (and after running some tests
 \onecolumn
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1.1\columnwidth]{research_project/piston/figures/wiggles/wiggle_correlation.png}
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/wiggles/wiggle_correlation.png}
     \caption{Parameter space split by wiggle presence.
     We observe how wiggles are prone to appear for low values in the speed of sound,
     large values in displacement and frequency; that is, when the forcing into the system is larger than a given threshold $u_M$.}
     \label{fig:wiggle_correlation}
 \end{figure}
 \twocolumn
-
-
-
-
-
-
-
-
 
 
 

@@ -15,7 +15,7 @@
 
 \begin{document}
 
-\section{Reduced Order Model}
+\section{(Hyper) Reduced Order Model}
 For any unseen parameter value, our aim is to be able to assemble and solve a smaller algebraic problem, 
 and yet to obtain a solution close enough to that of the Full Order Model.
 % We present now the formulation for the Reduced Order Model (ROM).
@@ -42,11 +42,10 @@ the homogeneous component $\hat{u}(x)$ of our solution,
 that is, for the weak formulation given by the system of equations~\eqref{eq:1d_fom_weak_formulation_homogeneous}.  
 
 % -----------------------------------------------------------------------------
-\subsection{A Naive Galerkin Approach}
+\subsection{A Naive Approach}
 We have included in the title the word \emph{naive} because we are going to define the reduction problem in a very blunt way,
 where many ineffiencies will show up.
-We do so to motivate the operator reduction procedures we will include, 
-especially regarding the operators.
+We do so to motivate the operator reduction procedures we will include later on.
 
 In the reduced context, we use a finite space $V_N \subset V_h$, where we can represent the solution as the linear combination of a set of orthonormal\footnote{If they were not, we can always make them so via Gram-Schmidt.} \mbox{problem-based} basis functions~$\psi_i(x)$,
 \begin{equation}
@@ -61,7 +60,7 @@ We will give details on how to obtain them later on.
 
 \subsubsection{Reduced Space Projection}
 Since we can represent any function in terms of our FE basis functions~$\varphi_i(x)$, 
-we have a linear mapping between the problem-based functions~$\psi_i(x)$ and the nodal basis functions.
+we have a linear mapping between the problem-based functions~$\psi_j(x)$ and the nodal basis functions.
 This allows us to establish the following relation between the problem solution in the reduced and original spaces,
 \begin{equation}
     \label{eq:1d_rom_burgers_projection_relation}
@@ -93,7 +92,7 @@ In practice, it is more convenient to project the algebraic FOM operators with \
         % \vb{F}_{{g,N}}^{n+1}   &= \rbVT \vb{F}_{{g,h}}^{n+1},
     \end{align}
 \end{subequations}
-where $\vb{X}_{h}$ and $\vb{F}_{h}$ stand for each of the FOM operators (matrix and vector respectively).
+where $\vb{X}_{h}$ and $\vb{F}_{h}$ stand for each of the FOM operators (matrices and vectors respectively).
 The assembly of matrices based on a FE basis can be easily done in parallel due to their local support, 
 whereas the integration of functions with global support is not necessarily computationally efficient.
 
@@ -142,7 +141,7 @@ If we collect terms and factor out the unknowns we get a linear system, this tim
         \\
         \vb{\hat{u}}_{N}^{0} &= \vb{\hat{u}}_{N,0},
         \\
-        \vb{K}_{N}^{n+1} &= \Ah{M} + \dt \left[\Ah{A} + \Ah{B} \right. 
+        \vb{K}_{N}^{n+1} &= m_{\text{BDF}} \Ah{M} + \dt \left[\Ah{A} + \Ah{B} \right. 
         \nonumber 
         \\
                         &\left. + \Ah{\hat{N}} + \Ah{N}\left(\vb{\hat{u}}_{N}^{n}\right)\right],
@@ -240,7 +239,7 @@ Yet, this basis $\Psi_{\hat{u}}$ is unpractical from a computational point of vi
 Additionally, it would probably lead to ill-posed linear systems, since the vectors are almost linearly dependent. 
 
 However, since all these vectors arise from the same PDE (although for different parametrizations of it), and for each timestep the solution is close to the previous one, in a way, we could expect there to be a lot of repeated information inside each $\Psi_{\hat{u}}(\mu_i)$, and consequently, inside $\Psi_{\hat{u}}$.
-We can exploit this fact by using a compression algorithm, such as the Proper Orthogonal Decomposition, to find a set of vectors which capture sufficiently good the span of $\Psi_{\hat{u}}$, and yet do so with less number of basis vectors. 
+We can exploit this fact by using a compression algorithm, such as the Proper Orthogonal Decomposition (POD), to find a set of vectors which capture sufficiently good the span of $\Psi_{\hat{u}}$, and yet do so with less number of basis vectors. 
 
 We call this the \emph{method of snapshots}. 
 
@@ -248,6 +247,7 @@ We call this the \emph{method of snapshots}.
 \subsubsection{POD Space Reduction}
 \label{sec:1d_rom_burgers_basis_construction_pod}
 This section is left intentionally short for the moment.
+\mytodo{POD references.}
 Many high quality references exist to explain what is the Proper Orthogonal Decomposition (POD), why does it work and which limitations does it have.
 
 We can see it as an enhanced Gram-Schmidt orthonormalization procedure: not only an orthonormal basis is obtained, but additionally the output basis vectors recover hierarchically the span of the original space given by the input vectors.
@@ -284,6 +284,7 @@ Alternatively to a prescribed error, one could directly ask for a prescribed num
 % -----------------------------------------------------------------------------
 \subsubsection{Nested POD Basis Construction}
 \label{sec:1d_rom_burgers_basis_construction_nested}
+\mytodo{Create diagram and sketches}
 A simple procedure to leverage the compression properties of the POD function, and the nested structure of our PDE with respect to time and the parameters; is to first build certain POD basis from the snapshots of the solution at different timesteps for a fixed parameter value,
 \begin{align*}
     \Psi_{\mu_0} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_0), \ldots, \hat{u}_h(t^T; \mu_0)\right]\right), \\
@@ -328,12 +329,15 @@ where the coefficient functions are real-valued, \mbox{$\Theta_q^a(t, \mu) \in \
 
 This expansion can be used for both matrices or vectors provided the topology of the mesh does not change in time.
 If this is the case, the matrices can be transformed into vectors, and later on brought back to matrix form once any necessary operation has been carried out.
+\mytodo{Reference from MDEIM paper.}
 
 If we had such a decomposition, once we had computed the basis matrix \rbV, we could project each element of the operator basis $A_{h, q}$ to obtain an expression for the reduced operator, 
 \begin{equation}
     \begin{split}
-        A_N(t, \mu) &= \rbVT A_h(t, \mu) \rbV \\ 
-        &= \sum_q^{Q_a} \Theta_q^a(t, \mu) \rbVT  A_{h, q} \rbV \\
+        A_N(t, \mu) &= \rbVT A_h(t, \mu) \rbV,
+        \\ 
+        &= \sum_q^{Q_a} \Theta_q^a(t, \mu) \rbVT  A_{h, q} \rbV, 
+        \\
         A_N(t, \mu) &= \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{N,q}.
     \end{split}
 \end{equation}
@@ -342,7 +346,7 @@ Since $A_{N, q}$ is fixed, provided that we had a way to evaluate each $\Theta_q
 % -----------------------------------------------------------------------------
 \subsubsection{Discrete Empirical Interpolation Method}
 Naturally, not many problems are likely to present a separable form as the one shown above.
-Even our simple linear heat equation problem, due to the time-deformation of the mesh, cannot be presented in such a form. 
+Even a simple linear heat equation problem, due to the time-deformation of the mesh, cannot be presented in such a form. 
 
 To tackle this issue, we use the Discrete Empirical Interpolation Method (DEIM).
 This method is a numerical extension of its analytical sibling, the Empirical Interpolation Method (EIM).
@@ -374,11 +378,11 @@ we enforce the approximation to actually match certain elements of the operator,
     \label{eq:1d_rom_burgers_interpolation_problem}
     [A_h(t, \mu)]_{k} = [A_h^m(t, \mu)]_{k} = \sum_q^{Q_a} \Theta_q^a(t, \mu) [A_{h, q}]_{k}
 \end{equation}
-for certain indices~$k \in \mathcal{I}_a$ within a collection of~$Q_a$ selected indices~$\mathcal{I}_a$.
+for certain indices~$k \in \mathcal{I}_a$ such that~$\left|\mathcal{I}_a\right| = Q_a$.
 The notation $[A_h(t, \mu)]_{k}$ stands for the value of the operator at the given mesh node $k$.
 In the FE context it can be obtained by integrating the weak form locally.
 
-This leads to a system with the same number of unknowns as equations, where each $\Theta_q^a(t, \mu)$ is unknown.
+This leads to a determined system, where each $\Theta_q^a(t, \mu)$ is unknown.
 The indices $\mathcal{I}_a$ are selected during the offline stage, according to error reduction arguments of the separable form \eqref{eq:1d_rom_burgers_system_approximation},
 \begin{equation}
     e_a(t, \mu) = \norm{A_h(t, \mu) - A_h^m(t, \mu)}.
@@ -418,6 +422,7 @@ with information about the solution and the parameter space.
 % -----------------------------------------------------------------------------
 \subsection{Hyper Reduced Basis Method}
 With an approximation of the reduced operators available, we can define yet another algebraic problem to integrate and obtain the reduced solution in time for a given parameter value,
+\mytodo{Update equations for piston problem.}
 \begin{subequations}
     \label{eq:1d_rom_weak_formulation_discrete}
     \begin{align}
@@ -427,6 +432,7 @@ With an approximation of the reduced operators available, we can define yet anot
     \end{align}
 \end{subequations}
 If we collect terms and factor out the unknowns we get a linear system, in the reduced space and with approximated operators, to be solved for each timestep to advance the solution,
+\mytodo{Update equations for piston problem.}
 \begin{subequations}
     \label{eq:1d_rom_linear_system_approximation_timestep}
     \begin{align}
@@ -447,62 +453,7 @@ Once the reduced homogeneous solution $\hat{u}^{m}_N(x)$ is obtained with approx
     u(x, t; \mu) \simeq u_h^{m}(t, \mu) = \rbV \hat{u}^{m}_N(t, \mu) + g_h(t,\mu).
 \end{equation}
 
-% -----------------------------------------------------------------------------
-\subsection{Certification of the Reduction Procedure}
-Computation of error bounds between FOM and ROM without actually computing the FOM.
-
-\subsubsection{Sacrifical Mode}
-We can use two ROMs to estimate the error with respect to the FOM solution.
-
-\begin{equation}
-    \norm{u_h - \rbV_{N} u_N} = \norm{u_h - \rbV_{N+1} u_{N+1} + \rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}}.
-\end{equation}
-By the triangle inequality, we get
-\begin{equation}
-    \norm{u_h - \rbV_{N} u_N} \leq \norm{u_h - \rbV_{N+1} u_{N+1}} + \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}}.
-\end{equation}
-If we define the error function $e_N = \norm{u_h - \rbV_{N} u_N}$, 
-we get an upper bound of the desired error in terms of the sacrificial ROM error and the error between ROMs,
-\begin{equation}
-    e_N \leq e_{N+1} + \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}}.
-\end{equation}
-With sufficient ROB\footnote{Reduced Order Basis} elements, it should be safe to assert that the error made 
-with an extra mode should be smaller or equal to the one made without it,
-\begin{equation}
-    e_{N+1} \leq e_{N}.
-\end{equation}
-Thus, we get the following error bound,
-\begin{equation}
-    e_N \leq \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}}.
-\end{equation}
-It remains to determine how sharp this error estimate is.
-
-\subsubsection*{ROMs error: Implementation Details}
-The error between the two ROMs,
-\begin{equation}
-    \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}},
-\end{equation}
-can be expressed as a sum in terms of the ROB elements.
-Due to the hierarchical character of the ROB elements, $\rbV_{N+1}$ contains the same elements 
-up to $N$ as $\rbV_{N}$.
-Thus, the error between ROMs can be expressed like
-\begin{equation}
-    \begin{split}
-        \norm{\rbV_{N+1} u_{N+1} - \rbV_{N} u_{N}} 
-        = \\ 
-        \norm{u^{N+1}_{N+1} \psi_{N+1} + \sum_{j}^{N} (u^{N+1}_{j} - u^{N}_{j}) \psi_j}
-    \end{split}
-\end{equation}
-The difference between ROM coefficients $(u^{N+1}_{j} - u^{N}_{j})$ should be relatively small, 
-since it represents the difference between the two coefficients associated to the same mode.
-If they were notably different, it would mean that the dynamics between the original ROM and the one 
-carrying the sacrificial mode are different.
-Since the basis has a hierarchical character, this effect is unlikely to happen: 
-adding a mode should only refine the solution, not change how the previous modes are scaled.
-They are not strictly the same because the ROM system entries change if more modes are added to the basis,
-but again, they should do so in a way that somehow preserves dynamics.
-
-\printbibliography
+% \printbibliography
 
 \end{document}
 
