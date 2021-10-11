@@ -11,11 +11,13 @@
 \newcommand{\pexp}{\ensuremath{\frac{2\gamma}{\left(\gamma-1\right)}}}
 \newcommand{\aleX}{\ensuremath{\mathcal{X}}}
 \newcommand{\Ah}[1]{\ensuremath{\vb{#1}^{n+1}_h}}
+\newcommand{\Ahm}[1]{\ensuremath{\vb{#1}^{m, n+1}_h}}
 \newcommand{\Ahn}[1]{\ensuremath{\vb{#1}^{n}_h}}
 
 \begin{document}
 
 \section{(Hyper) Reduced Order Model}
+\label{sec:rom_definition}
 For any unseen parameter value, our aim is to be able to assemble and solve a smaller algebraic problem, 
 and yet to obtain a solution close enough to that of the Full Order Model.
 % We present now the formulation for the Reduced Order Model (ROM).
@@ -124,7 +126,8 @@ By doing so, we find the following ROM for the time evolution problem,
 %         \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
 %     \end{align}
 % \end{subequations}
-If we collect terms and factor out the unknowns we get a linear system, this time in the reduced space, to be solved for each timestep to advance the solution,
+If we collect terms and factor out the unknowns we get a linear system, 
+this time in the reduced space, to be solved for each timestep to advance the solution,
 % \begin{subequations}
 %     \label{eq:1d_rom_linear_system_timestep}
 %     \begin{align}
@@ -141,7 +144,7 @@ If we collect terms and factor out the unknowns we get a linear system, this tim
         \\
         \vb{\hat{u}}_{N}^{0} &= \vb{\hat{u}}_{N,0},
         \\
-        \vb{K}_{N}^{n+1} &= m_{\text{BDF}} \Ah{M} + \dt \left[\Ah{A} + \Ah{B} \right. 
+        \vb{K}_{N}^{n+1} &= m_{\text{BDF}} \Ah{M} + \dt \left[\Ah{A} + \Ah{C} \right. 
         \nonumber 
         \\
                         &\left. + \Ah{\hat{N}} + \Ah{N}\left(\vb{\hat{u}}_{N}^{n}\right)\right],
@@ -195,11 +198,17 @@ Regarding the spatial boundary conditions, at this point of the naive reduction 
         \psi_i(x) = 0 \quad \forall \, x \in \partial \Omega.
     \end{equation*}
 \end{enumerate}
-These two facts imply that the projection of the operators, Equation~\eqref{eq:1d_rom_linear_system_operators}, does not break the original constraint of homogeneous boundary conditions;
-and that the linear expansion of the solution~$\hat{u}_N(x)$ in the span of~$V_N$, Equation~\eqref{eq:1d_rom_burgers_rb_expansion}, is always true.
-\mytodo{There was a paper which discussed this kind of details regarding homogeneous boundary projection.}
+These two facts imply that the projection of the operators, 
+Equation~\eqref{eq:1d_rom_linear_system_operators}, 
+does not break the original constraint of homogeneous boundary conditions;
+and that the linear expansion of the solution~$\hat{u}_N(x)$ in the span of~$V_N$, 
+Equation~\eqref{eq:1d_rom_burgers_rb_expansion}, 
+is always true.
 
-Once the reduced homogeneous solution~$\hat{u}_N(x)$ is obtained, it can be brought back to the original space~$V_h$ via Equation~\eqref{eq:1d_rom_burgers_projection_relation}, and then add on top of it the FE representation of the Dirichlet lifting, to obtain the final solution,
+Once the reduced homogeneous solution~$\hat{u}_N(x)$ is obtained, 
+it can be brought back to the original space~$V_h$ via 
+Equation~\eqref{eq:1d_rom_burgers_projection_relation}, 
+and then add on top of it the FE representation of the Dirichlet lifting, to obtain the final solution
 \begin{equation}
     u(x, t; \mu) \simeq u_h(t, \mu) = \rbV \hat{u}_N(t, \mu) + g_h(t,\mu).
 \end{equation}
@@ -246,11 +255,10 @@ We call this the \emph{method of snapshots}.
 % -----------------------------------------------------------------------------
 \subsubsection{POD Space Reduction}
 \label{sec:1d_rom_burgers_basis_construction_pod}
-This section is left intentionally short for the moment.
-\mytodo{POD references.}
-Many high quality references exist to explain what is the Proper Orthogonal Decomposition (POD), why does it work and which limitations does it have.
-
-We can see it as an enhanced Gram-Schmidt orthonormalization procedure: not only an orthonormal basis is obtained, but additionally the output basis vectors recover hierarchically the span of the original space given by the input vectors.
+We can see the Proper Orthogonal Decomposition (POD) as 
+an enhanced Gram-Schmidt orthonormalization procedure: not only an orthonormal basis is obtained, 
+but additionally the output basis vectors recover hierarchically the span of the original space 
+given by the input vectors.
 
 Let us define the $POD: X \rightarrow Y$ function between two normed spaces, 
 such that $Y \subseteq  X$, 
@@ -285,7 +293,9 @@ Alternatively to a prescribed error, one could directly ask for a prescribed num
 \subsubsection{Nested POD Basis Construction}
 \label{sec:1d_rom_burgers_basis_construction_nested}
 \mytodo{Create diagram and sketches}
-A simple procedure to leverage the compression properties of the POD function, and the nested structure of our PDE with respect to time and the parameters; is to first build certain POD basis from the snapshots of the solution at different timesteps for a fixed parameter value,
+A simple procedure to leverage the compression properties of the POD function, 
+and the nested structure of our PDE with respect to time and the parameters; 
+is to first build certain POD basis from the snapshots of the solution at different timesteps for a fixed parameter value,
 \begin{align*}
     \Psi_{\mu_0} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_0), \ldots, \hat{u}_h(t^T; \mu_0)\right]\right), \\
     \Psi_{\mu_1} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_1), \ldots, \hat{u}_h(t^T; \mu_1)\right]\right), \\  
@@ -296,18 +306,29 @@ Then, all the $\mu$-fixed POD basis, which sum up the information contained in t
 \begin{equation*}
     \rbV := \Psi = POD_{\varepsilon} \left(\left[\Psi_{\mu_0}, \Psi_{\mu_1}, \ldots, \Psi_{\mu_{N_{\mu}}}\right]\right).
 \end{equation*}
-In the end, this gives us a unique basis $\Psi = [\psi_i] = \rbV$, which contains information for parameter variations and time evolution.
-And above all, it has been built in a computationally efficienty manner, at least in terms of storage.
+In the end, this gives us a unique basis $\Psi = [\psi_i] = \rbV$, 
+which contains information for parameter variations and time evolution.
+It has been built in a computationally efficienty manner, 
+at least in terms of storage.
 
-Different error tolerances could be prescribed at the time and parameter compression stages.
+Different error tolerances could be prescribed at the time and parameter compression stages
+for demanding problems.
 
-We say this to be an automatic and out-of-the-box procedure because it does not require further complications beyond the storage of the snapshots and the implementation of the POD algorithm.
-It only demands the definition of a collection of parameter values to solve for.
-This can be done with random sampling techniques, or if some physically-based knowledge is available, a custom selection of the parameters for ranges in which we know the solution will strongly vary.
+We say this to be an automatic and out-of-the-box procedure because it does not require further developments 
+beyond the storage of the snapshots and the implementation of the POD algorithm.
+It only requires the construction of a collection of parameter values to solve for.
+This can be done with random sampling techniques, 
+or if some physically-based knowledge is available, 
+a custom selection of the parameters for ranges in which we know the solution will strongly vary.
 
-Naturally, more involved procedures exist to create the final basis $\Psi$, but they demand the capacity to evaluate during the creation of the basis how good or bad the new basis is performing at capturing the problem dynamics, or the determination of sharp \emph{a priori} error estimators.
+Naturally, more involved procedures exist to create the final basis $\Psi$, 
+but they need the capacity to evaluate how accurately or poorly 
+is the basis performing at capturing the problem dynamics.
+This can be dealt with the determination of sharp \emph{a priori} error estimators,
+but that again requires theoretical developments 
+(which we value deeply but consider out of our range at the moment).
 
-We leave this for later.
+% We leave this for later.
 
 % -----------------------------------------------------------------------------
 \subsection{(M)DEIM: System Approximation}
@@ -319,17 +340,21 @@ increasing the overall cost of the integration procedure.
 This will be our main motivation to include a system approximation procedure,
 with the goal of speeding up the construction of the operators.
 
-We talk about \emph{parameter and time separable} problems, or the existence of an \emph{affine decomposition},
-when the spatial operators (bilinear or linear forms), which depend on time and parameter values, present the following functional form,
+We talk about \emph{parameter and time separable} problems 
+(or the existence of an \emph{affine decomposition})
+when the spatial operators (bilinear or linear forms)
+present the following functional form
 \begin{equation}
     \label{eq:1d_rom_burgers_separable_form_time_param}
-    A_h(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q},
+    A_h(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q}.
 \end{equation}
-where the coefficient functions are real-valued, \mbox{$\Theta_q^a(t, \mu) \in \mathbb{R}$}, and the operator basis elements $A_{h,q}$ are parameter-independent.
+The coefficient functions are real-valued, \mbox{$\Theta_q^a(t, \mu) \in \mathbb{R}$}, 
+and the operator basis elements $A_{h,q}$ are parameter-independent.
 
-This expansion can be used for both matrices or vectors provided the topology of the mesh does not change in time.
-If this is the case, the matrices can be transformed into vectors, and later on brought back to matrix form once any necessary operation has been carried out.
-\mytodo{Reference from MDEIM paper.}
+This expansion can be used for both matrices or vectors provided 
+the topology of the mesh does not change.
+If this is the case, the matrices can be transformed into vectors, 
+and later on brought back to matrix form once any necessary operation has been carried out.
 
 If we had such a decomposition, once we had computed the basis matrix \rbV, we could project each element of the operator basis $A_{h, q}$ to obtain an expression for the reduced operator, 
 \begin{equation}
@@ -351,9 +376,13 @@ Even a simple linear heat equation problem, due to the time-deformation of the m
 To tackle this issue, we use the Discrete Empirical Interpolation Method (DEIM).
 This method is a numerical extension of its analytical sibling, the Empirical Interpolation Method (EIM).
 Basically, it mimicks the idea of creating a basis for the solution space, but this time centered around the operator space.
-By means of a nested POD as we explained in Section~\ref{sec:1d_rom_burgers_basis_construction_nested}, if we replace the solution snapshots with operator snapshots, we can build the static and problem-dependent basis $A_{h,q}$.
+By means of a nested POD as we explained in Section~\ref{sec:1d_rom_burgers_basis_construction_nested}, 
+if we replace the solution snapshots with operator snapshots, 
+we can build the static and problem-dependent basis $A_{h,q}$.
 
-Since we will be creating the operator basis with an approximation technique, an error is expected in the reconstruction of the actual operator, and so we introduce the notation $A_h^m(t, \mu)$ to reference the approximation of the operator via the (M)DEIM algorithm,
+Since we will be creating the operator basis with an approximation technique, 
+an error is expected in the reconstruction of the actual operator, 
+and so we introduce the notation $A_h^m(t, \mu)$ to reference the approximation of the operator via the (M)DEIM algorithm,
 \begin{equation}
     \label{eq:1d_rom_burgers_system_approximation}
     A_h(t, \mu) \simeq A_h^m(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q}.
@@ -363,7 +392,8 @@ Naturally, this idea leads to the concept of approximated reduced operators,
 \begin{equation}
     A_N(t, \mu) \simeq A_N^m(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{N,q},
 \end{equation}
-which is the approximation of the reduced operators when the basis comes from an approximation of the operator snapshots. 
+which is the approximation of the reduced operators when the collateral basis 
+has been projected unto the reduced space.
 
 % -----------------------------------------------------------------------------
 \subsubsection{Discussion on the Approximation Target}
@@ -383,7 +413,8 @@ The notation $[A_h(t, \mu)]_{k}$ stands for the value of the operator at the giv
 In the FE context it can be obtained by integrating the weak form locally.
 
 This leads to a determined system, where each $\Theta_q^a(t, \mu)$ is unknown.
-The indices $\mathcal{I}_a$ are selected during the offline stage, according to error reduction arguments of the separable form \eqref{eq:1d_rom_burgers_system_approximation},
+The indices $\mathcal{I}_a$ are selected during the offline stage, 
+according to error reduction arguments of the separable from \eqref{eq:1d_rom_burgers_system_approximation},
 \begin{equation}
     e_a(t, \mu) = \norm{A_h(t, \mu) - A_h^m(t, \mu)}.
 \end{equation}
@@ -421,25 +452,45 @@ with information about the solution and the parameter space.
 
 % -----------------------------------------------------------------------------
 \subsection{Hyper Reduced Basis Method}
-With an approximation of the reduced operators available, we can define yet another algebraic problem to integrate and obtain the reduced solution in time for a given parameter value,
-\mytodo{Update equations for piston problem.}
+With an approximation of the reduced operators available, 
+we can define yet another algebraic problem to integrate and 
+obtain the reduced solution in time for a given parametrization,
 \begin{subequations}
-    \label{eq:1d_rom_weak_formulation_discrete}
+    \label{eq:1d_hrom_weak_formulation_discrete}
     \begin{align}
-        \vb{M}^{m, n+1}_N \vb{\hat{u}}_{N}^{n+1} &+ \Delta t \vb{A}^{m, n+1}_N \vb{\hat{u}}_{N}^{n+1} \\ 
-        &= \vb{F}^{n}_{\vb{\hat{u}}_N} + \Delta t \vb{F}_N^{m,n+1} + \Delta t \vb{F}^{m,n+1}_{g, N}, \nonumber \\
-        \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
+        m_{\text{BDF}} \vb{M}^{m, n+1}_{N} \vb{\hat{u}}_{N}^{m, n+1}
+        + \dt \vb{C}^{m, n+1}_{N} \vb{\hat{u}}_{N}^{m, n+1}
+        \nonumber 
+        \\ 
+        + \dt \vb{A}^{m, n+1}_{N} \vb{\hat{u}}_{N}^{m, n+1}
+        \nonumber 
+        \\ 
+        + \dt \vb{\hat{N}}^{m, n+1}_{N} \vb{\hat{u}}_{N}^{m, n+1}
+        \nonumber 
+        \\ 
+        + \dt \left[\vb{N}^{m, n+1}_{N}\left(\vb{\hat{u}}_{N}^{n}\right)\right] \vb{\hat{u}}_{N}^{m, n+1}
+        \nonumber
+        \\
+        = \vb{F}_{\vb{\hat{u}}_{N}}^{m, n}
+        + \dt \vb{F}_{g,N}^{m, n+1};
+        \\
+        \vb{\hat{u}}_N^{0} = \vb{\hat{u}}_{N,0}.
     \end{align}
 \end{subequations}
 If we collect terms and factor out the unknowns we get a linear system, in the reduced space and with approximated operators, to be solved for each timestep to advance the solution,
-\mytodo{Update equations for piston problem.}
 \begin{subequations}
-    \label{eq:1d_rom_linear_system_approximation_timestep}
+    \label{eq:1d_hrom_linear_system_timestep}
     \begin{align}
-        \vb{K}_N^{m,n+1} \vb{\hat{u}}_N^{n+1} &= \vb{b}_N^{m, n+1}, \\
-        \vb{K}_N^{m,n+1} &= \vb{M}_{N}^{m,n+1} + \Delta t \vb{A}_{N}^{m,n+1}, \\
-        \vb{b}_N^{m,n+1} &= \vb{F}_{\vb{\hat{u}}_N}^{n} + \Delta t \vb{F}_N^{m,n+1} + \Delta t \vb{F}_{g,N}^{m,n+1}, \\
-        \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
+        \vb{K}_{N}^{m, n+1} \vb{\hat{u}}_{N}^{m, n+1} &= \vb{b}_{N}^{m, n+1}, 
+        \\
+        \vb{\hat{u}}_{N}^{0} &= \vb{\hat{u}}_{N,0};
+        \\
+        \vb{K}_{N}^{m, n+1} &= m_{\text{BDF}} \Ahm{M} + \dt \left[\Ahm{A} + \Ahm{C} \right. 
+        \nonumber 
+        \\
+                        &\left. + \Ahm{\hat{N}} + \Ahm{N}\left(\vb{\hat{u}}_{N}^{m, n}\right)\right],
+        \\
+        \vb{b}_{N}^{m, n+1} &= \vb{F}_{\vb{\hat{u}}_{N}}^{m,n} + \dt \vb{F}_{g,N}^{m, n+1}.
     \end{align}
 \end{subequations}
 Each of the operators present in the problem, $\vb{M}_N, \vb{A}_N, \vb{F}_N \qqtext{and} \vb{F}_{g,N}$ will have associated an operator basis and will require the solution of the interpolation problem \eqref{eq:1d_rom_burgers_interpolation_problem} to be solved for each timestep and parameter value.

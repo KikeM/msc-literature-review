@@ -5,6 +5,7 @@
 \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
 \usepackage[utf8]{inputenc} % allow utf-8 input
 \usepackage{amsmath}
+% \usepackage{hyperref}
 \usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage{float}  % used to fix location of images i.e.\begin{figure}[H]
@@ -20,7 +21,9 @@
 
 \externaldocument[M-]{main}
 
-\usepackage[backend=biber,style=ieee]{biblatex} 
+\usepackage[style=ieee]{biblatex}
+\bibliography{xampl}
+% \usepackage[backend=biber,style=ieee]{biblatex} 
 \bibliography{bibliography.bib} %your file created using JabRef
 
 % https://tex.stackexchange.com/questions/246/when-should-i-use-input-vs-include
@@ -35,7 +38,7 @@
 \onecolumn
 
 % paper title
-\title{Skipping The Jacobian \\[5mm] \large{Hyperreduced Order Models For Moving Domains}}
+\title{Skipping The Jacobian \\[5mm] \large{(Hyper) Reduced Order Models For Moving Domains}}
 
 % author names 
 \author{Enrique Millán Valbuena \\ \normalsize{463 426 8}}% <-this % stops a space
@@ -49,11 +52,12 @@
 
 \begin{abstract}
    We present a Reduced Order Model (ROM) for a one-dimensional gas dynamics problem:
-   the moving piston.
+   the isentropic piston.
    The main body of the PDE, 
    the geometrical definition of the moving boundary, 
    and the boundary conditions themselves are parametrized.
-   The Full Order Model is obtained with a Galerkin semi-implicit Finite Element discretization.
+   The Full Order Model is obtained with a Galerkin semi-implicit Finite Element discretization,
+   under the Arbitrary-Lagrangian formulation (ALE).
    To stabilize the system, an artificial viscosity term is included.
    The Reduced Basis to express the solution is obtained with the classical POD technique.
    To overcome the explicit use of the jacobian transformation, 
@@ -70,15 +74,15 @@
    A concise description of the reducing procedure is provided, 
    together with a posteriori error estimations, obtained via model truncation,
    to certify the Reduced Order Model.
-   Numerical examples to showcase computational costs and implementation details are designed, 
-   implemented and validated with the Manufactured Solutions Method.
+   % Numerical examples to showcase computational costs and implementation details are designed, 
+   % implemented and validated with the Manufactured Solutions Method.
 \end{abstract}
 
 \begin{IEEEkeywords}
     \centering
-    Reduced Order Model, 
-    Moving Piston, Deforming Mesh, 
-    Galerkin, (M)DEIM, POD, 
+    Finite Elements, Galerkin, Reduced Order Models, 
+    Moving Piston, Deforming Mesh, ALE, 
+    (M)DEIM, POD, 
     Model Truncation
 \end{IEEEkeywords}
 

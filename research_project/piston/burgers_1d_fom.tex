@@ -14,10 +14,10 @@
 \begin{document}
 
 \section{One-Dimensional Gas Dynamics}
-\label{sec:1d_fom_heat_equation_full_order_model}
+\label{sec:fom_definition}
 The Full Order Model for the parametrized one-dimensional piston problem is derived.
 
-We depart from the compressible isentropic Navier Stokes equations to end up with a non-linear Burgers-like equation.
+We depart from the one-dimensional, compressible, and isentropic \mbox{Navier-Stokes} equations to end up with a non-linear Burgers-like equation.
 Therefore, this problem contains all the necessary ingredients to show how the ROM behaves 
 in the presence of a non-linear term within a moving domain.
 
@@ -33,19 +33,21 @@ We deal with our problem within a deforming domain in time, whose movement is kn
 \end{equation*}
 From now on, we drop the dependency on time and the parameters unless it is strictly necessary. 
 
-If the variational or Finite Element problem is not correctly stated in formal terms yet, we apologize in advance.
-These kind of language formalities take time to settle and this is still a draft. 
-The reader will be able to fill in any notational or definition gaps for the moment. 
+If the variational or Finite Element problem is not expressed in its usual formal terms, we apologize in advance.
+These kind of language formalities take time to settle.
+We hope the presentation is clear and that the reader will be able to fill in any notational gaps. 
 
 \subsection{Physical Derivation}
 The piston movement $L(t)$ is a real-valued smooth sinusoidal function,
 \begin{equation}
     L(t) = L_0 \left[1 - \delta \left(1 - \cos \left(\omega t\right)\right)\right],
 \end{equation}
-where $\omega$ is the frequency at which it oscillates and $\delta \ll L_0$ is a scale variable to adjust how much it is displaced from its original position.
-The length $L_0$ is defined to keep physical dimensions sound, but it will remain fixed to $L_0=1$ for the remaining of the problem.
+where $\omega$ is the frequency at which it oscillates, 
+and $\delta \ll L_0$ is a scale variable to adjust how much it is displaced from its original position.
+The length $L_0$ is defined to keep physical dimensions sound as we advance through the model, 
+but it will remain fixed to $L_0=1$ for the remaining of the work.
 
-To derive the equations of motion of the fluid inside the piston, 
+To derive the equations of motion, 
 we depart from the conservation of mass, momentum and the isentropic relation between pressure and density,
 \begin{subequations}
 \begin{align}
@@ -60,12 +62,12 @@ Ideally, we only want to solve an equation for the velocity, where boundary cond
 
 To do so, we take the following steps:
 \begin{enumerate}
-    \item Remove the pressure gradient by means of the isentropic relation. 
+    \item Remove the pressure gradient through the isentropic relation. 
     \item Relate explicitly velocity~$u$ to density~$\rho$. %with a necessary compatibility condition.
-    \item Collect all the above into one equation in terms of velocity~$u$.
+    \item Collect into one equation in terms of the velocity~$u$.
 \end{enumerate}
 
-\subsubsection*{Removal of the pressure gradient}
+\subsubsection*{Pressure Gradient}
 To remove the pressure gradient, we start by taking derivatives in the isentropic relation (\ref{eq:isentropic_relation}):
 \begin{equation}
     \pdv{p}{x} = k \gamma \rho^{\gamma-1} \pdv{\rho}{x}
@@ -363,6 +365,7 @@ We define the mesh velocity as the time derivative of the spatial coordinate, wh
 \begin{equation}
     w(x,t) = \pdv{x}{t} = \pdv{\alemap}{t} \ (x, t) = \pdv{\alemap}{t} \ (\alemap^{-1} (\aleX,t), t).
 \end{equation}
+\mytodo{The symbol for mesh velocity is very similar as the oscillating frequency.}
 
 \subsubsection*{Time-Derivative in the Reference Domain}
 Since the equations are going to be solved in the physical domain, we need to adjust the time derivative in the physical domain 
@@ -382,7 +385,6 @@ from where we get the necessary modification to be done to the strong form (\ref
 \end{equation}
 An additional convective term shows up, to take into account the movement of the nodes.
 We will show in the results section how, if we remove this term, mass is no longer conserved.
-\mytodo{Quote paper with FSI piston.}
 \mytodo{Define ALE map and mesh velocity for the piston problem.}
 
 % -----------------------------------------------------------------------------
@@ -569,7 +571,7 @@ and recall that the initial condition should be modified accordingly to the homo
 \end{subequations}
 At this point, we have defined the continuous problem for the one-dimensional piston in a moving domain.
 
-\subsection{Semi-Discrete Formulation: Time-Discretization}
+\subsection{Semi-Discrete Formulation: Time Discretization}
 The continuous solution changes in two dimensions: space and time.
 Eventually, we need to discretize them both, but we can do so incrementally.
 
@@ -808,7 +810,7 @@ If we collect terms and factor out the unknowns, we get a compact linear system 
         \\
         \vb{\hat{u}}_h^{0} &= \vb{\hat{u}}_{h,0},
         \\
-        \vb{K}_h^{n+1} &= \Ah{M} + \dt \left[\Ah{A} + \Ah{B} \right. 
+        \vb{K}_h^{n+1} &= \Ah{M} + \dt \left[\Ah{A} + \Ah{C} \right. 
         \nonumber 
         \\
                         &\left. + \Ah{\hat{N}} + \Ah{N}\left(\vb{\hat{u}}_{h}^{n}\right)\right],

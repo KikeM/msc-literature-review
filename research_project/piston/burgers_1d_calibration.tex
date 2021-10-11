@@ -14,6 +14,7 @@
 \begin{document}
 
 \section{FOM Calibration}
+\label{sec:fom_calibration}
 This section is devoted to present the Full Order Model in action.
 Certain parameters need to tweaked and defined,
 along with consistency checks to validate the simulation.
@@ -106,6 +107,12 @@ rising up the average error.
     Mass conservation, visual comparison (top) and numerical error (bottom).}    \label{fig:bdf_2_mass_plot}
 \end{figure}
 
+\subsection{Deforming Mesh Effects}
+\mytodo{Show mass conservation without ALE convective term 
+(as in \cite{FSIPistonProblem}).}
+\mytodo{Show simulation for constant solution (related to D-GCL).}
+
+
 \subsection{Parameter Range}
 For the construction of the reduced basis we are randomly sampling the parameter space.
 Hence, we need to determine an acceptable range for each parameter.
@@ -114,8 +121,8 @@ To do so, we sample a large space and visually check each of the solutions.
 Visual inspection reveals that certain solutions contain wiggles when a shock wave occurs, see Figure~\ref{fig:smooth_vs_wiggled}.
 Naturally, wiggles were not expected to be captured by this simple model, 
 so they must be due to the fact that the shock wave is becoming thinner than the mesh size.
-\mytodo{Check for different mesh sizes for a configuration with wiggles.}
 
+\mytodo{Present nondimensional results.}
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/wiggles/smooth_vs_wiggled.png}
@@ -125,6 +132,7 @@ so they must be due to the fact that the shock wave is becoming thinner than the
 \end{figure}
 To prevent these unrealistic solutions from polluting our reference solutions, we
 need to determine a safety margin in the sampling range prevent using a parametrization for which wiggles will take place.
+
 
 \subsubsection{System Forcing And Nonlinear Response}
 \label{sec:fom_calibration_system_forcing}
@@ -203,10 +211,6 @@ With this empirical study of the system's response (and after running some tests
     \label{fig:wiggle_correlation}
 \end{figure}
 \twocolumn
-
-
-
-
 
 % \section{Piston Motion Hyperreduction}
 

@@ -4,15 +4,16 @@
 \begin{document}
 
 \section{Conclusions}
+% The jacobian can be succesfully skipped!
 An hyperreduced order model has been succesfully created and certified for
 the one-dimensional isentropic moving piston.
 This is a simplified gas dynamics problem, 
 with all the ingredients that conform a real life problem in their mild versions:
 a Burgers-like nonlinear term and a moving boundary.
 
-Our approach to the construction of the Reduced Order Model has been
-purely algebraic and with a black-box setting.
-That is, we have obtained a reduced basis with global support to carry out the Galerkin projection;
+Our approach to the construction of the Reduced Order Model has been purely algebraic, 
+with a non-intrusive approach that should allow its implementation on existing solvers.
+We have obtained a reduced basis with global support to carry out the Galerkin projection;
 and a collateral basis for each of the algebraic operators (vectors and matrices),
 to approximate their projection unto the reduced space 
 without explicitly assembling and projecting the original FOM operator.
@@ -24,20 +25,22 @@ However, the technique is actually more powerful,
 as it could be used for domains whose boundary remains fixed,
 but the internal nodes do not (i.e. shock tracking schemes).
 
-% The jacobian can be succesfully skipped!
-
-\subsection{Future Work}
+\subsection{Limitations and Future Work}
 The next natural step would be to extend the methodology to higher-dimensional domains.
 Most of the problem would remain the same (albeit larger matrices), except for a difficulty 
 which was not present in this work: the calculation of the Dirichlet lifting. 
-Indeed, in this work we leveraged the advantage that the lifting could be computed analytically.
-In higher dimension settings, an empirical extension needs to be done,
-either via harmonic extensions
-\mytodo{Cite!},
-or solving the elastic deformation equations
-\mytodo{Cite!}.
 
-Use the methodology with the actual Navier-Stokes equations.
+Indeed, in this work we leveraged the advantage that the lifting could be computed analytically.
+In higher dimension, the boundary conditions need to be numerically extended to the domain,
+either via harmonic extensions
+\cite{formaggiaALE},
+or solving the elastodynamic equations
+\cite{1995_farhat_elasticEquations}.
+
+These are not the only challenges when the problem is expanded to higher dimensions.
+For the creation of the Navier-Stokes ROM, the velocity field needs to be enriched
+\cite{supremizers},
+so that the inf-sup condition is satisfied at the ROM level too.
 
 The oscillating cylinder problem contains both requirements.
 

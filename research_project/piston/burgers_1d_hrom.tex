@@ -16,6 +16,7 @@
 \begin{document}
 
 \section{Results and Certification}
+\label{sec:results_and_certification}
 We are now going to see the Hyperreduced Order Model in action.
 The error decay for the solution and the nonlinear operator 
 are presented and commented in Section~\ref{sec:hrom_results_reduced_basis}.
@@ -28,6 +29,38 @@ how to certify the HROM solution with a model truncation technique.
 \subsection{Approximation Error}
 \label{sec:hrom_results_reduced_basis}
 We explore how the number of modes influences the approximation error of the FOM solution.
+
+We have trained our model with 10 samples such that
+\begin{align*}
+    u_p \sim \frac{\delta \omega L_0}{a_0},
+    \nonumber
+    \\
+    0.15 \leq u_p \leq 0.4,
+\end{align*}
+to make sure no wiggles appeared and 
+that the complete range of system responses were included.
+
+This lead to the following number of basis for each operator,
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[!h]
+    \caption{For each operator,
+    basis size after the tree walk and final size after tree walk compression.
+    The nonlinear term and the RB space have the same size, 
+    since the RB elements were used to evaluated the nonlinear term.}
+    \centering
+    \begin{tabular}{@{}rcc@{}}
+    \toprule
+                      & After Treewalk & Final \\ \midrule
+    RB                & 289            & 63                \\
+    RHS               & 20             & 2                 \\
+    Mass              & 10             & 1                 \\
+    Stiffness         & 10             & 1                 \\
+    Nonlinear         & 630            & 63                \\
+    Convection        & 20             & 2                 \\
+    Nonlinear-Lifting & 10             & 1                 \\ \bottomrule
+    \end{tabular}
+    \end{table}
 
 Since we are using a POD to build our reduced basis, 
 we attempt to relate the POD a posteriori error estimations with 
@@ -46,10 +79,26 @@ We define the energy of the basis that contains up to the $i$-th element as
 \end{equation}
 We shall see if this variable has any predictive power on the ROM error.
 
-\subsubsection{ROM Optimal Size}
+\mytodo{Relate this "energy" to the actual error made by the POD basis in the reconstruction of the original span.}
+
+\subsubsection{Error Decay}
 We want to find the smallest size $N^{*}$ for which the FOM is correctly reproduced.
 Naturally, the exact value of this variable is problem-dependent, 
 but the way in which we approach its search would suit any RB problem.
+
+We have done this online simulation for one sample, in the most nonlinear regime.
+\begin{table}[h]
+    \centering
+    \caption{Online sampling.}
+    \begin{tabular}{cccc}
+    \toprule
+        $a_0$ & $\omega$ & $\delta$ & $u_p$
+        \\ \midrule
+        20.62 & 25.98    & 0.29     & 0.37
+        \\ \bottomrule
+    \end{tabular}
+\end{table}
+\mytodo{Extend for multiple valuations.}
 
 In Figure~\ref{fig:error_decay} we present the ROM error with respect to the number of basis elements and the energy of the truncated basis.
 \begin{figure}[h]
@@ -76,10 +125,9 @@ but how it drastically improves for $N=10$, except for the initial instants of m
     \centering
     \includegraphics[width=\columnwidth]{research_project/piston/figures/rb_certification/outflow_probes_comparison_rom_10_srom_20_online_0.png}
     \caption{Outflow velocities for different models. 
-    The ROM model is better resolved for $N=10$, except at the beginning of the simualation.}
+    The ROM model is better resolved for $N=10$, except at the beginning of the simulation.}
     \label{fig:outflow_model_comparison_N_10}
 \end{figure}
-\mytodo{Use enhanced POD technique to solve this problem.}
 The flow departs from rest as the piston starts to move.
 Therefore, the first snapshots contain a nonlinearity in the sense that the flow starts to move on one side, 
 but remains still along the rest of the tube.
@@ -88,7 +136,8 @@ However, for most of the time interval, this kind of nonlinearity will not be pr
 since the flow will be in constant motion, flowing in and out of the system.
 Hence, it is an expected behaviour that this is the interval where the ROM will fail the most,
 unless we include a sufficient number of basis elements.
-To fix this problem, certain techniques exist which enhance the basis without adding excessive complexity.
+To fix this problem, certain techniques exist which enhance the POD basis 
+without adding excessive complexity \cite{weightedPOD}.
 
 \subsection{(M)DEIM Error Estimation}
 TBD.
@@ -182,7 +231,17 @@ not change drastically how the previous modes are scaled.
 They are not strictly the same because the ROM matrix changes if more modes are added to the basis,
 but again, it does so in a way that dynamics should be preserved.
 
-In Figure~\ref{fig:estimator_accuracy} we present how close is the estimator to the actual error.
+In Figure~\ref{fig:estimator_accuracy_timewise} we show in the behaviour of the error estimator 
+for each timestep.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/rb_certification/error_estimation_rom_10_srom_11.png}
+    \caption{Time-wise a posteriori error estimator accuracy for $N_{\text{ROM}} = 10$, $N_{\text{SROM}} = 11$.
+    We observe how accurate the estimator is carrying only one additional mode.}
+    \label{fig:estimator_accuracy_timewise}
+\end{figure}
+In Figure~\ref{fig:estimator_accuracy} we present how close is the estimator to the actual error,
+both aggregated in the time direction.
 We have computed the estimator for~\mbox{$\Delta N = 1, 5$} and~$10$ additional modes.
 Then, we compute \textit{estimator accuracy}, how far it is from the actual ROM error,
 aggregated for all timesteps, 
