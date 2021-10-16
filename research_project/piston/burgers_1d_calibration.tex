@@ -103,8 +103,45 @@ Expectedly, the BDF-2 scheme ($\sim 2$) decreases twice as fast as the BDF-1 sch
 \end{figure}
 
 \subsection{Deforming Mesh Effects}
+
+\subsubsection{Mesh Velocity}
 \mytodo{Show mass conservation without ALE convective term.}
-\mytodo{Show simulation for constant solution (related to D-GCL).}
+
+
+\subsubsection{Geometric Conservation Law}
+As mentioned in the Literature Review regarding deforming meshes, 
+in Section \ref{sec:literature_review_deforming_mesh},
+a proxy to check to asses how affected is a discretization by a moving mesh
+is to attempt the resolution of the constant solution.
+
+This is so because if the discretization is not correctly handling the movement of the mesh,
+artificial fluxes of information might be introduced. 
+Nevertheless, evidence points towards both directions regarding this test,
+succesfully integrating the constant solution seems to be a sufficient but not necessary condition for stability.
+
+Our scheme seems unable to reproduce correctly the constant solution.
+This happens in a fixed and moving mesh setting (see Figure~\ref{fig:ale_effect_constant_solution}).
+Therefore, we believe it could be due to the accumulation of round-off errors, 
+as previous works have reported in the literature \cite{liu2019balancing}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/ale_effect/mean_fe_comparison_constant_solution.png}
+    \caption{Constant solution simulation for fixed (top) and moving mesh (middle, bottom).
+    The round-off error increases as the number of DoFs increases too ($N_x$). 
+    The errors in the fixed mesh take more to accumulate or do not accumulate at all.
+    For the moving mesh, for the smallest number of DoFs the solution drifts away from the constant solution.
+    In the bottom plot, the values have been clipped to the $[0.01, 10]$ interval.}
+    \label{fig:ale_effect_constant_solution}
+\end{figure}
+
+In a way, we are surprised that this blowing-up effect does not show up in the piston problem.
+We hint towards the fact that, in that context, the constantly changing boundary conditions
+somehow lead to balanced round-off errors, which cancel out in time.
+
+Chasing to the detail this behaviour is certainly meaningful, 
+but since our reference solution (the piston) does not suffer from these effects,
+we limit ourselves to report this behaviour and skip any further investigation, 
+as we believe it falls out of the scope of this work. 
 
 \subsection{Parameter Range}
 For the construction of the reduced basis we are randomly sampling the parameter space.
