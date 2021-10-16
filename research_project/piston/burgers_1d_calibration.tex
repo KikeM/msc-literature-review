@@ -27,8 +27,7 @@ certain combinations within the parameter space produce unfeasible solutions,
 and so we explain how to sample within the feasible range.
 
 \subsection{Artificial Viscosity}
-\mytodo{Place holder for stabilization operators.}
-\mytodo{Could we reduce other operators?.}
+\mytodo{Add text: AV is a placeholder for stabilization operators.}
 \label{sec:fom_calibration_artificial_viscosity}
 As stated previously in the document, 
 we included an artificial viscosity term in the final formulation
@@ -52,16 +51,17 @@ The actual value that seems correct, keeping the system stable whilst purely con
 \end{equation}
 In Figure~\ref{fig:artificial_viscosity_comparison} we present a comparison for these two viscosity values.
 We show the motion of the fluid at the outflow and a phase plot, to ease the analysis of the correlation between the weak shock wave at the outflow and the piston motion.
-The smallest viscosity value, $(10^{-10})$ leads to a convection-like phase plot; 
-the shape of the input is distorted but the maximum and mimimum values honored, and the same path is repeated over and over.
+The smallest viscosity value, $(10^{-10})$ leads to a convection-like phase plot:
+the shape of the input is distorted but the maximum and mimimum values are honored, 
+the same path is repeated over and over.
 Instead, the solution with a higher viscosity value (or at least the one that we thought would do the job) shows a diffusive pattern, reducing the extrema and changing its path on every pass.
 \begin{figure}[!h]
     \centering
     \includegraphics[width=1.0\columnwidth]{research_project/piston/figures/artificial_viscosity/artificial_viscosity_comparison.png}
     \caption{Artificial viscosity comparison.
-    (Top) Outflow velocities for two different values of the viscosity term.
+    (Top) Outer boundary velocities for two different values of the viscosity term.
     In dashed, the piston motion, to help in the visualization of the nonlinear distortion.
-    (Bottom) Phase plot between the piston motion (x-axis) and the response at the outflow (y-axis) for the same artificial viscosity values.
+    (Bottom) Phase plot between the piston motion (x-axis) and the response at the outer boundary (y-axis) for the same artificial viscosity values.
     Due to the creation of a weak shock wave, the piston motion is distorted.
     However, only the smallest viscosity value ($10^{-10}$) presents a stable phase plot, going over and over the same path. 
     }
@@ -74,21 +74,23 @@ seems to withstand such a small numerical viscosity term without incurring into 
 
 \subsection{BDF Scheme Convergence Rates}
 \label{sec:fom_calibration_bdf_convergence_rates}
+\mytodo{Convergence rates in space? What would be the expected rate for P1 FE?}
 The next concept we are going to look at to check the quality of our simulation is 
 the convergence rate for the two time-integration schemes, 
-BDF-1 and BDF-2, 
-We do so by looking at the convergence rates of the solution to one obtained
-with a small $dt\sim 10^{-4}$ (Figure~\ref{fig:bdf_convergence_solutions}),
-and the mass defect error (Figure~\ref{fig:bdf_convergence_mass}).
+BDF-1 and BDF-2.
 
-For some reason, the BDF-2 scheme does not decrease at the expected rate of 2.
+We will analyze two convergence plots: the solution itself and mass preservation.
+For the solution, since we do not have an analytical reference, we need to establish one numerically.
+It will be the one corresponding to the solution for a small timestep, $dt \sim 10^{-4}$.
+In Figure~\ref{fig:bdf_convergence_solutions} we present the convergence rates for the solution,
+and in Figure~\ref{fig:bdf_convergence_mass} the ones corresponding to the mass defect.
+
+Expectedly, the BDF-2 scheme ($\sim 2$) decreases twice as fast as the BDF-1 scheme ($\sim 1$).
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/convergence_finest_solution.png}
-    \caption{Convergence rates to the solution with $dt\sim 10^{-4}$.
-    The BDF-1 scheme decreases at the expected rate, whereas the BDF-2 does not.
-    In fact, both schemes seem to converge at the same rate,
-    although the BDF-2 has a smaller error in mean.}
+    \caption{Convergence rates to numerical reference solution.
+    Both schemes decrease at the expected rate.}
     \label{fig:bdf_convergence_solutions}
 \end{figure}
 
@@ -96,37 +98,13 @@ For some reason, the BDF-2 scheme does not decrease at the expected rate of 2.
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/convergence_rates_mass.png}
     \caption{Convergence rates for mass defect.
-    The BDF-1 scheme decreases at the expected rate, whereas the BDF-2 does not.
-    This could be due to the calculation procedure for the mass defect and not to a bug in the calculation itself.}
+    Both schemes decrease at the expected rate.}
     \label{fig:bdf_convergence_mass}
 \end{figure}
-It is worthy pointing out how the BDF-2 scheme is actually superior to the BDF-1 scheme 
-for most of the period, as we can see from Figure~\ref{fig:bdf_1_mass_plot} and \ref{fig:bdf_2_mass_plot}. 
-However, for some reason yet unknown, in the neighborhood of the shock wave creation, mass preservation decreases,
-rising up the average error.  
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/mass_FOM_8_bdf_1.png}
-    \caption{(BDF-1, $dt\sim 10^{-4}$).
-    Mass conservation, visual comparison (top) and numerical error (bottom).}
-    \label{fig:bdf_1_mass_plot}
-\end{figure}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/mass_FOM_8_bdf_2.png}
-    \caption{(BDF-2, $dt\sim 10^{-4}$).
-    Mass conservation, visual comparison (top) and numerical error (bottom).}    \label{fig:bdf_2_mass_plot}
-\end{figure}
-
-What we observe in the convergence rates could be in line with what was portrayed 
-in Section~\ref{sec:literature_review_deforming_mesh} of the deforming mesh literature review,
-and the references therein.
-Solving the equations on a moving mesh can influence the scheme order.
 
 \subsection{Deforming Mesh Effects}
 \mytodo{Show mass conservation without ALE convective term.}
 \mytodo{Show simulation for constant solution (related to D-GCL).}
-
 
 \subsection{Parameter Range}
 For the construction of the reduced basis we are randomly sampling the parameter space.
