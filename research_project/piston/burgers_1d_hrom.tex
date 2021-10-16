@@ -17,6 +17,8 @@
 
 \section{Results and Certification}
 \label{sec:results_and_certification}
+\mytodo{HROM Results: Show how to reduce $\min / \max$ weak forms.
+This will be a proxy to show that other stabilization schemes suit this technique.}
 We are now going to see the Hyperreduced Order Model in action.
 The error decay for the solution and the nonlinear operator 
 are presented and commented in Section~\ref{sec:hrom_results_reduced_basis}.
@@ -79,7 +81,8 @@ We define the energy of the basis that contains up to the $i$-th element as
 \end{equation}
 We shall see if this variable has any predictive power on the ROM error.
 
-\mytodo{Relate this "energy" to the actual error made by the POD basis in the reconstruction of the original span.}
+\mytodo{Relate POD "energy" to the actual error made by the POD basis in the reconstruction of the original span.
+There is an equation which bounds the L2 norm of the POD basis.}
 
 \subsubsection{Error Decay}
 We want to find the smallest size $N^{*}$ for which the FOM is correctly reproduced.
@@ -98,7 +101,7 @@ We have done this online simulation for one sample, in the most nonlinear regime
         \\ \bottomrule
     \end{tabular}
 \end{table}
-\mytodo{Extend for multiple valuations.}
+\mytodo{HROM Error Decay: Extend for multiple online valuations.}
 
 In Figure~\ref{fig:error_decay} we present the ROM error with respect to the number of basis elements and the energy of the truncated basis.
 \begin{figure}[h]
@@ -161,7 +164,7 @@ with different basis elements.
 The second one, called \textit{sacrificial} ROM (SROM),
 will be used to compute the actual error for the base ROM,
 without requiring the calculation of the FOM.
-\mytodo{Create descriptive flow chart.}
+\mytodo{SROM: Create descriptive flow chart.}
 The SROM is baptized with such name because its results cannot be used,
 since we have no way to estimate their error.
 We assume it is smaller than the one of base ROM, since it has more basis elements,
@@ -204,7 +207,7 @@ It remains to determine how sharp this error estimate is.
 \subsubsection{Error Between Two ROMs}
 The error estimator 
 \begin{equation}
-    \tilde{e}_{N}(\hat{N}) = \norm{\rbV_{\hat{N}} u_{\hat{N}} - \rbV_{N} u_{N}},
+    \tilde{e}_{N}(\hat{N}) = \norm{\rbV_{\hat{N}} u_{\hat{N}} - \rbV_{N} u_{N}}
 \end{equation}
 can be expressed as a sum in terms of the RB elements.
 Due to the hierarchical character of the RB basis, $\rbV_{\hat{N}}$ contains the same elements 
@@ -230,6 +233,8 @@ adding an additional mode should only refine the solution,
 not change drastically how the previous modes are scaled.
 They are not strictly the same because the ROM matrix changes if more modes are added to the basis,
 but again, it does so in a way that dynamics should be preserved.
+\mytodo{Plot: Common mode amplitudes for ROM and SROM. 
+We expect the coefficients to coincide when a sufficient number of basis elements are included.}
 
 In Figure~\ref{fig:estimator_accuracy_timewise} we show in the behaviour of the error estimator 
 for each timestep.
@@ -245,7 +250,7 @@ both aggregated in the time direction.
 We have computed the estimator for~\mbox{$\Delta N = 1, 5$} and~$10$ additional modes.
 Then, we compute \textit{estimator accuracy}, how far it is from the actual ROM error,
 aggregated for all timesteps, 
-\mytodo{Make this a relative error.}
+\mytodo{Esitmator accuracy: make this a relative error.}
 \begin{equation}
     \text{Estimator Accuracy} = \norm{e_t - \tilde{e}_t} 
 \end{equation}

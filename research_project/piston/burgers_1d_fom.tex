@@ -109,9 +109,7 @@ Introducing these relations into the mass and the momentum equations to remove $
             \mathtt{V}' \pdv{\rho}{t} + \pdv{\rho}{x} \left(\mathtt{V} \mathtt{V}' + \frac{a^2}{\rho}\right) &= 0.
     \end{align}
 \end{subequations}
-Since we have two equations for two unknowns, the system can only have a solution if the determinant is zero.
-\mytodo{Why does the determinant need to be zero for the compatibility condition?
-Because the system is homogeneous.}
+Since we have an homogeneous system, it can only have a non-trivial solution if the determinant is zero.
 \begin{equation}
     \begin{vmatrix}
         1 & \mathtt{V} + \rho \mathtt{V}'\\ 
@@ -135,11 +133,11 @@ The $\pm$ signs come up because there are two travelling waves, one to each side
 Since our piston is located at the right boundary of the domain, 
 we choose the $-$ sign so that waves propagate left, and continue our derivation.
 We can integrate~$\mathtt{V}'$ with respect to~$\rho$ to obtain a relation between the flow velocity~$u$ and the speed of sound~$a$:
-\mytodo{What is the physical process that allows me to not apply a boundary conditon.}
-\mytodo{Ignoring the + sign means that no inflow is permitted.}
-\mytodo{Constant Riemann invariant outside of the domain.}
-\mytodo{Clarify what is happening at the model outer boundary.}
-\mytodo{More detailed section about the boundary condition.}
+\mytodo{Outer boundary: What is the physical process that allows me to not apply a boundary conditon.}
+\mytodo{Outer boundary: Ignoring the + sign means that no inflow is permitted.}
+\mytodo{Outer boundary: Constant Riemann invariant outside of the domain.}
+\mytodo{Outer boundary: Clarify what is happening at the model outer boundary.}
+\mytodo{Outer boundary: More detailed section about the boundary condition.}
 \begin{equation}
     \mathtt{V} = - \int_{\rho_0}^{\rho} \frac{a}{\rho} d\rho 
 \end{equation}
@@ -256,7 +254,7 @@ and mass outflow at the open boundary,
 \end{equation}
 We shall verify to which degree of accuracy this relation is honoured by our numerical scheme.
 
-\mytodo{Formulate mass conservation as a FOM functional to be computed with the ROM basis.}
+\mytodo{FOM: Formulate mass conservation as a FOM functional to be computed with the ROM basis.}
 
 \subsubsection{Interesting Physical Quantities}
 In the craft of building reduced order models, it is certainly interesting to measure and study the error between the full and reduced solutions. 
@@ -321,7 +319,7 @@ The viscosity value $\varepsilon$ will be small enough so that it does not remov
 while keeping it sufficiently stable. 
 More on this in Section~\ref{sec:results_artificial_viscosity} in the Results section.
 
-\mytodo{Explain the limitations of a constant viscosity term.}
+\mytodo{FOM: Explain the limitations of a constant viscosity term.}
 
 % \mytodo{Review diffusion coefficient value for mesh consistency.}
 % \begin{equation}
@@ -343,7 +341,7 @@ Thus, the differential model in the physical space is given by the following PDE
 At the left boundary, we will impose a natural ouflow condition.
 At the right boundary, the moving piston, a Dirichlet condition sets the flow velocity equal to the one of the moving wall,
 
-\mytodo{Natural outflow condition means evaluating the weak form at the boundary.
+\mytodo{Outer boundary: Natural outflow condition means evaluating the weak form at the boundary.
 This is compatible with the small diffusion coefficient.
 This is equivalent to imposing an homogeneous Neumann boundary condition.
 }
@@ -374,7 +372,7 @@ We define the mesh velocity as the time derivative of the spatial coordinate, wh
 \begin{equation}
     w(x,t) = \pdv{x}{t} = \pdv{\alemap}{t} \ (x, t) = \pdv{\alemap}{t} \ (\alemap^{-1} (\aleX,t), t).
 \end{equation}
-\mytodo{The symbol for mesh velocity is very similar as the oscillating frequency.}
+\mytodo{Nomenclature: the symbol for mesh velocity $w$ is very similar as the oscillating frequency $\omega$.}
 
 \subsubsection*{Time-Derivative in the Reference Domain}
 Since the equations are going to be solved in the physical domain, we need to adjust the time derivative in the physical domain 
@@ -394,7 +392,7 @@ from where we get the necessary modification to be done to the strong form (\ref
 \end{equation}
 An additional convective term shows up, to take into account the movement of the nodes.
 We will show in the results section how, if we remove this term, mass is no longer conserved.
-\mytodo{Define ALE map and mesh velocity for the piston problem.}
+\mytodo{Add text: define ALE map and mesh velocity for the piston problem.}
 
 % -----------------------------------------------------------------------------
 \subsubsection{Nondimensional Equations}
@@ -490,7 +488,7 @@ This is important when computing stress-related values from the solved field.
 
 With this inner product, we project the residual of the strong formulation onto a given fuction $v \in V$,
 where $V$ is a suitable Hilbert space,
-\mytodo{Is this the right way to formulate a weak form?}
+\mytodo{Nomenclature: is this the right way to formulate a weak form?}
 \begin{subequations}
     \begin{align}
         \label{eq:1d_fom_weak_formulation}
@@ -587,7 +585,7 @@ Eventually, we need to discretize them both, but we can do so incrementally.
 First, we discretize in time. 
 To do so, we need to build an approximation for the time derivate, $\left(\frac{\partial \hat{u}}{\partial t}\right)$.
 There is a complete body of knowledge devoted to this step of the numerical scheme.
-\mytodo{Cite works on time discretization.} 
+\mytodo{Time-discretization: Cite works on time discretization.} 
 
 Briefly, there is a trade-off between computational effort and stability in terms of the resulting matrices.
 For our needs, we opt for the maximization of stability, so we chose what is called an semi-implicit scheme, 
@@ -636,7 +634,7 @@ of the \textit{convection velocity},
 With this strategy we obtain a semi-implicit scheme, which can be treated as a linear system.
 
 \subsubsection{BDF-1}
-\mytodo{Update BDF-1 proof, it is done with the heat equation. Should I move this to an appendix? Should I simplify this to be equation-independent?}
+\mytodo{Time-discretization: update BDF-1 proof, it is done with the heat equation. Should I move this to an appendix? Should I simplify this to be equation-independent?}
 To derive the BDF-1 scheme, we start by evaluating our weak formulation at time $t^{n+1}$, where the solution is unknown,
 \begin{equation}
     \begin{split}
@@ -686,7 +684,7 @@ With this approximation of the time derivative, we get the following semi-discre
     \end{align}
 \end{subequations}
 
-\mytodo{Include BDF-2 discrete scheme.}
+\mytodo{Time-discretization: include BDF-2 discrete scheme.}
 
 Note that the problem is still continuous in space, but no longer in time.
 
@@ -889,8 +887,8 @@ With all of the above, the generic Finite Element Method for the one-dimensional
 
 The problem has been explained within three levels of abstraction: continuous with strong and weak formulations, semi-discrete in time and fully discretized in time and space.
 An semi-implicit time discretization scheme is used, to obtain a sufficiently stable algebraic system.
-\mytodo{How does the semi-discretization play with the stability of the system?} 
-\mytodo{What about the convergence rates?} 
+\mytodo{Add text: how does the semi-discretization play with the stability of the system?
+What about the convergence rates?} 
 
 A lifting of the Dirichlet boundary conditions has been introduced, which lead to the appearence of an additional forcing term and the homogenization of the boundary conditions.
 Hence, we will focus in the solution of an homogeneous boundary value problem.
