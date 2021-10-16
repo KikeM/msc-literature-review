@@ -25,10 +25,18 @@ However, the technique is actually more powerful,
 as it could be used for domains whose boundary remains fixed,
 but the internal nodes do not (i.e. shock tracking schemes).
 
-\subsection{Limitations and Future Work}
+\subsection{Limitations}
+We are aware of how much we have benefited from solving our PDE in a one-dimensional domain.
+Despite including nonlinear terms and a moving mesh,
+the formulation of the problem remains benign. 
+
+Nevertheless, our whole procedure would scale switfly to higher dimensions.
+
+\subsection{Future Work}
 The next natural step would be to extend the methodology to higher-dimensional domains.
-Most of the problem would remain the same (albeit larger matrices), except for a difficulty 
-which was not present in this work: the calculation of the Dirichlet lifting. 
+Most of the problem would remain the same (albeit larger matrices), 
+except for a difficulty which was not present in this work: 
+the calculation of the Dirichlet lifting. 
 
 Indeed, in this work we leveraged the advantage that the lifting could be computed analytically.
 In higher dimension, the boundary conditions need to be numerically extended to the domain,
@@ -42,6 +50,7 @@ For the creation of the Navier-Stokes ROM, the velocity field needs to be enrich
 \cite{supremizers},
 so that the inf-sup condition is satisfied at the ROM level too.
 
-The oscillating cylinder problem contains both requirements.
+The oscillating cylinder problem could be a good candidate 
+to test the formulation in more realistic setting.
 
 \end{document}

@@ -104,12 +104,14 @@ where $\mathtt{V}'$ represents differentiation with respect to density.
 Introducing these relations into the mass and the momentum equations to remove $u$, we obtain
 \begin{subequations}
     \begin{align}
-            \pdv{\rho}{t} + \pdv{\rho}{x} \left(\rho \mathtt{V}' + \mathtt{V}\right) &= 0, \\ 
+            \pdv{\rho}{t} + \pdv{\rho}{x} \left(\rho \mathtt{V}' + \mathtt{V}\right) &= 0, 
+            \\ 
             \mathtt{V}' \pdv{\rho}{t} + \pdv{\rho}{x} \left(\mathtt{V} \mathtt{V}' + \frac{a^2}{\rho}\right) &= 0.
     \end{align}
 \end{subequations}
 Since we have two equations for two unknowns, the system can only have a solution if the determinant is zero.
-\mytodo{Why does the determinant need to be zero for the compatibility condition?}
+\mytodo{Why does the determinant need to be zero for the compatibility condition?
+Because the system is homogeneous.}
 \begin{equation}
     \begin{vmatrix}
         1 & \mathtt{V} + \rho \mathtt{V}'\\ 
@@ -133,6 +135,11 @@ The $\pm$ signs come up because there are two travelling waves, one to each side
 Since our piston is located at the right boundary of the domain, 
 we choose the $-$ sign so that waves propagate left, and continue our derivation.
 We can integrate~$\mathtt{V}'$ with respect to~$\rho$ to obtain a relation between the flow velocity~$u$ and the speed of sound~$a$:
+\mytodo{What is the physical process that allows me to not apply a boundary conditon.}
+\mytodo{Ignoring the + sign means that no inflow is permitted.}
+\mytodo{Constant Riemann invariant outside of the domain.}
+\mytodo{Clarify what is happening at the model outer boundary.}
+\mytodo{More detailed section about the boundary condition.}
 \begin{equation}
     \mathtt{V} = - \int_{\rho_0}^{\rho} \frac{a}{\rho} d\rho 
 \end{equation}
@@ -313,6 +320,8 @@ At this point of the derivation, we allow ourselves to introduce an artificial v
 The viscosity value $\varepsilon$ will be small enough so that it does not remove energy from the system,
 while keeping it sufficiently stable. 
 More on this in Section~\ref{sec:results_artificial_viscosity} in the Results section.
+
+\mytodo{Explain the limitations of a constant viscosity term.}
 
 % \mytodo{Review diffusion coefficient value for mesh consistency.}
 % \begin{equation}
@@ -601,18 +610,29 @@ In terms of notation, from now on we use
 to define a function in space evaluated at time $t^n$.
 
 \subsubsection{Semi-Implicit Scheme}
-As a final note, we point out that according to each problem needs or complexities, sometimes a convergent scheme can be obtained even if certain equation terms are treated explicitly.
-This trick can be used in problems such as the Navier-Stokes equations, where going fully implicit leads to a non-linear algebraic system. 
-If the nonlinear convective term is treated semi-implicitly, one recovers a linear system, and yet reaches a satisfactory numerical solution.
+As a final note, we point out that according to each problem needs or complexities, 
+sometimes a convergent scheme can still be obtained even if certain equation terms are treated explicitly.
+This trick can be used in problems such as the Navier-Stokes equations, 
+where going fully implicit leads to a non-linear algebraic system. 
+If the nonlinear convective term is treated semi-implicitly, 
+one recovers a linear system, and yet reaches a satisfactory numerical solution.
 
-Additionally, as we shall see further down in the reduced model, we will be able to assemble the reduced non-linear operator with the MDEIM procedure.
-If for the evaluation of the nonlinear we used $u^{n+1}$, we would have a non-linear system which could be solved with a Newton-Rapshon iterative method.
+Additionally, as we shall see further down in the reduced model, 
+we will be able to assemble the reduced non-linear operator with the MDEIM procedure.
+If for the evaluation of the nonlinear we used $\hat{u}^{n+1}$, 
+we would have a non-linear system which could be solved with a Newton-Rapshon iterative method.
 Although this method is certainly the most robust, it is not efficient. 
 
-Thus, we opt for the approximation of its effect by considering the \textit{convection velocity} at time $t$, instead of time $t^{n+1}$,
-\begin{equation}
-    \inner{b_0 \hat{u} \grad \hat{u}}{v}^{n+1} \simeq \inner{b_0 \hat{u}^{n} \grad \hat{u}^{n+1}}{v}.
-\end{equation}
+Thus, we opt for the approximation of its effect by considering a second order extrapolation in time 
+of the \textit{convection velocity},
+\begin{subequations}
+    \begin{align}
+        \inner{b_0 \textcolor{NavyBlue}{\hat{u}} \grad \hat{u}}{v}^{n+1} 
+        \simeq 
+        \inner{b_0 \textcolor{NavyBlue}{\hat{u}^{*}} \grad \hat{u}^{n+1}}{v}, \\
+        \textcolor{NavyBlue}{\hat{u}^{*}} = 2 \hat{u}^{n} - \hat{u}^{n-1} + \mathcal{O}(\dt^2).
+    \end{align}
+\end{subequations}
 With this strategy we obtain a semi-implicit scheme, which can be treated as a linear system.
 
 \subsubsection{BDF-1}
@@ -870,6 +890,7 @@ With all of the above, the generic Finite Element Method for the one-dimensional
 The problem has been explained within three levels of abstraction: continuous with strong and weak formulations, semi-discrete in time and fully discretized in time and space.
 An semi-implicit time discretization scheme is used, to obtain a sufficiently stable algebraic system.
 \mytodo{How does the semi-discretization play with the stability of the system?} 
+\mytodo{What about the convergence rates?} 
 
 A lifting of the Dirichlet boundary conditions has been introduced, which lead to the appearence of an additional forcing term and the homogenization of the boundary conditions.
 Hence, we will focus in the solution of an homogeneous boundary value problem.
@@ -878,15 +899,12 @@ This fact will prove useful when we get into the implementation details of the r
 
 \subsection{How to Work on a Fixed Domain}
 
-\subsubsection{Jacobian Transformation}
+Jacobian Transformation.
 How would the system change if we wanted to solve our equations in a fixed domain?
 What would be the expression of the algebraic system?
 
-\subsubsection{Space-Time Finite Elements}
-TBD.
+Add these for completeness.
 
-Comment on how in the $(x,t)$ domain we actually have a deforming domain. 
-This could be solved with space-time FE, but it involves complex tensor products. 
-Explain how what we have done is a good approximation of the latter.
+Although I am tempted to actually solve them and compare ... 
 
 \end{document}

@@ -27,6 +27,8 @@ certain combinations within the parameter space produce unfeasible solutions,
 and so we explain how to sample within the feasible range.
 
 \subsection{Artificial Viscosity}
+\mytodo{Place holder for stabilization operators.}
+\mytodo{Could we reduce other operators?.}
 \label{sec:fom_calibration_artificial_viscosity}
 As stated previously in the document, 
 we included an artificial viscosity term in the final formulation
@@ -72,23 +74,32 @@ seems to withstand such a small numerical viscosity term without incurring into 
 
 \subsection{BDF Scheme Convergence Rates}
 \label{sec:fom_calibration_bdf_convergence_rates}
-\mytodo{This requires a more detailed investigation.}
 The next concept we are going to look at to check the quality of our simulation is 
-the convergence rate for the two time-integration schemes, BDF-1 and BDF-2, see Figure~\ref{fig:bdf_convergence_rates}.
+the convergence rate for the two time-integration schemes, 
+BDF-1 and BDF-2, 
+We do so by looking at the convergence rates of the solution to one obtained
+with a small $dt\sim 10^{-4}$ (Figure~\ref{fig:bdf_convergence_solutions}),
+and the mass defect error (Figure~\ref{fig:bdf_convergence_mass}).
 
 For some reason, the BDF-2 scheme does not decrease at the expected rate of 2.
-Nevertheless, since for the calculation of the mass defect figure a space integral and a time derivative are used, 
-this could reveal a weakness in this specific calculation, 
-rather than a bug in the overall simulation.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/convergence_finest_solution.png}
+    \caption{Convergence rates to the solution with $dt\sim 10^{-4}$.
+    The BDF-1 scheme decreases at the expected rate, whereas the BDF-2 does not.
+    In fact, both schemes seem to converge at the same rate,
+    although the BDF-2 has a smaller error in mean.}
+    \label{fig:bdf_convergence_solutions}
+\end{figure}
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/convergence_rates_mass.png}
     \caption{Convergence rates for mass defect.
     The BDF-1 scheme decreases at the expected rate, whereas the BDF-2 does not.
     This could be due to the calculation procedure for the mass defect and not to a bug in the calculation itself.}
-    \label{fig:bdf_convergence_rates}
+    \label{fig:bdf_convergence_mass}
 \end{figure}
-
 It is worthy pointing out how the BDF-2 scheme is actually superior to the BDF-1 scheme 
 for most of the period, as we can see from Figure~\ref{fig:bdf_1_mass_plot} and \ref{fig:bdf_2_mass_plot}. 
 However, for some reason yet unknown, in the neighborhood of the shock wave creation, mass preservation decreases,
@@ -107,9 +118,13 @@ rising up the average error.
     Mass conservation, visual comparison (top) and numerical error (bottom).}    \label{fig:bdf_2_mass_plot}
 \end{figure}
 
+What we observe in the convergence rates could be in line with what was portrayed 
+in Section~\ref{sec:literature_review_deforming_mesh} of the deforming mesh literature review,
+and the references therein.
+Solving the equations on a moving mesh can influence the scheme order.
+
 \subsection{Deforming Mesh Effects}
-\mytodo{Show mass conservation without ALE convective term 
-(as in \cite{FSIPistonProblem}).}
+\mytodo{Show mass conservation without ALE convective term.}
 \mytodo{Show simulation for constant solution (related to D-GCL).}
 
 
@@ -136,6 +151,7 @@ need to determine a safety margin in the sampling range prevent using a parametr
 
 \subsubsection{System Forcing And Nonlinear Response}
 \label{sec:fom_calibration_system_forcing}
+\mytodo{State this has to do with the way we have stabilized the discretization.}
 On the one hand, when we think about the equations and their response, we could hint at the fact that shock wave strength will be driven by the magnitude of the piston's velocity.
 This variable, although time dependent, is scaled by the combination of the speed of sound,
 piston frequency and displacement, 
