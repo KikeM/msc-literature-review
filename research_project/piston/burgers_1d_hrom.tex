@@ -54,15 +54,15 @@ This lead to the following number of basis for each operator,
     \begin{tabular}{@{}rcc@{}}
     \toprule
                       & After Treewalk & Final \\ \midrule
-    RB                & 289            & 63                \\
+    RB                & 295            & 69                \\
     RHS               & 20             & 2                 \\
     Mass              & 10             & 1                 \\
     Stiffness         & 10             & 1                 \\
-    Nonlinear         & 630            & 63                \\
+    Nonlinear         & 690            & 69                \\
     Convection        & 20             & 2                 \\
     Nonlinear-Lifting & 10             & 1                 \\ \bottomrule
     \end{tabular}
-    \end{table}
+\end{table}
 
 Since we are using a POD to build our reduced basis, 
 we attempt to relate the POD a posteriori error estimations with 
@@ -143,7 +143,45 @@ To fix this problem, certain techniques exist which enhance the POD basis
 without adding excessive complexity \cite{weightedPOD}.
 
 \subsection{(M)DEIM Error Estimation}
-TBD.
+In this section we are going to explore the reduction of the nonlinear operator.
+
+In Figure~\ref{fig:mdeim_error_approximation} we show the mean approximation error
+in time for the nonlinear operator. 
+The first ten elements of the reduced basis were used to assemble the operators.
+We see that unless the complete basis is used ($N=69$),
+the approximation error is quite poor.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/nonlinear_error_decay.png}
+    \caption{Nonlinear MDEIM error approximation for incremental number of elements in the basis.
+    The first ten elements of the reduced basis were used to assemble the operator.
+    The approximation is quite poor, unless the complete basis is used 
+    ($N=69$).}
+    \label{fig:mdeim_error_approximation}
+\end{figure}
+
+We believe this has to do with the fact that the reduced basis elements,
+which form an orthogonal basis, were used to assemble the nonlinear operator snapshots.
+Hence, all the POD basis elements contain fundamental information,
+as hinted by the abrupt drop in the singular value, see Figure~\ref{fig:sigmas_decay}. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/sigmas_problem.png}
+    \caption{Singular values decay for the reduced basis and the nonlinear operator.
+    The dashed vertical line corresponds to the number of reduced basis elements, $N=69$.
+    The basis for the nonlinear operator does not present the same pattern as the 
+    one for the reduced basis.
+    All of the elements of the nonlinear operator basis 
+    seem to contain the same amount of information from the span.
+    We believe this has to do with the fact that the reduced basis elements,
+    which form an orthogonal basis, were used to assemble the nonlinear operator snapshots.}
+    \label{fig:sigmas_decay}
+\end{figure}
+
+In the light of these results, 
+we necessarily need to use the whole MDEIM basis for our simulations.
+
+\mytodo{What would happen if we used the snapshots obtained during the solution of the FOM?}
 
 \subsection{HROM Error Estimation}
 \label{sec:hrom_results_posteriori_error_estimation}
@@ -264,8 +302,5 @@ aggregated for all timesteps,
 We conclude that it seems to be better to carry more than one mode.
 Nevertheless, if it is going to become too costly to compute all these additional modes,
 one extra mode could do the job fairly well too, provided that the base ROM is well resolved.
-
-\subsubsection{RB and MDEIM Error Interaction}
-TBD. 
 
 \end{document}

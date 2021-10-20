@@ -11,9 +11,9 @@ to find a subset among the combinations of basic colours
 to represent the solution to the problem of interest.
 
 In the context of this work, 
-the basic colours are the classical mathematical Lagrangian finite element basis functions, 
+the basic colours are the classical mathematical Lagrangian finite element basis functions: 
 generic, piecewise, with local support, able to represent most functions of interest.
-Instead, the landscape palette will be ad-hoc, 
+Instead, the landscape palette will be ad-hoc:
 problem-dependent functions with global support, 
 good at capturing details only specific to landscapes.
 
@@ -68,8 +68,8 @@ it is quite possible that we have to compute the jacobian transformation numeric
 This is likely to be an undesirable situation, 
 for the physical weak form will become contaminated with additional terms, 
 making it more cumbersome to implement and deal with\footnote{
-    The discretization will not be formulated for the original variable $\phi$,
-    but rather for its distorted counterpart $J \phi$.
+    The discretization will not be formulated for the original variable~$\phi$,
+    but rather for its distorted counterpart~$J \phi$.
     },
 and the inevitable overhead in computational costs.
 
@@ -362,8 +362,8 @@ Haasdonk2013}.
 This method uses the automatic compression feature provided by the POD in the time dimension,
 and the greedy approach to parameter selection in the parameter space.
 
-For our work, we will use a physics-driven greedy approach for the sampling strategy,
-and a nested POD strategy for the time and parameter spaces.
+For our work, we will use a physics-driven approach for the sampling strategy in the parameter space,
+and a nested POD strategy for the time and parameter spaces \cite{Santo_Manzoni_2019}.
 
 Finally, some words needs to be said about the handling of inhomogeneous boundary conditions
 that we will encounter.
