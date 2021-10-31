@@ -550,7 +550,7 @@ we find additional forcing terms and PDE terms, due to the cross-product between
 \end{equation}
 Taking this into account, we find the following \textit{lifted} weak formulation,
 \begin{subequations}
-    % \label{eq:1d_fom_weak_formulation_homogeneous}
+    \label{eq:1d_fom_weak_formulation_homogeneous}
     \begin{align}
         \inner{\frac{\partial \hat{u}}{\partial t}}{v} \textcolor{Purple}{- \inner{c \grad \hat{u}}{v}} \textcolor{OliveGreen}{+ \inner{\varepsilon \grad \hat{u}}{\grad v}} \nonumber\\
         \textcolor{NavyBlue}{+ \inner{b_0 g \grad \hat{u}}{v}
@@ -581,45 +581,201 @@ At this point, we have defined the continuous problem for the one-dimensional pi
 \subsection{Semi-Discrete Formulation: Time Discretization}
 The continuous solution changes in two dimensions: space and time.
 Eventually, we need to discretize them both, but we can do so incrementally.
+We choose to first discretize in time. 
 
-First, we discretize in time. 
-To do so, we need to build an approximation for the time derivate, $\left(\frac{\partial \hat{u}}{\partial t}\right)$.
-There is a complete body of knowledge devoted to this step of the numerical scheme.
-\mytodo{Time-discretization: Cite works on time discretization.} 
+% There is a complete body of knowledge devoted to this step of the numerical scheme.
+% \mytodo{Time-discretization: Cite works on time discretization.} 
 
-Briefly, there is a trade-off between computational effort and stability in terms of the resulting matrices.
-For our needs, we opt for the maximization of stability, so we chose what is called an semi-implicit scheme, 
-which is potentially stable, in exchange for a more dense linear system to be solved.
+% Briefly, there is a trade-off between computational effort and stability in terms of the resulting matrices.
+% For our needs, we opt for the maximization of stability, so we chose what is called an semi-implicit scheme, 
+% which is potentially stable, in exchange for a more dense linear system to be solved.
 
-The procedure is the following: a polynomial interpolation of the function $u(x,t)$ is built, 
-using the solution at previous timesteps, $\left\{u(x,t^{n}), u(x,t^{n-1}), \ldots\right\}$.
-Then, the interpolant's derivative at time $t^{n+1}$ is used as an approximation of the actual derivative.
+To do so, we need to build an approximation for the time derivative.
+A polynomial interpolation $p_n(x, t)$ of the function 
+$\hat{u}(x,t^{n+1})$ is built, 
+using the solution at previous timesteps, 
+$\left\{\hat{u}(x,t^{n}), \hat{u}(x,t^{n-1}), \ldots\right\}$.
+Then, the interpolant's derivative at time $t^{n+1}$ is used as an approximation of the actual derivative,
+\begin{equation}
+    \pdv{\hat{u}}{t} \qty(x, t^{n+1}) \simeq \pdv{p_n}{t} \qty(x, t^{n+1}).
+\end{equation}
 The accuracy of the scheme (and also its complexity) is determined by the number of previous timesteps used in the interpolation. 
 
-In the coming sections, we define two implicit schemes of order one and two, BDF-1 (also known as Backwards Euler), and BDF-2, respectively.
-Throughout our simulations we will use the BDF-2 scheme, but since it uses two points from the past, 
+In the coming sections, we define two implicit schemes of order one and two, 
+BDF-1\footnote{Also known as Backwards Euler.}, and BDF-2, respectively.
+Throughout our simulations we will use the BDF-2 scheme, but since it requires two points from the past, 
 it cannot be used at the beginning of the simulation. 
-That is where the BDF-1 comes into play, to obtain $u(x,t^1)$.
-Additionally, studying the BDF-1 scheme is still useful, to understand the implications of time discretization. 
-In terms of notation, from now on we use
+This is where the BDF-1 comes into play, to obtain $\hat{u}(x,t^1)$.
+Additionally, studying the BDF-1 scheme is still useful, to understand the implications of time discretization.
+
+From now on we use the abbreviated notation
 \begin{equation}
     \hat{u}^n := \hat{u}(x,t^n)
 \end{equation}
 to define a function in space evaluated at time $t^n$.
+Additionally, to simplify our derivations, we will use a toy weak form,
+with only two spatial differential operators and one forcing term, 
+as placeholders for the actual linear and nonlinear terms of a complete model,
+\begin{equation}
+        \inner{\frac{\partial \hat{u}}{\partial t}}{v}
+        + \inner{u}{v} 
+        + \inner{l(u)}{v} 
+        =  
+        \inner{f}{v}.
+\end{equation}
+The functional $l(u)$ stands for a nonlinear transformation on $u$ and its derivatives in space.
+
+\subsubsection{BDF-1}
+To derive the both schemes, 
+we start by evaluating our weak formulation at time $t^{n+1}$, 
+where the solution is unknown\footnote{
+    For the initial time $t^0$ the solution is known, from the initial condition
+    $u(x,0)$.
+},
+\begin{equation}
+    \inner{\frac{\partial \hat{u}}{\partial t}}{v}^{n+1}
+    + \inner{\hat{u}}{v}^{n+1}
+    + \inner{l(\hat{u})}{v}^{n+1}
+    =  
+    \inner{f}{v}^{n+1}
+\end{equation}
+Then, we construct our interpolation polynomial using only one previous timestep from the past, 
+\begin{subequations}
+\begin{align}
+        p_1(t) 
+        &:= 
+        \hat{u}^{n+1}
+        \qty(\frac{t-t^{n}}{\dt})
+        - 
+        \hat{u}^{n}
+        \qty(\frac{t-t^{n+1}}{\dt});
+        \\
+        \pdv{p_1}{t} 
+        &= 
+        \frac{\hat{u}^{n+1} - \hat{u}^{n}}{\dt}.
+    \end{align}
+\end{subequations}
+With this approximation of the time derivative, we get the following semi-discrete weak formulation,
+\begin{align}
+    \hat{u}^{n+1}
+    + \dt \inner{\hat{u}}{v}^{n+1}
+    + \dt \inner{l(\hat{u})}{v}^{n+1}
+    =
+    \nonumber \\
+    \inner{\hat{u}^{n}}{v}^{n+1}
+    + 
+    \dt \inner{f}{v}^{n+1}
+    \label{eq:bdf_1_toy_weak_formulation}
+\end{align}
+Note that the problem is still continuous in space, but no longer in time.
+
+\subsubsection{BDF-2}
+For the BDF-2 scheme,
+our interpolation takes two previous timesteps from the past,
+\begin{subequations}
+\begin{align}
+    p_2(t) 
+    := 
+    &\phantom{+}\hat{u}^{n+1}
+    \qty(\frac{t-t^{n}}{\dt})
+    \qty(\frac{t-t^{n-1}}{2\dt})
+    \nonumber \\
+    &-
+    \hat{u}^{n}
+    \qty(\frac{t-t^{n+1}}{\dt})
+    \qty(\frac{t-t^{n-1}}{\dt}) 
+    \nonumber \\
+    &+
+    \hat{u}^{n-1}
+    \qty(\frac{t-t^{n+1}}{2\dt})
+    \qty(\frac{t-t^{n}}{\dt});
+    \\[2mm]
+    \pdv{p_2}{t} 
+    &= 
+    \frac{3\hat{u}^{n+1} - 4\hat{u}^{n} + \hat{u}^{n-1}}{2\dt},
+    \nonumber \\
+    &\frac{1}{\dt}
+    \qty(
+        \frac{3}{2}\hat{u}^{n+1} 
+        - 2\hat{u}^{n} 
+        + \frac{1}{2}\hat{u}^{n-1}
+        ).
+    \end{align}
+\end{subequations}
+With this alternative approximation of the time derivate, 
+we get a very similar semi-discrete weak formulation as the one 
+from Equation~\eqref{eq:bdf_1_toy_weak_formulation},
+\begin{align}
+    \frac{3}{2}\inner{\hat{u}^{n+1}}{v}^{n+1}
+    + \dt \inner{\hat{u}}{v}^{n+1}
+    + \dt \inner{l(\hat{u})}{v}^{n+1}
+    =
+    \nonumber \\
+    2            \inner{\hat{u}^{n}  }{v}^{n+1}
+    - \frac{1}{2}\inner{\hat{u}^{n-1}}{v}^{n+1}
+    + 
+    \dt \inner{f}{v}^{n+1}.
+    \label{eq:bdf_2_toy_weak_formulation}
+\end{align}
+In fact, both formulations can be synthezised into one,
+\begin{align}
+    m_{\text{BDF}}\inner{\hat{u}^{n+1}}{v}^{n+1}
+    + \dt \inner{\hat{u}}{v}^{n+1}
+    + \dt \inner{l(\hat{u})}{v}^{n+1}
+    =
+    \nonumber \\
+    \inner{\hat{u}_{\text{BDF}}  }{v}^{n+1}
+    + 
+    \dt \inner{f}{v}^{n+1},
+    \label{eq:weak_formulation_generalized_bdf}
+\end{align}
+where the forcing term due to the time integration scheme has been generalized,
+\begin{equation}
+    \hat{u}_{\text{BDF}} =
+    \begin{cases}
+        \hat{u}^{n}, &\text{BDF-1},
+        \\    
+        2\hat{u}^{n} 
+        -\frac{1}{2}\hat{u}^{n-1}, &\text{BDF-2};
+    \end{cases}
+    \label{eq:bdf_forcing_term_generalization}
+\end{equation}
+and the parameter $m_{\text{BDF}}$ determines the time integration scheme used,
+\begin{equation}
+    m_{\text{BDF}} = 
+    \begin{cases}
+    1, &\text{BDF-1},
+    \\    
+    \frac{3}{2}, &\text{BDF-2}.
+    \end{cases}
+\end{equation}
+
+The generalized semi-discrete weak formulation from 
+Equation~\eqref{eq:weak_formulation_generalized_bdf} 
+is much more comfortable from an implementation-wise perspective,
+since it has isoleted the effects the discretization scheme.
 
 \subsubsection{Semi-Implicit Scheme}
-As a final note, we point out that according to each problem needs or complexities, 
-sometimes a convergent scheme can still be obtained even if certain equation terms are treated explicitly.
+% As a final note, we point out that according to each problem needs or complexities, 
+% sometimes a convergent scheme can still be obtained even if certain equation terms are treated explicitly.
+Now, Equation~\eqref{eq:weak_formulation_generalized_bdf}
+is a nonlinear one, due to the presence of the $l(\hat{u})$ functional,
+which represents the nonlinear convection term from our original model.
+
+In the presence of nonlinearities, one can opt to evaluate certain terms 
+with known information from the past.
 This trick can be used in problems such as the Navier-Stokes equations, 
 where going fully implicit leads to a non-linear algebraic system. 
 If the nonlinear convective term is treated semi-implicitly, 
 one recovers a linear system, and yet reaches a satisfactory numerical solution.
 
 Additionally, as we shall see further down in the reduced model, 
-we will be able to assemble the reduced non-linear operator with the MDEIM procedure.
-If for the evaluation of the nonlinear we used $\hat{u}^{n+1}$, 
-we would have a non-linear system which could be solved with a Newton-Rapshon iterative method.
-Although this method is certainly the most robust, it is not efficient. 
+this trick will be the one that allows us to 
+to assemble the reduced non-linear operator with the MDEIM procedure.
+
+% If for the evaluation of the nonlinear we used $\hat{u}^{n+1}$, 
+% we would have a non-linear system which could be solved with a Newton-Rapshon iterative method.
+% Although this method is certainly the most robust, it is not efficient. 
 
 Thus, we opt for the approximation of its effect by considering a second order extrapolation in time 
 of the \textit{convection velocity},
@@ -629,108 +785,82 @@ of the \textit{convection velocity},
         \simeq 
         \inner{b_0 \textcolor{NavyBlue}{\hat{u}^{*}} \grad \hat{u}^{n+1}}{v}, \\
         \textcolor{NavyBlue}{\hat{u}^{*}} = 2 \hat{u}^{n} - \hat{u}^{n-1} + \mathcal{O}(\dt^2).
+        \label{eq:semi_implicit_approximation_convective_term}
     \end{align}
 \end{subequations}
-With this strategy we obtain a semi-implicit scheme, which can be treated as a linear system.
-
-\subsubsection{BDF-1}
-\mytodo{Time-discretization: update BDF-1 proof, it is done with the heat equation. Should I move this to an appendix? Should I simplify this to be equation-independent?}
-To derive the BDF-1 scheme, we start by evaluating our weak formulation at time $t^{n+1}$, where the solution is unknown,
-\begin{equation}
-    \begin{split}
-        \inner{\frac{\partial \hat{u}}{\partial t}}{v}^{n+1} 
-        - \inner{w \grad \hat{u}}{v}^{n+1} 
-        + \inner{\varepsilon \grad \hat{u}}{\grad v}^{n+1} =  \\
-        + \inner{f}{v}^{n+1} + \inner{f_{g,1}}{v}^{n+1} + \inner{f_{g,2}}{\grad v}^{n+1}.
-    \end{split}
-\end{equation}
-Then, we construct our interpolation polynomial using only one previous timestep from the past, 
-\begin{align}
-    \hat{u}(x,t) &\simeq I_1(t) := 
-    \hat{u}^{n+1}\left( \frac{t-t^{n}}{\dt}  \right)
-    + \hat{u}^{n}\left(\frac{t^{n+1}-t}{\dt}\right), \\
-    \left.\frac{\partial\hat{u}}{\partial t}\right|^{n+1} &\simeq \frac{d I_1(t)}{dt} = \frac{\hat{u}^{n+1} - \hat{u}^{n}}{\dt}
-\end{align}
-With this approximation of the time derivative, we get the following semi-discrete weak formulation, 
-% \begin{subequations}
-%     \begin{align}
-%         \label{eq:1d_fom_weak_formulation_semidiscrete_time}
-%         \inner{\hat{u}^{n+1}}{v} 
-%         - \dt \inner{w \grad \hat{u}^{n+1}}{v} 
-%         + \dt \inner{\varepsilon \grad \hat{u}^{n+1}}{\grad v} = \nonumber \\ 
-%         \inner{\hat{u}^{n}}{v} 
-%         + \dt \inner{f^{n+1}}{v} \nonumber \\
-%         + \dt \inner{f_{g,1}^{n+1}}{v} + \dt \inner{f_{g,2}^{n+1}}{\grad v}, \\
-%         \hat{u}^{n+1}(0) = 0, \\
-%         \hat{u}^{n+1}(L\left(t^{n+1}\right)) = 0, \\
-%         \hat{u}^{0}(x) = \hat{u}_0(x).
-%     \end{align}
-% \end{subequations}
+This approximation can be obtained by expanding $\hat{u}^{n+1}$ and $\hat{u}^{n-1}$
+with a Taylor polynomial centered around $\hat{u}^{n}$,
 \begin{subequations}
-    \label{eq:1d_fom_weak_formulation_homogeneous}
     \begin{align}
-        \inner{\hat{u}^{n+1}}{v} 
+        \hat{u}^{n+1} &= \hat{u}^{n} 
+        + \pdv{\hat{u}^{n}}{t} \dt 
+        + \frac{1}{2}\pdv[2]{\hat{u}^{n}}{t} \dt^2 
+        + \mathcal{O}\qty(\dt^3),
+        \\
+        \hat{u}^{n-1} &= \hat{u}^{n} 
+        - \pdv{\hat{u}^{n}}{t} \dt 
+        + \frac{1}{2}\pdv[2]{\hat{u}^{n}}{t} \dt^2 
+        + \mathcal{O}\qty(\dt^3).
+    \end{align}
+\end{subequations}
+Combining both expansions, \dt-order terms cancel out and one gets
+\begin{equation}
+    \hat{u}^{n+1} = 
+    2 \hat{u}^{n} 
+    -\hat{u}^{n-1} 
+    + \pdv[2]{\hat{u}^{n}}{t} \dt^2 
+    + \mathcal{O}\qty(\dt^3).
+\end{equation}
+
+With this strategy we obtain a semi-implicit scheme, which can be treated as a linear system.
+It is paramount to use a second order approximation for the nonlinear term,
+otherwise the accuracy benefits of the BDF-2 scheme are lost;
+falling back to order one convergence rates, 
+despite the second order approximation of the time derivative.
+
+\subsubsection{Semi-Discrete Weak Formulation for Both Schemes}
+All in all, the complete semi-discretized weak formulation for the original problem 
+can be found by replacing the placeholders for the actual spatial operators 
+from Equation~(\ref{eq:1d_fom_weak_formulation_homogeneous})
+into Equation~(\ref{eq:weak_formulation_generalized_bdf});
+the generalized forcing term~$\hat{u}_{\text{BDF}}$ due to time-discretization,
+Equation (\ref{eq:bdf_forcing_term_generalization});
+and the second-order approximation~$\hat{u}^{*}}$ of the convection velocity in the nonlinear operator,
+Equation (\ref{eq:semi_implicit_approximation_convective_term}),
+\begin{subequations}
+    % \label{eq:1d_fom_weak_formulation_homogeneous}
+    \begin{align}
+        m_{\text{BDF}} \inner{\hat{u}^{n+1}}{v} 
         - \dt \inner{c \grad \hat{u}^{n+1}}{v} 
         + \dt \inner{\varepsilon \grad \hat{u}^{n+1}}{\grad v} \nonumber\\
         + \dt\left(\inner{b_0 \hat{u}^{n+1} \grad g^{n+1}}{v}\right. 
         + \left.\inner{b_0 g^{n+1} \grad \hat{u}^{n+1}}{v}\right) \nonumber\\
-        + \inner{b_0 \hat{u} \grad \hat{u}}{v}^{n+1} \nonumber\\
+        + \inner{b_0 \hat{u}^{*} \grad \hat{u}^{n+1}}{v} \nonumber\\
         = 
-        \inner{\hat{u}^{n}}{v} 
+        \inner{\hat{u}_{\text{BDF}}}{v}
         - \dt \inner{\frac{\partial g^{n+1}}{\partial t}}{v} \nonumber \\
         - \dt \inner{b_0 g^{n+1} \grad g^{n+1}}{v} 
         - \dt \inner{\varepsilon \grad g^{n+1}}{\grad v} \nonumber\\ 
-        + \dt \inner{c^{n+1} \grad g^{n+1}}{v}
+        + \dt \inner{c^{n+1} \grad g^{n+1}}{v}.
     \end{align}
 \end{subequations}
 
-\mytodo{Time-discretization: include BDF-2 discrete scheme.}
-
-Note that the problem is still continuous in space, but no longer in time.
-
-% \subsubsection{BDF-2}
-% To derive the BDF-2 scheme, again, we start by evaluating our weak formulation at time $t^{n+1}$, where the solution is unknown,
-% \begin{equation}
-%     \begin{split}
-%         \inner{\frac{\partial \hat{u}}{\partial t}}{v}^{n+1} + \inner{\varepsilon(x) \grad \hat{u}}{\grad v}^{n+1} = \inner{f}{v}^{n+1} \\
-%         + \inner{f_{g,1}}{v}^{n+1} + \inner{f_{g,2}}{\grad v}^{n+1}.
-%     \end{split}
-% \end{equation}
-% Then, we construct our interpolation polynomial using two previous timestamps from the past, 
-% \begin{align}
-%     \hat{u}(x,t) &\simeq I_2(t) := 
-%       \varepsilon_1 \hat{u}^{n+1} 
-%     + \varepsilon_2 \hat{u}^{n}
-%     + \varepsilon_3 \hat{u}^{n-1}, \\
-%     \left.\frac{\partial\hat{u}}{\partial t}\right|^{n+1} &\simeq \frac{d I_2(t)}{dt} = 
-%     \frac{\frac{3}{4}\hat{u}^{n+1} - \frac{1}{2}\hat{u}^{n} + \frac{1}{4}\hat{u}^{n-1}}{\dt}
-% \end{align}
-% With this approximation of the time derivative, we get the following semi-discrete weak formulation, 
-% \begin{subequations}
-%     \begin{align}
-%         \label{eq:1d_fom_weak_formulation_semidiscrete_time_bdf2}
-%         \frac{3}{4}\inner{\hat{u}^{n+1}}{v} + \dt \inner{\varepsilon(x) \grad \hat{u}^{n+1}}{\grad v} &= \\
-%           \frac{1}{2}\inner{\hat{u}^{n}}{v}
-%         - \frac{1}{4}\inner{\hat{u}^{n-1}}{v} \nonumber \\
-%         + \dt \inner{f^{n+1}}{v} \nonumber \\
-%         + \dt \inner{f_{g,1}^{n+1}}{v} + \dt \inner{f_{g,2}^{n+1}}{\grad v}, \nonumber \\
-%         \hat{u}^{n+1}(0) &= 0, \\
-%         \hat{u}^{n+1}(L\left(t^{n+1}\right)) &= 0, \\
-%         \hat{u}^{0}(x) &= \hat{u}_0(x).
-%     \end{align}
-% \end{subequations}
-% Note how the only changes between both discretizations are the forcing terms due to the previous solutions and the leading coefficient multipliying the inner product of the desired unknown solution $\hat{u}^{n+1}$. 
-
 \subsection{Discrete Problem: Space Discretization}
 To complete our discretization, we define a finite functional space $V_h \subset V$, where we can represent the solution as the linear combination of a set of Finite Elements (FE) basis functions $\varphi_i(x)$ with local support,
-\begin{align}
-    \hat{u}^{n}(x) \simeq \hat{u}_h^n(x) &= \sum_j^{N_h} \hat{u}_{h_j}^n \varphi_j(x), \\
-    \vb{\hat{u}}_h^{n} &= \left[\hat{u}_{h_j}^n\right].
-\end{align}
-In this discrete setting, we define the FE vector $\vb{\hat{u}}_h^{n}$ to be the collection of coefficients~$[\hat{u}_{h_j}^n]$ which multiply the basis functions.
-In the FE context, these coincide with the values of the function at each node.
+\begin{subequations}
+    \begin{align}
+        \hat{u}^{n}(x) \simeq \hat{u}_h^n(x) &= \sum_j^{N_h} \hat{u}_{h_j}^n \varphi_j(x), 
+        \\
+        \vb{\hat{u}}_h^{n} &= \left[\hat{u}_{h_j}^n\right].
+    \end{align}
+\end{subequations}
+We define the FE~vector $\vb{\hat{u}}_h^{n}$ to be the collection of 
+coefficients~$\hat{u}_{h_j}^n$ which multiply the basis functions.
+In the FE~context with Lagrangian basis elements, 
+these coincide with the values of the function at each node.
 
-Applying the Galerkin principle to solve PDEs, we enforce the orthogonality of the residual to the functional space $V_h$. 
+Applying the Galerkin principle to solve PDEs, 
+we enforce the orthogonality of the residual to the functional space $V_h$. 
 %This is equivalent to enforcing the orthogonality to each basis function of the space, 
 %so we get an algebraic system with the same number of unknowns as equations.
 Because the domain changes with time, 
@@ -739,27 +869,36 @@ both the matrices and the vectors change for each timestep,
 \begin{subequations}
     \label{eq:1d_fom_linear_system_operators}
     \begin{align}
-        \left[\vb{M}_{h}^{n+1}\right]_{ij}           &= m_{\text{BDF}} \inner{\varphi_j}{\varphi_i}, 
+        \left[\vb{M}_{h}^{n+1}\right]_{ij}           
+        &= m_{\text{BDF}} \inner{\varphi_j}{\varphi_i}^{n+1}, 
         \\
-        \left[\vb{A}_{h}^{n+1}\right]_{ij}           &= \inner{\varepsilon \grad \varphi_j}{\grad \varphi_i}, 
+        \left[\vb{A}_{h}^{n+1}\right]_{ij}           
+        &= \inner{\varepsilon \grad \varphi_j}{\grad \varphi_i}^{n+1}, 
         \\
-        \left[\vb{C}_{h}^{n+1}\right]_{ij}           &= -\inner{c \grad \varphi_j}{\varphi_i}, 
+        \left[\vb{C}_{h}^{n+1}\right]_{ij}           
+        &= -\inner{c \grad \varphi_j}{\varphi_i}^{n+1}, 
         \\
-        \left[\vb{N}_{h}^{n+1}\right]_{ij}           &= b_0 \inner{u^{n} \grad \varphi_j}{\varphi_i}, 
+        \left[\vb{N}_{h}^{n+1}\right]_{ij}           
+        &= b_0 \inner{u^{n} \grad \varphi_j}{\varphi_i}^{n+1}, 
         \\
-        \left[\vb{\hat{N}}_{h}^{n+1}\right]_{ij}     &= b_0 \left(\inner{g \grad \varphi_j}{\varphi_i} + \inner{\varphi_j \grad g}{\varphi_i}\right), 
+        \left[\vb{\hat{N}}_{h}^{n+1}\right]_{ij}     
+        &= b_0 \left(
+            \inner{g \grad \varphi_j}{\varphi_i}^{n+1} + 
+            \inner{\varphi_j \grad g}{\varphi_i}^{n+1}
+            \right), 
         \\
-        \left[\vb{F}_{{g,h}}^{n+1}\right]_{i}        &= -\inner{\pdv{g}{t} + b_0 g \grad g - c \grad g}{\varphi_i} \nonumber
+        \left[\vb{F}_{{g,h}}^{n+1}\right]_{i}        
+        &= -\inner{\pdv{g}{t} + b_0 g \grad g - c \grad g}{\varphi_i}^{n+1} \nonumber
         \\
-                                                     &  -\inner{\varepsilon \grad g}{\grad \varphi_i},
+        &  -\inner{\varepsilon \grad g}{\grad \varphi_i}^{n+1},
         \label{eq:1d_fom_linear_system_operators_fg}
-        \\ 
+        \\[2mm]
         \left[\vb{F}_{\vb{\hat{u}}_h}^{n}\right]_{i} &= 
             \begin{cases}
-                \inner{\hat{u}_h^{n}}{\varphi_i}, &\text{BDF-1},
+                \inner{\hat{u}_h^{n}}{\varphi_i}^{n+1},                &\text{BDF-1},
                 \\
-                \frac{1}{2}\inner{\hat{u}_h^{n}}{\varphi_i}
-                - \frac{3}{4}\inner{\hat{u}_h^{n-1}}{\varphi_i}, &\text{BDF-2}.
+                2\inner{\hat{u}_h^{n}}{\varphi_i}^{n+1}
+                - \frac{1}{2}\inner{\hat{u}_h^{n-1}}{\varphi_i}^{n+1}, &\text{BDF-2}.
             \end{cases}
     \end{align}
 \end{subequations}
@@ -771,13 +910,14 @@ This leads to the following algebraic system:
         + \dt \vb{C}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
         + \dt \vb{A}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
         \nonumber 
-        \\ 
+        \\[2mm] 
         + \dt \vb{\hat{N}}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
         + \dt \left[\vb{N}^{n+1}_h\left(\vb{\hat{u}}_{h}^{n}\right)\right] \vb{\hat{u}}_{h}^{n+1} 
         \nonumber
-        \\ 
+        \\[2mm] 
         = \vb{F}_{\vb{\hat{u}}_h}^{n}
-        + \dt \vb{F}_{g,h}^{n+1}, \\
+        + \dt \vb{F}_{g,h}^{n+1}, 
+        \\[2mm]
         \vb{\hat{u}}_h^{0} = \vb{\hat{u}}_{h,0}.
     \end{align}
 \end{subequations}
@@ -786,15 +926,6 @@ The initial condition is obtain via interpolation or projection.
 The assembly of the forcing terms given in Equation \eqref{eq:1d_fom_linear_system_operators_fg}
 are to be done with the FE vector representations of the functional expressions of each of the terms $f$ and $f_g$, to be obtained by projection or interpolation.
 
-The parameter $m_{\text{BDF}}$ determines the time integration scheme used,
-\begin{equation}
-    m_{\text{BDF}} = 
-    \begin{cases}
-    1, &\text{BDF-1},
-    \\    
-    \frac{3}{4}, &\text{BDF-2}.
-    \end{cases}
-\end{equation}
 Regarding the forcing due to previous timesteps, $\left(\vb{F}_{\vb{\hat{u}}_h}^{n}\right)$, 
 although for the FOM model we could compute the inner products at each timestep, 
 for the Reduced Order Model we will exploit an algebraic expression of these expressions.
@@ -805,18 +936,22 @@ It can be expressed as the product between the mass matrix and the FE representa
     \begin{cases}
         \vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n},                &\text{BDF-1},
         \\
-        \frac{1}{2}\vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n}
-        - \frac{3}{4}\vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n-1}, &\text{BDF-2}.
+        2\vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n}
+        - \frac{1}{2}\vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n-1}, &\text{BDF-2}.
     \end{cases}
 \end{equation}
 We point out how the timestep $\dt$ has been intentionally left out of the discrete operators definition.
 There are two reasons to back this decision:
 \begin{enumerate}
-    \item Conceptually, each discrete operator encodes a spatial model, in terms of a differential operator or the presence of a forcing term.
+    \item Conceptually, each discrete operator encodes a spatial model, 
+    in terms of a differential operator or the presence of a forcing term.
     The timestep $\dt$ shows up because we first discretized the continuous problem in time. 
-    Had we gone the other way around, discretizing the problem in space in the first place, we would have found a system of ODEs with the previously defined spatial operators. 
-    \item When we leverage the system approximation reduction technique, we will not want to have there the presence of the timestep.
-    The reduced model could use a different timestep, or the snapshots for different $\mu$ values could be collected for different timestep values.
+    Had we gone the other way around (discretizing first in space), 
+    we would have found a system of ODEs with the previously defined spatial operators. 
+    \item When we leverage the system approximation reduction technique, 
+    we will not want to have inside the operator the presence of the timestep.
+    The reduced model could use a different timestep, 
+    or the snapshots for different parameters could be collected for different timestep values.
 \end{enumerate}
 % The computation of the discrete initial condition $\vb{\hat{u}}_{h,0}$ is addressed in Section~\ref{sec:1d_fom_projection_interpolation}.
 
@@ -826,8 +961,8 @@ If we collect terms and factor out the unknowns, we get a compact linear system 
         \label{eq:1d_fom_linear_system_timestep}
         \vb{K}_h^{n+1} \vb{\hat{u}}_h^{n+1} &= \vb{b}_h^{n+1}, 
         \\
-        \vb{\hat{u}}_h^{0} &= \vb{\hat{u}}_{h,0},
-        \\
+        \vb{\hat{u}}_h^{0} &= \vb{\hat{u}}_{h,0};
+        \\[2mm]
         \vb{K}_h^{n+1} &= \Ah{M} + \dt \left[\Ah{A} + \Ah{C} \right. 
         \nonumber 
         \\
@@ -836,51 +971,6 @@ If we collect terms and factor out the unknowns, we get a compact linear system 
         \vb{b}_h^{n+1} &= \vb{F}_{\vb{\hat{u}}_h}^{n} + \dt \vb{F}_{g,h}^{n+1}.
     \end{align}
 \end{subequations}
-
-% \subsubsection{FE Representation of the Initial Condition}
-% \label{sec:1d_fom_projection_interpolation}
-% The initial condition in time $\hat{u}_0(x)$ needs to be expressed in terms of the basis functions $\varphi_i(x)$ to obtain the FE vector~$\vb{\hat{u}}_{h,0}$.
-% There are two ways to compute the values of this FE vector:
-% \begin{itemize}
-%     \item Interpolation.
-%     \item Projection.
-% \end{itemize}
-
-% \subsubsection*{Interpolation}
-% Since we are dealing with a nodal basis\footnote{We recall a nodal basis is one where each node of the mesh has a basis function assigned, 
-% such that the value of the coefficient which multiplies each basis function corresponds to the value of the function at that node.}, 
-% the interpolation procedure simply assigns to each vector entry the value of the function at the node corresponding to that entry.
-
-% In a sense, it is what we have done with the lifting of the boundary conditions in Section~\ref{sec:1d_fom_heat_equation_dirichlet_lifting}.
-% Since we are dealing with a nodal basis, we can express the lifting FE vector~$\vb{g}_h$ as a linear combination of the FE basis functions,
-% \begin{equation}
-%     g(x,t) \simeq g_h(x,t) = \sum_i^{N_h} g_{h_i}(t) \varphi_i(x),
-% \end{equation}
-% where each coefficient $\vb{g}_h = [g_{h_i}]$ is the value taken by the analytical interpolation of the boundary conditions given in Equation~\eqref{eq:1d_fom_dirichlet_lifting}. 
-
-% \subsubsection*{Projection}
-% Instead, the projection procedure aims at solving the approximation problem
-% \begin{equation}
-%     \hat{u}^{0}_h(x) = \sum_j^{N_h} \hat{u}_{h_i}^0 \varphi_j(x) = \hat{u}_0(x)
-% \end{equation}
-% with a variational approach within $V_h$. 
-% That is, the approximation error is set to be orthogonal to the function space $V_h$, yielding the weak formulation
-% \begin{equation}
-%     \inner{\hat{u}^{0}_h(x)}{v} = \inner{\hat{u}_0(x)}{v}, \, \forall \, v \in V_h,
-% \end{equation}
-% which leads to a linear system of equations if we enforce the orthogonality to each basis function,
-% \begin{subequations}
-%     \begin{align}
-%         \label{eq:projection_equation}
-%         \vb{M}_{h} \vb{\hat{u}}_{h,0} &= \vb{p}_h, \\
-%         \left[\vb{M}_{h}\right]_{ij} &= \inner{\varphi_j}{\varphi_i}, \\
-%         \left[\vb{p}_{h}\right]_{i} &= \inner{\hat{u}_0(x)}{\varphi_i}.
-%     \end{align}
-% \end{subequations}
-
-% In practice, the projection method is to be used, because even within the FE context we might not have a nodal basis (this would be the case if exotic function spaces are used).
-
-% However, when the Method of Manufactured Solutions is being used to certify the code implementation, only the interpolation procedure will allow us to reach machine accuracy when computing the error.
 
 \subsubsection{Wind-Up for the Full Order Problem}
 With all of the above, the generic Finite Element Method for the one-dimensional piston problem is defined.
@@ -893,7 +983,6 @@ What about the convergence rates?}
 A lifting of the Dirichlet boundary conditions has been introduced, which lead to the appearence of an additional forcing term and the homogenization of the boundary conditions.
 Hence, we will focus in the solution of an homogeneous boundary value problem.
 This fact will prove useful when we get into the implementation details of the reduction procedure.
-
 
 \subsection{How to Work on a Fixed Domain}
 
