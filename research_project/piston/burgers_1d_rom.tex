@@ -107,14 +107,14 @@ By doing so, we find the following ROM for the time evolution problem,
         + \dt \vb{C}^{n+1}_{N} \vb{\hat{u}}_{N}^{n+1}
         + \dt \vb{A}^{n+1}_{N} \vb{\hat{u}}_{N}^{n+1}
         \nonumber 
-        \\ 
+        \\[2mm]
         + \dt \vb{\hat{N}}^{n+1}_{N} \vb{\hat{u}}_{N}^{n+1}
         + \dt \left[\vb{N}^{n+1}_{N}\left(\vb{\hat{u}}_{N}^{n}\right)\right] \vb{\hat{u}}_{N}^{n+1}
         \nonumber
-        \\
+        \\[2mm]
         = \vb{F}_{\vb{\hat{u}}_{N}}^{n}
         + \dt \vb{F}_{g,N}^{n+1},
-        \\
+        \\[2mm]
         \vb{\hat{u}}_N^{0} = \vb{\hat{u}}_{N,0}.
     \end{align}
 \end{subequations}
@@ -142,13 +142,13 @@ this time in the reduced space, to be solved for each timestep to advance the so
     \begin{align}
         \vb{K}_{N}^{n+1} \vb{\hat{u}}_{N}^{n+1} &= \vb{b}_{N}^{n+1}, 
         \\
-        \vb{\hat{u}}_{N}^{0} &= \vb{\hat{u}}_{N,0},
-        \\
+        \vb{\hat{u}}_{N}^{0} &= \vb{\hat{u}}_{N,0};
+        \\[2mm]
         \vb{K}_{N}^{n+1} &= m_{\text{BDF}} \Ah{M} + \dt \left[\Ah{A} + \Ah{C} \right. 
         \nonumber 
         \\
                         &\left. + \Ah{\hat{N}} + \Ah{N}\left(\vb{\hat{u}}_{N}^{n}\right)\right],
-        \\
+        \\[2mm]
         \vb{b}_{N}^{n+1} &= \vb{F}_{\vb{\hat{u}}_{N}}^{n} + \dt \vb{F}_{g,N}^{n+1}.
     \end{align}
 \end{subequations}
@@ -172,7 +172,7 @@ The forcing term due to the time discretization takes the following form in the 
         \vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n},                & \text{BDF-1},
         \\
         \frac{1}{2}\vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n}
-        - \frac{3}{4}\vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n-1}, & \text{BDF-2}.
+        - \frac{3}{2}\vb{M}_{N}^{n+1} \vb{\hat{u}}_{N}^{n-1}, & \text{BDF-2}.
     \end{cases}
 \end{equation}
 Again, these mimic the algebraic pattern obtained in the FOM.
