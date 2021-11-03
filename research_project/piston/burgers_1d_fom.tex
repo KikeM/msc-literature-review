@@ -133,11 +133,6 @@ The $\pm$ signs come up because there are two travelling waves, one to each side
 Since our piston is located at the right boundary of the domain, 
 we choose the $-$ sign so that waves propagate left, and continue our derivation.
 We can integrate~$\mathtt{V}'$ with respect to~$\rho$ to obtain a relation between the flow velocity~$u$ and the speed of sound~$a$:
-\mytodo{Outer boundary: What is the physical process that allows me to not apply a boundary conditon.}
-\mytodo{Outer boundary: Ignoring the + sign means that no inflow is permitted.}
-\mytodo{Outer boundary: Constant Riemann invariant outside of the domain.}
-\mytodo{Outer boundary: Clarify what is happening at the model outer boundary.}
-\mytodo{Outer boundary: More detailed section about the boundary condition.}
 \begin{equation}
     \mathtt{V} = - \int_{\rho_0}^{\rho} \frac{a}{\rho} d\rho 
 \end{equation}
@@ -328,21 +323,29 @@ Thus, the differential model in the physical space is given by the following PDE
         % \frac{\partial u}{\partial x}(0, t) &= 0, \\
         u(L, t) &= L'(t),
         \\
+        \lim_{x\rightarrow-\infty}u(x,t) &= 0,
+        \label{eq:rest_condition_at_infinity}
+        \\
         u(x, 0) &= 0. 
     \end{align}
 \end{subequations}
-At the left boundary, we will impose a natural ouflow condition.
 At the right boundary, the moving piston, a Dirichlet condition sets the flow velocity equal to the one of the moving wall,
-
-\mytodo{Outer boundary: Natural outflow condition means evaluating the weak form at the boundary.
-This is compatible with the small diffusion coefficient.
-This is equivalent to imposing an homogeneous Neumann boundary condition.
-}
 \begin{equation}
     L'(t) = - \delta L_0 \omega \sin(\omega t).
 \end{equation}
-The notation $\left.\frac{\partial u}{\partial t}\right|_{x}$ indicates that the derivative takes place in the physical moving domain. 
-This is relevant for the ALE formulation, which we explain in the following section. 
+Towards the left boundary, we have to find a procedure to deal with the fact that our piston is infinite, and hence the fact that the far region of the flow is not aware of the piston's motion. 
+We postpone this discussion for the moment,
+since the PDE needs to be further modified to account for the 
+moving mesh in the physical domain.
+We shall deal with it once we are dealing with the weak form,
+in Section~\ref{sec:outer_boundary}.
+
+The notation for the time derivative,
+\begin{equation*}
+    \left.\frac{\partial u}{\partial t}\right|_{x},
+\end{equation*}
+indicates that the derivative takes place in the physical domain. 
+This is relevant for the ALE formulation, which we explain in the following section.
 
 \subsubsection{ALE Formulation}
 Despite the fact that we will be solving the problem in the physical moving domain, 
@@ -367,7 +370,8 @@ Then, we define the mesh velocity as the time derivative of the spatial coordina
     w_m(x,t) = \pdv{x}{t} = \pdv{\alemap}{t} \ (x, t) = \pdv{\alemap}{t} \ (\alemap^{-1} (\aleX,t), t).
 \end{equation}
 
-For the particular scenario of the moving piston, this mapping is quite simple to derive,
+For the particular scenario of the moving piston, this mapping is quite simple to derive, 
+for a rescaling of the spatial variable with the piston length is enough,
 \begin{equation}
     \aleX = \frac{x}{L(t)} \rightarrow \alemap(\aleX, t) = \aleX L(t), \, \aleX \in [0,1].
 \end{equation}
@@ -375,7 +379,7 @@ Then, we have an analytical expression for the mesh velocity too,
 \begin{equation}
     w_m(x,t) = \pdv{\alemap}{t} = \aleX L'(t) = \frac{x}{L(t)} L'(t).
 \end{equation}
-For such a simple domain, the mesh velocity quantity is a linear interpolation 
+For such a simple domain, the mesh velocity is a linear interpolation 
 for the moving boundary velocity.
 
 Additionally, we introduce the jacobian of the ALE mapping. 
@@ -404,7 +408,7 @@ which can actually be pulled out of the integral, since the jacobian does not de
     \label{eq:jacobian_pulled_out_integral}
 \end{equation}
 We will come back to this fact further down in the document,
-when we comment upon the reduction of the linear operators.
+when we comment upon the reduction of the algebraic operators.
 
 At last, we can carry out a \textit{correctness} check in our calculations by attempting to verify a well known relation between the mesh velocity vector and the jacobian \cite{aris1990vectors},
 \begin{subequations}
@@ -414,7 +418,9 @@ At last, we can carry out a \textit{correctness} check in our calculations by at
         \\[2mm]
         \pdv{J_{\alemap}}{t} &= L'(t),
         \\
-        J_{\alemap} \nabla \cdot w_m &= L(t) \frac{L'(t)}{L(t)} = L'(t),
+        J_{\alemap} \nabla \cdot w_m 
+        &= L(t) \frac{L'(t)}{L(t)} 
+        = L'(t),
     \end{align}
 \end{subequations}
 which proves the identity.
@@ -524,19 +530,19 @@ Since we will be working with the Galerkin procedure to solve PDEs,
 we define the $L^2(\Omega)$ inner product to transform the strong formulation into a weak, variational one,
 \begin{equation}
     %\inner{u}{v}_{(t, \mu)} = \int_{\Omega(t, \mu)} uv\ d\Omega.
-    \inner{u}{v} = \int uv\ d\Omega.
+    \inner{u}{v} = \int_0^L uv\ \dd\Omega.
 \end{equation}
 This inner product induces the so called \emph{eyeball} norm, since it checks if two functions look alike,
 \begin{equation}
     % \norm{f-g}_{(t, \mu)}  = \sqrt{\int_{\Omega(t, \mu)} (f - g)^2\ d\Omega}.
-    \norm{f-g}  = \sqrt{\int (f - g)^2\ d\Omega}.
+    \norm{f-g}  = \sqrt{\int_0^L (f - g)^2\ \dd\Omega}.
 \end{equation}
 Eventually, we will also be interested in other norms, such as the $H^1(\Omega)$ norm, which captures the differences in the gradients too.
 This is important when computing stress-related values from the solved field.
 
-With this inner product, we project the residual of the strong formulation onto a given fuction $v \in V$,
+With this inner product, we project the residual of the strong formulation onto a given fuction 
+$u, v \in V$,
 where $V$ is a suitable Hilbert space,
-\mytodo{Nomenclature: is this the right way to formulate a weak form?}
 \begin{subequations}
     \begin{align}
         \label{eq:1d_fom_weak_formulation}
@@ -549,14 +555,88 @@ where $V$ is a suitable Hilbert space,
         \\
         u(x, 0) &= 0, 
         \\
-        u(L, t) &= b_L(t), 
-        \\
+        u(L, t) &= b_L(t);
+        \\[2mm]
         b_L(t) &= - \frac{\delta L_0 \omega}{a_0} \sin \omega t.
     \end{align}
 \end{subequations}
 % The outflow Neumann condition has been taken into account, but since it is homogeneously zero, it does not show up. 
-The natural boundary condition, which for this problems translates into an homogeneous Neumann condition,
-has already been taken into account in the integration by parts procedure of the diffusion term. 
+% The natural boundary condition, which for this problems translates into an homogeneous Neumann condition,
+%has already been taken into account in the integration by parts procedure of the diffusion term. 
+
+\subsubsection{Natural Outer Boundary Condition}
+\label{sec:outer_boundary}
+In this section we explore how to deal with the rest condition at infinity, 
+Equation~\eqref{eq:rest_condition_at_infinity}. 
+We follow the reasonings found in \cite{outerBoundary},
+which are validated later on by the convergence of consistency checks
+such as the mass conservation equation, see Section~\ref{sec:fom_calibration_bdf_convergence_rates}.
+
+Since we have a finite domain, which goes from the origin to the piston location,
+we need to determine a boundary condition which allows us 
+to tell the flow to resolve the outer boundary of our numerical domain
+\textit{letting the flow be}, 
+as if there were no physical boundary (because there is truly none).
+
+If we have had a purely convective PDE, this would be already satisfied, 
+for we have defined a Dirichlet boundary condition at the piston wall.
+
+In the construction of the weak form
+we have used the integration by parts recipe,
+\begin{equation}
+    \int_{0}^{L} w \dd z 
+    = \left.wz\right|_{0}^{L} - \int_{0}^{L} z \dd w,
+\end{equation}
+to lower by one the degree of the laplacian operator,
+\begin{subequations}
+    \begin{align}
+        \dd z &= \pdv[2]{u}{x} \dd x \rightarrow z = \pdv{u}{x},
+        \\
+        w &= v \, \rightarrow \dd w = \pdv{v}{x} \dd x,
+        \\[2mm]
+        -\int_{0}^{L} 
+        \varepsilon \pdv[2]{u}{x} v \dd x 
+        &= -\left.\varepsilon \pdv{u}{x} v \right|_{0}^{L} 
+        + \int_{0}^{L} \varepsilon \pdv{u}{x} \pdv{v}{x} \dd x.
+    \end{align}
+\end{subequations}
+The first summand of the alternative expression for the laplacian integral 
+contains two summands when expanded,
+\begin{equation}
+    -\left.\varepsilon \pdv{u}{x} v \right|_{0}^{L}
+    = 
+    -\varepsilon\pdv{u}{x} \qty(L) v(L) 
+    +\varepsilon\pdv{u}{x} \qty(0) v(0).
+\end{equation}
+For the first summand, we have that $v(L) = 0$, 
+for an essential boundary condition is present at this location.
+
+Instead, for the other summand, we do not know the appropriate value for 
+$\pdv{u}{x} \qty(0)$.
+One approach would be to include this term in the weak formulation, so that it is taken into account and determined as part of the solution.
+However, as shown in \cite{outerBoundary}, this can lead to instability problems.
+
+In practice, one may also think that if the size of the domain is sufficiently large,
+following the rest boundary condition from Equation~\eqref{eq:rest_condition_at_infinity},
+one would have
+\begin{equation}
+    \lim_{x\rightarrow -x} \pdv{u}{x} = 0.
+\end{equation}
+Additionally, since in practice this term is multiplied by a very small value, 
+$\varepsilon$, 
+we opt to set it to zero.
+
+Our numerical results hint towards the fact that the resulting flow pattern seems realistic, 
+since it preserves mass.
+Interestingly, setting the boundary condition under this scheme 
+leads to stable\footnote{
+    By stable we mean that the flow comes in and out repeatedly without introducing
+    growth or decay in the solution.
+}
+inflow and outflow patterns at the outer boundary, 
+which are in good agreement with what we would expect from piston motion.
+
+\mytodo{Outer boundary: Constant Riemann invariant outside of the domain?}
 
 \subsubsection{Dirichlet Lifting}
 \label{sec:1d_fom_heat_equation_dirichlet_lifting}
