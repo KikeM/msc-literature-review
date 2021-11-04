@@ -424,8 +424,13 @@ At last, we can carry out a \textit{correctness} check in our calculations by at
     \end{align}
 \end{subequations}
 which proves the identity.
-Equation~\eqref{eq:jacobian_derivative} could be part of our problem if we did not have access 
-to an explicit expression for the jacobian, and we wanted to solve our problem in a fixed reference domain.
+Equation~\eqref{eq:jacobian_derivative} could be part of our problem 
+if we did not have access to an explicit expression for the jacobian, 
+and we wanted to solve our problem in a fixed reference domain. 
+It is an ODE whose initial condition would be 
+$J_{\alemap}(0) = 1$
+if the reference domain coincided with the initial domain configuration of the transient problem.
+
 
 \subsubsection*{Time-Derivative in the Reference Domain}
 Since the equations are going to be solved in the physical domain, we need to adjust the time derivative in the physical domain 
@@ -484,9 +489,10 @@ For the sake of clear notation, we condense the coefficients
 and drop the $\tilde{u}$ notation to prevent an overloaded notation.
 
 The coefficient $\left(\frac{\delta L_0 \omega}{a_0}\right)$ multiplying the boundary condition
-is the relation between the piston motion and the static speed of sound\footnote{
+is the ratio between the piston motion and the static speed of sound\footnote{
     A proxy for the average speed at which information propagates.
     }.
+In a way, it is the maximum piston mach number, in terms of the static speed of sound.
 As we will see in the results section, this coefficient will be the one driving the response of the fluid to the motion of the piston.
 The larger it is, the stronger the nonlinear response will become. 
 We shall exploit this fact to build our reduced space, by sampling smartly through the parameter space.
