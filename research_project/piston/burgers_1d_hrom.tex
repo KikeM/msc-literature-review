@@ -67,8 +67,10 @@ we attempt to relate the POD a posteriori error estimations with
 the actual error between ROM and FOM.
 
 \subsubsection{POD: A Posteriori Errors}
-The POD returns a collection of vectors and sigular values, each related to the other.
-The magnitude of each singular value somehow encodes 
+The POD returns a collection of vectors and sigular values, 
+$(\psi_i(x), \sigma_i)$,
+each related to the other.
+The magnitude of each singular value $\sigma_i$ somehow encodes 
 how much information is carried by its associated vector about the original span.
 % Departing from the idea that we need at least \textit{one} basis element to solve our problem,
 % and that we have a finite amount of 
@@ -77,17 +79,26 @@ We define the energy of the basis that contains up to the $i$-th element as
 \begin{equation}
     \mathcal{E}_i = \frac{\sum_{j=0}^{i}\sigma_j^2}{\sum \sigma_k^2}.
 \end{equation}
-We shall see if this variable has any predictive power on the ROM error.
+This magnitude is derived from the \textit{a posteriori} error bounds 
+for a POD reconstruction, where the following inequality holds,
+\begin{equation}
+    \norm{y(x) - \sum_{j=0}^{n} w_j \psi_j(x)}_{2}^{2} \leq \sum_{i = n+1}^{N} \sigma_i^2,
+\end{equation}
+with $y(x)$ belonging to the snapshots matrix used to build the POD basis.
+This inequality is telling us that if up to~$n$ basis vectors are used
+to reconstruct a vector belonging to the original span,
+the average error in the $L_2$ sense will be smaller or equal
+to the sum of the remaining squared singular values.
 
-\mytodo{Relate POD "energy" to the actual error made by the POD basis in the reconstruction of the original span.
-There is an equation which bounds the L2 norm of the POD basis.}
+We shall see if this variable has any predictive power on the ROM error.
 
 \subsubsection{Error Decay}
 We want to find the smallest size $N^{*}$ for which the FOM is correctly reproduced.
 Naturally, the exact value of this variable is problem-dependent, 
 but the way in which we approach its search would suit any RB problem.
 
-We have done this online simulation for one sample, in the most nonlinear regime.
+We have done this online simulation for one sample, 
+for a location in the parameter space where the system response is the most nonlinear.
 \begin{table}[h]
     \centering
     \caption{Online sampling.}
@@ -101,7 +112,8 @@ We have done this online simulation for one sample, in the most nonlinear regime
 \end{table}
 \mytodo{HROM Error Decay: Extend for multiple online valuations.}
 
-In Figure~\ref{fig:error_decay} we present the ROM error with respect to the number of basis elements and the energy of the truncated basis.
+In Figure~\ref{fig:error_decay} we present the ROM error with respect to 
+the number of basis elements and the energy of the truncated basis.
 \begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{research_project/piston/figures/rb_certification/error_decay.png}
@@ -112,7 +124,8 @@ In Figure~\ref{fig:error_decay} we present the ROM error with respect to the num
 The more elements in the basis, the smaller the error.
 The more energy the basis contains, the better the approximation.
 
-We present in Figures~\ref{fig:outflow_model_comparison_N_5} and \ref{fig:outflow_model_comparison_N_10} 
+We present in Figures~\ref{fig:outflow_model_comparison_N_5} 
+and \ref{fig:outflow_model_comparison_N_10} 
 the actual solution at the outflow for each model (FOM and ROM).
 We can see how the ROM model is poorly resolved for $N=5$, as reflected by the error,
 but how it drastically improves for $N=10$, except for the initial instants of movement.
@@ -181,7 +194,8 @@ as hinted by the abrupt drop in the singular value, see Figure~\ref{fig:sigmas_d
 In the light of these results, 
 we necessarily need to use the whole MDEIM basis for our simulations.
 
-\mytodo{What would happen if we used the snapshots obtained during the solution of the FOM?}
+\mytodo{What would happen if we used the snapshots obtained 
+during the solution of the FOM?}
 
 \subsection{HROM Error Estimation}
 \label{sec:hrom_results_posteriori_error_estimation}

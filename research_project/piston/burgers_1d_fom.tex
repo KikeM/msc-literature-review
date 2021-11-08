@@ -1109,23 +1109,29 @@ If we collect terms and factor out the unknowns, we get a compact linear system 
 \subsubsection{Wind-Up for the Full Order Problem}
 With all of the above, the generic Finite Element Method for the one-dimensional piston problem is defined.
 
-The problem has been explained within three levels of abstraction: continuous with strong and weak formulations, semi-discrete in time and fully discretized in time and space.
+The problem has been explained within three levels of abstraction: 
+continuous with strong and weak formulations, semi-discrete in time 
+and fully discretized in time and space.
 An semi-implicit time discretization scheme is used, to obtain a sufficiently stable algebraic system.
+
 \mytodo{Add text: how does the semi-discretization play with the stability of the system?
 What about the convergence rates?} 
 
-A lifting of the Dirichlet boundary conditions has been introduced, which lead to the appearence of an additional forcing term and the homogenization of the boundary conditions.
+A lifting of the Dirichlet boundary conditions has been introduced, 
+which lead to the appearence of an additional forcing term and 
+the homogenization of the boundary conditions.
 Hence, we will focus in the solution of an homogeneous boundary value problem.
-This fact will prove useful when we get into the implementation details of the reduction procedure.
+This fact will prove useful when we get into 
+the implementation details of the reduction procedure.
 
 \subsection{How to Work on a Fixed Domain}
+\mytodo{Complete section: fixed domain.}
 
 Jacobian Transformation.
-How would the system change if we wanted to solve our equations in a fixed domain?
+How would the system change if we wanted to 
+solve our equations in a fixed domain?
 What would be the expression of the algebraic system?
 
 Add these for completeness.
-
-Although I am tempted to actually solve them and compare ... 
 
 \end{document}
