@@ -23,11 +23,14 @@ In Section~\ref{sec:fom_calibration_artificial_viscosity} we show the effects of
 in Section~\ref{sec:fom_calibration_bdf_convergence_rates} we explore the differences 
 between BDF-1 and BDF-2 time integration schemes;
 and finally in Section~\ref{sec:fom_calibration_system_forcing} we show how
-certain combinations within the parameter space produce unfeasible solutions, 
+certain combinations within the parameter space produce unfeasible solutions\footnote{
+    Due to the lack of a proper stabilization scheme. 
+    We are comfortable with this choice since it was not mandatory to
+    showcase our reduction tools.
+}, 
 and so we explain how to sample within the feasible range.
 
 \subsection{Artificial Viscosity}
-\mytodo{Add text: AV is a placeholder for stabilization operators.}
 \label{sec:fom_calibration_artificial_viscosity}
 As stated previously in the document, 
 we included an artificial viscosity term in the final formulation
@@ -46,9 +49,9 @@ this value,
 no matter how small, was introducing measurable damping into the system.
 
 The actual value that seems correct, keeping the system stable whilst purely convective (at least for the time-scale for which we are solving) seems to be a much smaller one,
-\begin{equation}
+\begin{equation*}
     \varepsilon \sim 10^{-10}.
-\end{equation}
+\end{equation*}
 In Figure~\ref{fig:artificial_viscosity_comparison} we present a comparison for these two viscosity values.
 We show the motion of the fluid at the outflow and a phase plot, to ease the analysis of the correlation between the weak shock wave at the outflow and the piston motion.
 The smallest viscosity value, $(10^{-10})$ leads to a convection-like phase plot:
@@ -152,7 +155,6 @@ Visual inspection reveals that certain solutions contain wiggles when a shock wa
 Naturally, wiggles were not expected to be captured by this simple model, 
 so they must be due to the fact that the shock wave is becoming thinner than the mesh size.
 
-\mytodo{Present nondimensional results.}
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/wiggles/smooth_vs_wiggled.png}
