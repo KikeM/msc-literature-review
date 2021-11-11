@@ -200,6 +200,7 @@ once the latter is given, we can obtain density~$\rho$ and pressure~$p$ as a fun
 
 % -----------------------------------------------------------------------------
 \subsubsection{Mass Conservation}
+\label{sec:mass_conservation_definition}
 Before we present the complete problem and its numerical solution, we comment 
 on the integral equation for mass conservation.
 This relation will not be used for the solution of the system, but it is a 
@@ -224,23 +225,23 @@ the variables positive in the direction of the axes.}, which implies
     \frac{d}{dt}\int_{0}^{L(t)} \rho(x,t) dx - \rho(0,t) u(0,t) = 0.
     \label{eq:integral_mass_conservation}
 \end{equation}
-If we introduce the expression of density in terms of velocity from 
+If we introduce the expression for density in terms of velocity from 
 Equation~(\ref{eq:density_as_a_function_of_speed}), we get
 \begin{equation}
 \begin{split}
         \frac{d}{dt}\int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}\left(\frac{u(x,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}} dx 
         \\
-        - u(0,t) \left(1 - \frac{\gamma-1}{2}\left(\frac{u(0,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}}  = 0.
+        - u(0,t) \left(1 - \frac{\gamma-1}{2}\left(\frac{u(0,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}}  = 0,
 \end{split}
 \end{equation}
+where the constant $\rho_0$ has cancelled out for being a common factor to both summands,
+and the whole equation an equality with zero.
+
 To ease our task at verifying this equation, we rather calculate the integral term for each time step
 \begin{equation}
     I(t) = \int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}\left(\frac{u(x,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}} dx,
 \end{equation}
 and only then compute time derivatives, which can be done with a second order finite difference scheme.
-% \begin{equation}
-%     \frac{d}{dt}I(t) := I'(t) \simeq \frac{I\left(t^{n+1}\right) - I\left(t^{n}\right)}{\dt}.
-% \end{equation}
 Then we can compute numerically the mass defect $MD(t)$ between the time derivative of volume variation
 and mass outflow at the open boundary,
 \begin{equation}
@@ -504,16 +505,20 @@ With all of this done, we obtain a familiar PDE structure with diffusion, linear
     - c(x,t)\frac{\partial u}{\partial x} 
     - \varepsilon  \pdv[2]{u}{x} = 0.
 \end{equation}
-Before moving on to the derivation of the weak formulation, we apply the scaling to the mass conservation and derived variables expressions.
+Before moving on to the derivation of the weak formulation, we apply the scaling to the mass conservation 
+and derived variables expressions.
 
 \subsubsection{Mass Conservation}
-If this rescaling is applied, Equation~(\ref{eq:mass_conservation_check}) for mass conservation needs to be updated, 
+If the former rescaling is applied, Equation~(\ref{eq:mass_conservation_check}) 
+for mass conservation needs to be updated, 
 to take into account the fact that the velocity variable is now scaled with the speed of sound.
 \begin{subequations}
     \begin{align}
-        I(t) &= \int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}u(x,t)\right)^{\frac{2}{\gamma-1}} dx, 
+        I(t) &= \int_{0}^{\frac{L(t)}{L_0}} 
+        \left(1 - \frac{\gamma-1}{2}u(x,t)\right)^{\frac{2}{\gamma-1}} 
+        \dd x, 
         \\
-        MC(t) &= I'(t) - a_0 u(0,t) \left(1 - \frac{\gamma-1}{2}u(0,t)\right)^{\frac{2}{\gamma-1}}.
+        \frac{MD(t)}{\rho_0 a_0} &= \frac{1}{a_0}I'(t) - u(0,t) \left(1 - \frac{\gamma-1}{2}u(0,t)\right)^{\frac{2}{\gamma-1}}.
     \end{align}    
 \end{subequations}
 
@@ -580,7 +585,7 @@ such as the mass conservation equation, see Section~\ref{sec:fom_calibration_bdf
 
 Since we have a finite domain, which goes from the origin to the piston location,
 we need to determine a boundary condition which allows us 
-to tell the flow to resolve the outer boundary of our numerical domain
+to tell the scheme to resolve the outer boundary of our numerical domain
 \textit{letting the flow be}, 
 as if there were no physical boundary (because there is truly none).
 
@@ -646,7 +651,9 @@ which are in good agreement with what we would expect from piston motion.
 
 \subsubsection{Dirichlet Lifting}
 \label{sec:1d_fom_heat_equation_dirichlet_lifting}
-For reasons that will become apparent later, it is preferable to work with a homogeneous problem in the Dirichlet boundary conditions.
+For reasons related to the fact that we have a parametrized boundary condition,
+which will become apparent when the reduction scheme is presented,
+it is preferable to work with a homogeneous problem in the Dirichlet boundary conditions.
 
 To obtain so, we introduce a \emph{lifting} $g(x,t)$ of the Dirichlet boundary conditions.
 We express the solution of our problem like the linear combination of the solution of the homogeneous problem and the lifting function:
@@ -826,9 +833,10 @@ our interpolation takes two previous timesteps from the past,
     \\[2mm]
     \pdv{p_2}{t} 
     &= 
-    \frac{3\hat{u}^{n+1} - 4\hat{u}^{n} + \hat{u}^{n-1}}{2\dt},
-    \nonumber \\
-    &\frac{1}{\dt}
+    \frac{3\hat{u}^{n+1} - 4\hat{u}^{n} + \hat{u}^{n-1}}{2\dt}
+    \nonumber 
+    \\[2mm]
+    &= \frac{1}{\dt}
     \qty(
         \frac{3}{2}\hat{u}^{n+1} 
         - 2\hat{u}^{n} 
@@ -857,13 +865,14 @@ In fact, both formulations can be synthezised into one,
     + \dt \inner{\hat{u}}{v}^{n+1}
     + \dt \inner{l(\hat{u})}{v}^{n+1}
     =
-    \nonumber \\
+    \nonumber 
+    \\[2mm]
     \inner{\hat{u}_{\text{BDF}}  }{v}^{n+1}
     + 
     \dt \inner{f}{v}^{n+1},
     \label{eq:weak_formulation_generalized_bdf}
 \end{align}
-where the forcing term due to the time integration scheme has been generalized,
+provided that the forcing term due to the time integration scheme is generalized,
 \begin{equation}
     \hat{u}_{\text{BDF}} =
     \begin{cases}
@@ -966,15 +975,20 @@ Equation (\ref{eq:semi_implicit_approximation_convective_term}),
     \begin{align}
         m_{\text{BDF}} \inner{\hat{u}^{n+1}}{v} 
         - \dt \inner{c \grad \hat{u}^{n+1}}{v} 
-        + \dt \inner{\varepsilon \grad \hat{u}^{n+1}}{\grad v} \nonumber\\
+        + \dt \inner{\varepsilon \grad \hat{u}^{n+1}}{\grad v} 
+        \nonumber \\[2mm]
         + \dt\left(\inner{b_0 \hat{u}^{n+1} \grad g^{n+1}}{v}\right. 
-        + \left.\inner{b_0 g^{n+1} \grad \hat{u}^{n+1}}{v}\right) \nonumber\\
-        + \inner{b_0 \hat{u}^{*} \grad \hat{u}^{n+1}}{v} \nonumber\\
+        + \left.\inner{b_0 g^{n+1} \grad \hat{u}^{n+1}}{v}\right) 
+        \nonumber \\[2mm]
+        + \inner{b_0 \hat{u}^{*} \grad \hat{u}^{n+1}}{v} 
+        \nonumber \\[2mm]
         = 
         \inner{\hat{u}_{\text{BDF}}}{v}
-        - \dt \inner{\frac{\partial g^{n+1}}{\partial t}}{v} \nonumber \\
+        - \dt \inner{\frac{\partial g^{n+1}}{\partial t}}{v} 
+        \nonumber \\[2mm]
         - \dt \inner{b_0 g^{n+1} \grad g^{n+1}}{v} 
-        - \dt \inner{\varepsilon \grad g^{n+1}}{\grad v} \nonumber\\ 
+        - \dt \inner{\varepsilon \grad g^{n+1}}{\grad v} 
+        \nonumber \\[2mm] 
         + \dt \inner{c^{n+1} \grad g^{n+1}}{v}.
     \end{align}
 \end{subequations}
@@ -1030,7 +1044,7 @@ both the matrices and the vectors change for each timestep,
         \left[\vb{F}_{\vb{\hat{u}}_h}^{n}\right]_{i} &= 
             \begin{cases}
                 \inner{\hat{u}_h^{n}}{\varphi_i}^{n+1},                &\text{BDF-1},
-                \\
+                \\[2mm]
                 2\inner{\hat{u}_h^{n}}{\varphi_i}^{n+1}
                 - \frac{1}{2}\inner{\hat{u}_h^{n-1}}{\varphi_i}^{n+1}, &\text{BDF-2}.
             \end{cases}
@@ -1046,7 +1060,7 @@ This leads to the following algebraic system:
         \nonumber 
         \\[2mm] 
         + \dt \vb{\hat{N}}^{n+1}_h \vb{\hat{u}}_{h}^{n+1} 
-        + \dt \left[\vb{N}^{n+1}_h\left(\vb{\hat{u}}_{h}^{n}\right)\right] \vb{\hat{u}}_{h}^{n+1} 
+        + \dt \left[\vb{N}^{n+1}_h\left(\vb{\hat{u}}_{h}^{*}\right)\right] \vb{\hat{u}}_{h}^{n+1} 
         \nonumber
         \\[2mm] 
         = \vb{F}_{\vb{\hat{u}}_h}^{n}
@@ -1069,7 +1083,7 @@ It can be expressed as the product between the mass matrix and the FE representa
     \vb{F}_{\vb{\hat{u}}_h}^{n}= 
     \begin{cases}
         \vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n},                &\text{BDF-1},
-        \\
+        \\[2mm]
         2\vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n}
         - \frac{1}{2}\vb{M}_{h}^{n+1} \vb{\hat{u}}_{h}^{n-1}, &\text{BDF-2}.
     \end{cases}
