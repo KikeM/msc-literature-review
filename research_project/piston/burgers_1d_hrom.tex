@@ -101,16 +101,20 @@ We have done this online simulation for one sample,
 for a location in the parameter space where the system response is the most nonlinear.
 \begin{table}[h]
     \centering
-    \caption{Online sampling.}
+    \caption{Online sampling parameters, 
+    sorted in ascending order by piston mach~$u_p$ values.}
     \begin{tabular}{cccc}
     \toprule
         $a_0$ & $\omega$ & $\delta$ & $u_p$
         \\ \midrule
-        20.62 & 25.98    & 0.29     & 0.37
+        22.96 &   29.55 & 0.15 &           0.20 \\
+        19.28 &   22.87 & 0.20 &           0.23 \\
+        18.24 &   18.88 & 0.29 &           0.30 \\
+        24.64 &   27.13 & 0.29 &           0.32 \\
+        20.62 &   25.98 & 0.29 &           0.37
         \\ \bottomrule
     \end{tabular}
 \end{table}
-\mytodo{HROM Error Decay: Extend for multiple online valuations.}
 
 In Figure~\ref{fig:error_decay} we present the ROM error with respect to 
 the number of basis elements and the energy of the truncated basis.
@@ -131,13 +135,13 @@ We can see how the ROM model is poorly resolved for $N=5$, as reflected by the e
 but how it drastically improves for $N=10$, except for the initial instants of movement.
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\columnwidth]{research_project/piston/figures/rb_certification/outflow_probes_comparison_rom_5_srom_15_online_0.png}
+    \includegraphics[width=\columnwidth]{research_project/piston/figures/rb_certification/outflow_probes_comparison_rom_5_srom_15_online_4.png}
     \caption{Outflow velocities for different models. The ROM model is poorly resolved for $N=5$.}
     \label{fig:outflow_model_comparison_N_5}
 \end{figure}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\columnwidth]{research_project/piston/figures/rb_certification/outflow_probes_comparison_rom_10_srom_20_online_0.png}
+    \includegraphics[width=\columnwidth]{research_project/piston/figures/rb_certification/outflow_probes_comparison_rom_10_srom_20_online_4.png}
     \caption{Outflow velocities for different models. 
     The ROM model is better resolved for $N=10$, except at the beginning of the simulation.}
     \label{fig:outflow_model_comparison_N_10}
