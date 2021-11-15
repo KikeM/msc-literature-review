@@ -198,8 +198,133 @@ as hinted by the abrupt drop in the singular value, see Figure~\ref{fig:sigmas_d
 In the light of these results, 
 we necessarily need to use the whole MDEIM basis for our simulations.
 
-\mytodo{What would happen if we used the snapshots obtained 
-during the solution of the FOM?}
+\subsubsection{Hierarchical Basis}
+The previous results show that the basis obtained using
+snapshots built with the RB basis elements is not hierarchical.
+This is an unconvenient result.
+
+Although the assembly of the nonlinear operator has been simplified
+in terms of computational costs,
+there are no degrees of freedom to adjust the reconstruction error,
+which is a common operation in the field of Reduced Models.
+
+Hence, we explore an alternative approach, collecting nonlinear term snapshots 
+during the simulation of the FOM, and compressing them with the same 
+nested strategy as we did for the reduced basis.
+
+By doing so, we do recover a hierarchical basis, which allows us to tune the error,
+as proved by the singular value decay (Figure~\ref{fig:sigmas_decay_from_fom}).
+The basis for the nonlinear operator presents the same pattern 
+as the solution reduced basis.
+We believe this has to do with the fact that the linearized nonlinear operator is a trilinear form.
+Hence, due to the simplicity of the Jacobian, the reduction difficulty is similar to the one
+required for the reduced basis.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/sigmas_problem_from_fom.png}
+    \caption{Singular values decay for the reduced basis and the nonlinear operator.
+    The dashed vertical line corresponds to the number of basis elements, $N=70$.
+    The basis for the nonlinear operator presents the same pattern 
+    (and hence the same size)
+    as the solution reduced basis.
+    We believe this has to do with the fact that the linearized nonlinear operator is a trilinear form.
+    Hence, due to the simplicity of the Jacobian, the reduction difficulty is similar to the one
+    required for the reduced basis.}
+    \label{fig:sigmas_decay_from_fom}
+\end{figure}
+
+In Table~\ref{tab:mdeim_certification} we show the parameter range for which
+we tested this alternative basis against the first ten reduced basis elements
+(for which we averaged the error).
+\begin{table}[h]
+    \centering
+    \caption{Parameter space for nonlinear term reconstruction.}
+    \label{tab:mdeim_certification}
+    \begin{tabular}{cccc}
+        \toprule
+        $a_0$  & $\omega$ & $\delta$ & $u_p$ \\
+        \midrule
+        24.275 &  18.549  & 0.203 &  0.155 \\
+        21.055 &  15.969  & 0.236 &  0.179 \\
+        23.627 &  24.427  & 0.211 &  0.218 \\
+        21.533 &  24.376  & 0.200 &  0.226 \\
+        20.440 &  18.913  & 0.289 &  0.267 \\
+        23.849 &  27.396  & 0.261 &  0.300 \\
+        19.976 &  23.190  & 0.259 &  0.301 \\
+        20.633 &  24.184  & 0.280 &  0.329 \\
+        18.803 &  29.705  & 0.226 &  0.357 \\
+        19.890 &  27.986  & 0.278 &  0.391 \\
+        \bottomrule
+\end{tabular}
+\end{table}
+
+In Figures~\ref{fig:nonlinear_error_decay_from_fom_by_parameter} and~\ref{fig:nonlinear_error_decay_from_fom}
+we present the reconstruction error decay, as the N-MDEIM basis is truncated.
+This time, the basis does show the expected error decay as modes are removed,
+hence allowing to speed up even further computations if some compromise is made in the error.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/nonlinear_error_decay_by_parameter.png}
+    \caption{N-MDEIM reconstruction error decay, as we truncate the modes from the MDEIM basism
+    for some individual parametrizations.
+    Probably due to the simplicity of the problem, Jacobian and the fact that the linearized term is trilinear in
+    all of its arguments, there is no noticeable difference for different parametrizations.}
+    \label{fig:nonlinear_error_decay_from_fom_by_parameter}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/nonlinear_error_decay_from_fom.png}
+    \caption{N-MDEIM reconstruction error decay, as we truncate the modes from the MDEIM basis, averaged across parametrizations.}
+    \label{fig:nonlinear_error_decay_from_fom}
+\end{figure}
+
+\subsubsection{Reduced Basis and MDEIM Error Interaction}
+Finally, we truncate both bases (solution and nonlinear operator spaces)
+simultaneously, to determine the interaction between both of them.
+In Table~\ref{tab:nonlinear_error_decay_heatmap} we present 
+the timewise $L_2$ error for different numbers of reduced basis 
+and nonlinear operator basis elements.
+In Figure~\ref{fig:nonlinear_error_decay_heatmap} we present the same table,
+albeit in a heatmap plot. 
+
+Expectedly, we reach a situation where one error dominates the other one,
+that is, increasing the number of elements for one basis will not improve the
+results unless the other one is enlarged too.
+If we wanted to achieve a determined error threshold,
+we would have to analyze and take into account all the operator errors simultaneously.
+\begin{table}[h]
+    \centering
+    \caption{Timewise $L_2$ error decay for different truncation levels 
+    of the reduced basis space (N) 
+    and the nonlinear operator basis (N-MDEIM).}
+    \begin{tabular}{ccccccc}
+        \toprule
+        N-MDEIM &      5  &      10 &      15 &      30 &      40 &      50 \\
+        N  &         &         &         &         &         &         \\
+        \midrule
+        5  & 3.4e-2 & 3.4e-2 & 3.4e-2 & 3.4e-2 & 3.4e-2 & 3.4e-2 \\
+        10 & 3.4e-3 & 7.8e-4 & 7.8e-4 & 7.8e-4 & 7.8e-4 & 7.8e-4 \\
+        15 & 3.3e-3 & 2.1e-5 & 1.4e-5 & 1.4e-5 & 1.4e-5 & 1.4e-5 \\
+        20 & 3.3e-3 & 1.7e-5 & 8.0e-7 & 7.8e-7 & 7.8e-7 & 7.8e-7 \\
+        25 & 3.3e-3 & 1.7e-5 & 2.8e-7 & 1.5e-7 & 1.5e-7 & 1.5e-7 \\
+        30 & 3.3e-3 & 1.7e-5 & 2.5e-7 & 5.1e-8 & 5.3e-8 & 5.3e-8 \\
+        35 & 3.3e-3 & 1.7e-5 & 2.5e-7 & 4.5e-8 & 4.6e-8 & 4.6e-8 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:nonlinear_error_decay_heatmap}
+\end{table}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/error_decay_heatmap.png}
+    \caption{Timewise $L_2$ error decay for different truncation levels 
+    of the reduced basis space (N) 
+    and the nonlinear operator basis (N-MDEIM).
+    The $log_{10}$ transformation was applied, so that the heatmap color gradient is smooth.}
+    \label{fig:nonlinear_error_decay_heatmap}
+\end{figure}
 
 \subsection{HROM Error Estimation}
 \label{sec:hrom_results_posteriori_error_estimation}
