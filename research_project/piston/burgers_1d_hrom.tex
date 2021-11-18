@@ -158,45 +158,7 @@ To fix this problem, certain techniques exist which enhance the POD basis
 without adding excessive complexity \cite{weightedPOD}.
 
 \subsection{(M)DEIM Error Estimation}
-\mytodo{HROM Results: Show how to reduce $\min / \max$ weak forms.
-This will be a proxy to show that other stabilization schemes suit this technique.}
 In this section we are going to explore the reduction of the nonlinear operator.
-
-In Figure~\ref{fig:mdeim_error_approximation} we show the mean approximation error
-in time for the nonlinear operator. 
-The first ten elements of the reduced basis were used to assemble the operators.
-We see that unless the complete basis is used ($N=69$),
-the approximation error is quite poor.
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/nonlinear_error_decay.png}
-    \caption{Nonlinear MDEIM error approximation for incremental number of elements in the basis.
-    The first ten elements of the reduced basis were used to assemble the operator.
-    The approximation is quite poor, unless the complete basis is used 
-    ($N=69$).}
-    \label{fig:mdeim_error_approximation}
-\end{figure}
-
-We believe this has to do with the fact that the reduced basis elements,
-which form an orthogonal basis, were used to assemble the nonlinear operator snapshots.
-Hence, all the POD basis elements contain fundamental information,
-as hinted by the abrupt drop in the singular value, see Figure~\ref{fig:sigmas_decay}. 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/sigmas_problem.png}
-    \caption{Singular values decay for the reduced basis and the nonlinear operator.
-    The dashed vertical line corresponds to the number of reduced basis elements, $N=69$.
-    The basis for the nonlinear operator does not present the same pattern as the 
-    one for the reduced basis.
-    All of the elements of the nonlinear operator basis 
-    seem to contain the same amount of information from the span.
-    We believe this has to do with the fact that the reduced basis elements,
-    which form an orthogonal basis, were used to assemble the nonlinear operator snapshots.}
-    \label{fig:sigmas_decay}
-\end{figure}
-
-In the light of these results, 
-we necessarily need to use the whole MDEIM basis for our simulations.
 
 \subsubsection{Hierarchical Basis}
 The previous results show that the basis obtained using
@@ -325,6 +287,43 @@ we would have to analyze and take into account all the operator errors simultane
     The $log_{10}$ transformation was applied, so that the heatmap color gradient is smooth.}
     \label{fig:nonlinear_error_decay_heatmap}
 \end{figure}
+
+\subsection{Non-Hierarchical Basis}
+In Figure~\ref{fig:mdeim_error_approximation} we show the mean approximation error
+in time for the nonlinear operator. 
+The first ten elements of the reduced basis were used to assemble the operators.
+We see that unless the complete basis is used ($N=69$),
+the approximation error is quite poor.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/nonlinear_error_decay.png}
+    \caption{Nonlinear MDEIM error approximation for incremental number of elements in the basis.
+    The first ten elements of the reduced basis were used to assemble the operator.
+    The approximation is quite poor, unless the complete basis is used 
+    ($N=69$).}
+    \label{fig:mdeim_error_approximation}
+\end{figure}
+
+We believe this has to do with the fact that the reduced basis elements,
+which form an orthogonal basis, were used to assemble the nonlinear operator snapshots.
+Hence, all the POD basis elements contain fundamental information,
+as hinted by the abrupt drop in the singular value, see Figure~\ref{fig:sigmas_decay}. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/sigmas_problem.png}
+    \caption{Singular values decay for the reduced basis and the nonlinear operator.
+    The dashed vertical line corresponds to the number of reduced basis elements, $N=69$.
+    The basis for the nonlinear operator does not present the same pattern as the 
+    one for the reduced basis.
+    All of the elements of the nonlinear operator basis 
+    seem to contain the same amount of information from the span.
+    We believe this has to do with the fact that the reduced basis elements,
+    which form an orthogonal basis, were used to assemble the nonlinear operator snapshots.}
+    \label{fig:sigmas_decay}
+\end{figure}
+
+In the light of these results, 
+we necessarily need to use the whole MDEIM basis for our simulations.
 
 \subsection{HROM Error Estimation}
 \label{sec:hrom_results_posteriori_error_estimation}
