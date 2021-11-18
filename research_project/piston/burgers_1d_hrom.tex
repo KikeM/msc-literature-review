@@ -161,20 +161,21 @@ without adding excessive complexity \cite{weightedPOD}.
 In this section we are going to explore the reduction of the nonlinear operator.
 
 \subsubsection{Hierarchical Basis}
-The previous results show that the basis obtained using
-snapshots built with the RB basis elements is not hierarchical.
-This is an unconvenient result.
+% The previous results show that the basis obtained using
+% snapshots built with the RB basis elements is not hierarchical.
+% This is an unconvenient result.
 
-Although the assembly of the nonlinear operator has been simplified
-in terms of computational costs,
-there are no degrees of freedom to adjust the reconstruction error,
-which is a common operation in the field of Reduced Models.
+% Although the assembly of the nonlinear operator has been simplified
+% in terms of computational costs,
+% there are no degrees of freedom to adjust the reconstruction error,
+% which is a common operation in the field of Reduced Models.
 
-Hence, we explore an alternative approach, collecting nonlinear term snapshots 
-during the simulation of the FOM, and compressing them with the same 
+% Hence, we explore an alternative approach, 
+During the simulation of the FOM, 
+we collect snapshots of the nonlinear term and compress them with the same  
 nested strategy as we did for the reduced basis.
 
-By doing so, we do recover a hierarchical basis, which allows us to tune the error,
+By doing so, we obtain a hierarchical basis, which allows us to tune the error,
 as proved by the singular value decay (Figure~\ref{fig:sigmas_decay_from_fom}).
 The basis for the nonlinear operator presents the same pattern 
 as the solution reduced basis.
@@ -200,7 +201,7 @@ we tested this alternative basis against the first ten reduced basis elements
 (for which we averaged the error).
 \begin{table}[h]
     \centering
-    \caption{Parameter space for nonlinear term reconstruction.}
+    \caption{Parameter space sampling for nonlinear term reconstruction.}
     \label{tab:mdeim_certification}
     \begin{tabular}{cccc}
         \toprule
@@ -222,23 +223,26 @@ we tested this alternative basis against the first ten reduced basis elements
 
 In Figures~\ref{fig:nonlinear_error_decay_from_fom_by_parameter} and~\ref{fig:nonlinear_error_decay_from_fom}
 we present the reconstruction error decay, as the N-MDEIM basis is truncated.
-This time, the basis does show the expected error decay as modes are removed,
+The basis shows the expected error decay as modes are removed,
 hence allowing to speed up even further computations if some compromise is made in the error.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/nonlinear_error_decay_by_parameter.png}
-    \caption{N-MDEIM reconstruction error decay, as we truncate the modes from the MDEIM basism
-    for some individual parametrizations.
-    Probably due to the simplicity of the problem, Jacobian and the fact that the linearized term is trilinear in
-    all of its arguments, there is no noticeable difference for different parametrizations.}
+    \caption{N-MDEIM reconstruction error decay, 
+    as we truncate the modes from the MDEIM basis for some individual parametrizations.
+    Due to the simplicity of the problem, 
+    the Jacobian and 
+    the fact that the linearized term is trilinear in all of its arguments, 
+    there is no noticeable difference for different parametrizations.}
     \label{fig:nonlinear_error_decay_from_fom_by_parameter}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/nonlinear_error_decay_from_fom.png}
-    \caption{N-MDEIM reconstruction error decay, as we truncate the modes from the MDEIM basis, averaged across parametrizations.}
+    \caption{N-MDEIM reconstruction error decay, 
+    as we truncate the modes from the MDEIM basis, averaged across parametrizations.}
     \label{fig:nonlinear_error_decay_from_fom}
 \end{figure}
 
@@ -278,7 +282,7 @@ we would have to analyze and take into account all the operator errors simultane
     \label{tab:nonlinear_error_decay_heatmap}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/error_decay_heatmap.png}
     \caption{Timewise $L_2$ error decay for different truncation levels 
@@ -288,7 +292,7 @@ we would have to analyze and take into account all the operator errors simultane
     \label{fig:nonlinear_error_decay_heatmap}
 \end{figure}
 
-\subsection{Non-Hierarchical Basis}
+\subsubsection{Non-Hierarchical Basis}
 In Figure~\ref{fig:mdeim_error_approximation} we show the mean approximation error
 in time for the nonlinear operator. 
 The first ten elements of the reduced basis were used to assemble the operators.
@@ -308,7 +312,7 @@ We believe this has to do with the fact that the reduced basis elements,
 which form an orthogonal basis, were used to assemble the nonlinear operator snapshots.
 Hence, all the POD basis elements contain fundamental information,
 as hinted by the abrupt drop in the singular value, see Figure~\ref{fig:sigmas_decay}. 
-\begin{figure}[h]
+\begin{figure}
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/sigmas_problem.png}
     \caption{Singular values decay for the reduced basis and the nonlinear operator.
@@ -324,6 +328,86 @@ as hinted by the abrupt drop in the singular value, see Figure~\ref{fig:sigmas_d
 
 In the light of these results, 
 we necessarily need to use the whole MDEIM basis for our simulations.
+
+\subsubsection{Fourier Basis Exploration}
+We investigate further the non-hierarchical character of the N-MDEIM basis.
+The snapshots were obtained from evaluations 
+of the nonlinear term with reduced basis elements,
+\begin{equation}
+    \begin{split}
+        \qty[\Ah{N}\left(\psi_{h}\right)]_{i,j}
+        &= b_0 \inner{\psi_h(x)\grad \varphi_j}{\varphi_i}^{n+1},
+        \\[2mm]
+        &= b_0 \int_{0}^{L(t^{n+1})} \psi_h(x) \grad \varphi_j \varphi_i \dd x.
+    \end{split}
+\end{equation}
+Now, the reduced basis elements are expressed themselves in terms of 
+the finite element Lagrangian basis functions,
+\begin{equation}
+    \psi_h(x) = \sum_{k} \psi_k \varphi_{k}(x),
+\end{equation}
+which leads to the following exact expression for each of the entries of the nonlinear term,
+\begin{equation}
+    \begin{split}
+        \qty[\Ah{N}\left(\psi_{h}\right)]_{i,j}
+        &= b_0 \sum_k \psi_k \int_{0}^{L(t^{n+1})} \varphi_{k} \grad \varphi_j \varphi_i \dd x.
+    \end{split}
+\end{equation}
+Each summand is going to take a nonzero value only when the local support of the three
+basis functions coincides simultaneously.
+
+This detailed inspection of the matrix elements has not clarified our doubts.
+For the assembly of the nonlinear operator during the FOM integration, 
+the extrapolated velocity~$u^{*}$ is also expressed within the Lagrangian basis.
+And yet, the snapshots compressed from that source lead to a hierarchical reduced basis.
+Therefore, the interaction between the finite element basis functions
+does not seem to be the problem. 
+There must be another effect playing a role 
+in the non-hierarchical character of the reduced basis.
+
+The remaining degrees of freedom are the coefficient values $\psi_k$.
+When the snapshots are collected during the FOM simulation, 
+each of the $u_k^{*}$ values is quite similar to the ones from the previous timestep,
+for the solution is smooth.
+However, when the reduced basis elements are used to create 
+the nonlinear operator snapshots, 
+for any two different basis elements $\psi_1(x)$ and $\psi_2(x)$,
+we know that they satisfy an orthogonality condition,
+\begin{equation}
+    \int_\Omega \psi_1(x) \psi_2(x) \dd x = 0.
+\end{equation}
+We are going to explore if this condition is playing a role, 
+by using as input functions elements from a naturally orthogonal basis:
+the Fourier basis.
+
+We kick-off with a naive approach, selecting the following elements of the basis:
+\begin{equation}
+    \psi_q = \qty{\cos(2 \pi \omega_q x) \, : \, \omega_q \in \qty{1, \ldots, 20}}.
+\end{equation}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/fourier_basis.png}
+    \caption{Fourier basis for the $[0,1]$ interval for $\omega_q \in \qty{1, 2, 5, 10}$.}
+    \label{fig:fourier_basis}
+\end{figure}
+
+We are going to carry out two experiments:
+\begin{itemize}
+    \item (A) Run this basis through the SVD and analyze its spectrum decay. 
+    We would expect to find no decay at all, since the basis is orthogonal.
+    \item (B) Compute snapshots of the nonlinear operator term with this basis
+    and run them through the SVD as well. 
+    Only one parameter will be selected, and the snapshots will be collected
+    as time varies.
+    Two alternative strategies can be used:
+        \begin{itemize}
+            \item (B1) Collect snapshots for each basis element and then compress.
+            \item (B2) Collect for all basis elements and then compress. 
+        \end{itemize}
+    We shall look at the spectrum decay to establish conclusions. 
+\end{itemize}
+
+
 
 \subsection{HROM Error Estimation}
 \label{sec:hrom_results_posteriori_error_estimation}
