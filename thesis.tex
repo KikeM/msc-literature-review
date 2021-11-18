@@ -19,6 +19,7 @@
 \usepackage{subfiles}
 \usepackage{physics}
 \usepackage{epigraph}
+% \usepackage{savetrees}
 
 \usepackage{todonotes,tocloft,xpatch,hyperref}
 \hypersetup{
@@ -69,7 +70,7 @@
 \onecolumn
 
 % paper title
-\title{Skipping The Jacobian \\[5mm] \large{(Hyper) Reduced Order Models For Moving Domains}}
+\title{Skipping The Jacobian \\[5mm] \large{(Hyper) Reduced Order Models For Moving Meshes}}
 
 % author names 
 \author{Enrique Millán Valbuena \\ \normalsize{463 426 8}}% <-this % stops a space
@@ -82,13 +83,13 @@
 \maketitle
 
 \begin{abstract}
-   We present a Reduced Order Model (ROM) for a one-dimensional gas dynamics problem:
+   We present a Reduced Order Model (ROM) for a one-dimensional nonlinear gas dynamics problem:
    the isentropic piston.
    The main body of the PDE, 
    the geometrical definition of the moving boundary, 
-   and the boundary conditions themselves are parametrized.
-   The Full Order Model is obtained with a Galerkin semi-implicit Finite Element discretization,
-   under the Arbitrary-Lagrangian formulation (ALE).
+   and the boundary conditions are parametrized.
+   The full order model is obtained with a Galerkin finite element discretization,
+   under the Arbitrary Lagrangian Eulerian formulation (ALE).
    To stabilize the system, an artificial viscosity term is included.
    The Reduced Basis to express the solution is obtained with the classical POD technique.
    To overcome the explicit use of the jacobian transformation, 
@@ -98,9 +99,9 @@
    to work with a weak form defined in the physical domain (and hence the physical weak formulation)
    whilst maintaining an
    efficient assembly for the algebraic operators, 
-   despite their evolution with every timestep.
-   All in all, our approach to the construction of the Reduced Order Model is purely algebraic
-   and makes no use of Full Order structures in its resolution, 
+   despite their change with every timestep.
+   All in all, our approach is purely algebraic
+   and the reduced model makes no use of full order structures, 
    thus achieving a perfect \textit{offline-online} split.
    A concise description of the reducing procedure is provided, 
    together with a posteriori error estimations, obtained via model truncation,
