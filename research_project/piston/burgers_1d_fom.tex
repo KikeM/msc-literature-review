@@ -352,8 +352,8 @@ This is relevant for the ALE formulation, which we explain in the following sect
 Despite the fact that we will be solving the problem in the physical moving domain, 
 we still need the two basic ingredients stemming at the root of the ALE method:
 \begin{itemize}
-    \item A smooth mapping between domains.
-    \item A mesh velocity vector.
+    \item a smooth mapping between domains;
+    \item a mesh velocity vector.
 \end{itemize}
 
 We introduce the ALE mapping 
@@ -365,8 +365,8 @@ that connects a point in the fixed reference domain $\mathcal{X}$ with a point i
         \aleX &= \alemap^{-1}(x, t).
     \end{align}
 \end{subequations}
-We assume this map to be regular enough.
-Then, we define the mesh velocity as the time derivative of the spatial coordinate, which will coincide with the time derivative of the ALE map:
+We assume this map to be regular enough for all the operations that we will carry with it.
+Then, we define the mesh velocity $w_m(x,t)$ function as the time derivative of the spatial coordinate, which will coincide with the time derivative of the ALE map:
 \begin{equation}
     w_m(x,t) = \pdv{x}{t} = \pdv{\alemap}{t} \ (x, t) = \pdv{\alemap}{t} \ (\alemap^{-1} (\aleX,t), t).
 \end{equation}
@@ -378,28 +378,37 @@ for a rescaling of the spatial variable with the piston length is enough,
 \end{equation}
 Then, we have an analytical expression for the mesh velocity too,
 \begin{equation}
-    w_m(x,t) = \pdv{\alemap}{t} = \aleX L'(t) = \frac{x}{L(t)} L'(t).
+    w_m(x,t) = \pdv{\alemap}{t} = \aleX L'(t) = L'(t) \qty(\frac{x}{L(t)}).
 \end{equation}
-For such a simple domain, the mesh velocity is a linear interpolation 
-for the moving boundary velocity.
+In this simple domain, the mesh velocity is a linear interpolation 
+of the moving boundary velocity.
 
-Additionally, we introduce the jacobian of the ALE mapping. 
-The jacobian is defined as the determinant of the ALE mapping gradient,
+Additionally, we introduce the Jacobian of the ALE mapping. 
+The Jacobian is defined as the determinant of the ALE mapping gradient,
 \begin{equation}
-    J_{\alemap} = \qty|\pdv{x}{\aleX}| = L(t).
+    J_{\alemap} = \qty|\pdv{x}{\aleX}|.
     \label{eq:jacobian}
 \end{equation}
-The jacobian is used when we want to map an integral in the physical domain
+The Jacobian is used when we want to map an integral in the physical domain
 into an integral in the reference, fixed domain,
 \begin{equation}
     \int_{\Omega_t} \phi \dd \Omega = \int_{\Omega_0} \phi J_{\alemap} \dd \Omega.
     \label{eq:jacobian_integral_transformation}
 \end{equation}
-Although we will not be using this function explicitly in our calculations,
-it is useful to see it written down, 
-for it will give us information about the difficulty we might face when reducing the algebraic operators, as shown by Equation~\eqref{eq:jacobian_integral_transformation}.
-Indeed, for our simple one-dimensional geometry, we have a very simple transformation,
-which can actually be pulled out of the integral, since the jacobian does not depend on space,
+Equation~\eqref{eq:jacobian_integral_transformation} 
+gives us information about the difficulty we face reducing the algebraic operators.
+Although we will not be using this transformation explicitly in our calculations,
+it is useful to see it written down to understand any possible nonlinearities
+that arise from the ALE formulation.
+
+For our piston-like one-dimensional geometry, we have a very simple transformation,
+\begin{equation}
+    J_{\alemap} = L(t),
+    \label{eq:jacobian_trivial}
+\end{equation}
+which spreads out the deformation of the domain uniformly across all the mesh cells.
+Since the Jacobian does not depend on space,
+we could pull it out of the integral, 
 \begin{equation}
     \int_{\Omega_t} \phi \dd \Omega 
     = 
@@ -408,10 +417,14 @@ which can actually be pulled out of the integral, since the jacobian does not de
     L(t) \int_{\Omega_0} \phi \dd \Omega.
     \label{eq:jacobian_pulled_out_integral}
 \end{equation}
+That is, the Jacobian transformation for a piston-like motion 
+does not introduce any nonlinearity in the space dimension. 
 We will come back to this fact further down in the document,
 when we comment upon the reduction of the algebraic operators.
 
-At last, we can carry out a \textit{correctness} check in our calculations by attempting to verify a well known relation between the mesh velocity vector and the jacobian \cite{aris1990vectors},
+At last, we can carry out a \textit{correctness} check in our calculations 
+by attempting to verify a well known relation between 
+the mesh velocity vector and the Jacobian \cite{aris1990vectors},
 \begin{subequations}
     \begin{align}
         \pdv{J_{\alemap}}{t} &= J_{\alemap} \nabla \cdot w_m,
@@ -426,11 +439,11 @@ At last, we can carry out a \textit{correctness} check in our calculations by at
 \end{subequations}
 which proves the identity.
 Equation~\eqref{eq:jacobian_derivative} could be part of our problem 
-if we did not have access to an explicit expression for the jacobian, 
+if we did not have access to an explicit expression for the Jacobian, 
 and we wanted to solve our problem in a fixed reference domain. 
 It is an ODE whose initial condition would be 
 $J_{\alemap}(0) = 1$
-if the reference domain coincided with the initial domain configuration of the transient problem.
+if the reference domain coincided with the initial domain configuration of the transient domain.
 
 
 \subsubsection*{Time-Derivative in the Reference Domain}
@@ -954,6 +967,15 @@ Combining both expansions, \dt-order terms cancel out and one gets
     + \pdv[2]{\hat{u}^{n}}{t} \dt^2 
     + \mathcal{O}\qty(\dt^3).
 \end{equation}
+If the Taylor expansion terms are truncated, 
+one gets the expression for the velocity extrapolation in time,
+\begin{equation}
+    \hat{u}^{*} = 
+    2 \hat{u}^{n} 
+    -\hat{u}^{n-1}
+    + \mathcal{O}(\dt^2).
+    \label{eq:u_star_approximation}
+\end{equation}
 
 With this strategy we obtain a semi-implicit scheme, which can be treated as a linear system.
 It is paramount to use a second order approximation for the nonlinear term,
@@ -1137,15 +1159,5 @@ the homogenization of the boundary conditions.
 Hence, we will focus in the solution of an homogeneous boundary value problem.
 This fact will prove useful when we get into 
 the implementation details of the reduction procedure.
-
-\subsection{How to Work on a Fixed Domain}
-\mytodo{Complete section: fixed domain.}
-
-Jacobian Transformation.
-How would the system change if we wanted to 
-solve our equations in a fixed domain?
-What would be the expression of the algebraic system?
-
-Add these for completeness.
 
 \end{document}
