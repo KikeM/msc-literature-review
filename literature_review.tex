@@ -1,0 +1,113 @@
+% \documentclass[a4paper, technote, draft, compsoc]{IEEEtran}
+\documentclass[a4paper, technote,compsoc]{IEEEtran}
+%\documentclass[a4paper]{article}
+
+\usepackage[toc,page,titletoc]{appendix}
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage{amsmath}
+% \usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{float}  % used to fix location of images i.e.\begin{figure}[H]
+\usepackage{graphicx}  %needed to include png, eps figures
+\usepackage{mwe}
+\usepackage{url} % correct bad hyphenation here
+\usepackage[dvipsnames]{xcolor}
+% \usepackage{todonotes}
+\usepackage{xr}
+\usepackage{subfiles}
+\usepackage{physics}
+\usepackage{epigraph}
+
+\usepackage{todonotes,tocloft,xpatch,hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+% This is based on classicthesis chapter definition
+\let\oldsec=\section
+\renewcommand*{\section}{\secdef{\Sec}{\SecS}}
+\newcommand\SecS[1]{\oldsec*{#1}}%
+\newcommand\Sec[2][]{\oldsec[\texorpdfstring{#1}{#1}]{#2}}%
+
+% https://tex.stackexchange.com/a/61267/11984
+\makeatletter
+\xapptocmd{\Sec}{\addtocontents{tdo}{\protect\todoline{\thesection}{#1}{}}}{}{}
+\newcommand{\todoline}[1]{\@ifnextchar\Endoftdo{}{\@todoline{#1}}}
+\newcommand{\@todoline}[3]{%
+  \@ifnextchar\todoline
+    {}
+    {\contentsline{section}{\numberline{#1}#2}{#3}{}{}}%
+}
+\let\l@todo\l@subsection
+\newcommand{\Endoftdo}{}
+
+\AtEndDocument{\addtocontents{tdo}{\string\Endoftdo}}
+\makeatother
+
+
+\externaldocument[M-]{main}
+
+\usepackage[style=ieee]{biblatex}
+\bibliography{xampl}
+% \usepackage[backend=biber,style=ieee]{biblatex} 
+\bibliography{bibliography.bib} %your file created using JabRef
+
+% https://tex.stackexchange.com/questions/246/when-should-i-use-input-vs-include
+% \input{nomenclature.tex}
+
+\DeclareMathOperator{\sspn}{span}
+\newcommand{\spn}[1]{\sspn\left(#1\right)}
+\newcommand{\mytodo}[1]{\todo[inline, color=green!20, inlinewidth=\columnwidth]{#1}}
+
+\begin{document}
+
+\onecolumn
+
+% paper title
+\title{
+    \large{(Hyper) Reduced Order Models For Moving Meshes}
+    \\[5mm] Literature Review \& Research Project 
+    }
+
+% author names 
+\author{Enrique Millán Valbuena \\ \normalsize{463 426 8}}% <-this % stops a space
+        
+% The report headers
+\markboth{M. Sc. Aerospace Engineering, TU Delft}%do not delete next lines
+{Shell \MakeLowercase{\textit{et al.}}: Bare Demo of IEEEtran.cls for IEEE Journals}
+
+% make the title area
+\maketitle
+
+\begin{IEEEkeywords}
+    \centering
+    Finite Elements, Galerkin, Reduced Order Models, 
+    Moving Piston, Deforming Mesh, ALE, 
+    (M)DEIM, POD, 
+    Model Truncation
+\end{IEEEkeywords}
+
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\twocolumn
+
+\section{Research Project}
+\input{literature_review_intro.tex}
+
+\section{Literature Review}
+\input{literature.tex}
+
+\newpage
+\section{Plan and Scope}
+\input{research.tex}
+
+\newpage
+\printbibliography
+
+\end{document}
