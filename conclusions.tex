@@ -4,40 +4,77 @@
 \begin{document}
 
 \section{Conclusions}
-% The jacobian can be succesfully skipped!
+% The Jacobian can be succesfully skipped!
 An hyperreduced order model has been succesfully created and certified for
 the one-dimensional isentropic moving piston.
 This is a simplified gas dynamics problem, 
-with all the ingredients that conform a real life problem in their mild versions:
-a Burgers-like nonlinear term and a moving boundary.
+with all the ingredients that conform a real life problem in their milder versions:
+a Burgers-like nonlinear term and a moving mesh.
+We have dealt in a general way with the parametrized Dirichlet boundary conditions,
+without any assumption on the functional form.
+Two parametrized moving meshes have been introduced: 
+one with uniform stretching of the cell size,
+and one with local node concentration, using a Gaussian bell density function as a proxy.
 
-Our approach to the construction of the Reduced Order Model has been purely algebraic, 
+Our approach to the construction of the reduced order model is purely algebraic, 
 with a non-intrusive approach that should allow its implementation on existing solvers.
 We have obtained a reduced basis with global support to carry out the Galerkin projection;
 and a collateral basis for each of the algebraic operators (vectors and matrices),
 to approximate their projection unto the reduced space 
 without explicitly assembling and projecting the original FOM operator.
+Building the collateral basis increases the cost of the offline stage,
+but it allows a perfect offline-online split:
+no FOM operators are used during the online run. 
+For the linear operators, the offline stage is carried out separately from the FOM simulation,
+so that a wider parameter range can be spanned. 
 
-Hence, it has allowed us to prove the fact that the technique is satisfactory
-to solve problems where a jacobian transformation would be required,
-without ever actually computing the jacobian. 
-However, the technique is actually more powerful, 
-as it could be used for domains whose boundary remains fixed,
-but whose internal nodes do not.
+Due to the linearization of the Navier-Stokes nonlinear convection term,
+a trilinear operator was present in the discretization.
+We have compared two strategies to create the MDEIM basis for this operator:
+\begin{itemize}
+    \item collecting the snapshots from the FOM simulation;
+    \item collecting the snapshots from evaluations of the operator with RB modes.
+\end{itemize}
+The first solution is a standard approach, but it has the following drawbacks:
+it limits the parameter range of the \mbox{N-MDEIM} to 
+the one used to identify the solution reduced basis;
+the FOM simulation might not be available if the reduced basis is identified
+from experimental data.
+Our enhancement of the trilinear MDEIM offline stage tackles these two issues,
+by uncoupling the snapshot collection from the offline simulation.
+The reduced basis modes can be used to assemble trilinear snapshots to build the collateral basis.
+Once the modes have been identified, and trimed to a given threshold error,
+they can be used to build the \mbox{N-MDEIM} collateral basis.
+
+The interaction between the RB and (M)DEIM errors has been analyzed.
+Both need to be taken into account to determine the HROM error.
+Additionally, if the (M)DEIM error is higher than the one present in the RB basis,
+the certification technique by truncation will fail.
+
+All the above has allowed to solve an unsteady nonlinear parabolic PDE 
+with a moving mesh skipping the Jacobian transformation. 
+The approach is general, as in that it could be used for domains with fixed boundaries, 
+whose mesh moves on the inside.
 
 \subsection{Limitations}
 We are aware of how much we have benefited from solving our PDE in a one-dimensional domain.
-Despite including nonlinear terms and a moving mesh,
-the formulation of the problem remains benign. 
+Despite including a nonlinear term and a moving mesh,
+the formulation of the problem remained benign. 
 
 Nevertheless, our whole procedure would scale switfly to higher dimensions.
+We have restricted ourselves to $\mathbb{P}1$ finite elements.
+Although for one-dimensional domains scaling to higher order polynomials does not
+raise dimensionality issues, for actual three-dimensional domains it would.
+Therefore, we saw no need to rising our degree at this level either.
 
 \subsection{Future Work}
 The next natural step would be to extend the methodology to higher-dimensional domains.
-Most of the problem would remain the same (albeit larger matrices), 
+The oscillating cylinder problem is a good candidate 
+to test the formulation in a more realistic setting.
+
+Most of the problem algebraic formulation would remain the same (albeit larger matrices),
 except for a difficulty which was not present in this work: 
 the calculation of the Dirichlet lifting. 
-
 Indeed, in this work we leveraged the advantage that the lifting could be computed analytically.
 In higher dimension, the boundary conditions need to be numerically extended to the domain,
 either via harmonic extensions
@@ -45,12 +82,9 @@ either via harmonic extensions
 or solving the elastodynamic equations
 \cite{1995_farhat_elasticEquations}.
 
-These are not the only challenges when the problem is expanded to higher dimensions.
+These are not the only challenges when the problem is dealt with in higher dimensions.
 For the creation of the Navier-Stokes ROM, the velocity field needs to be enriched
 \cite{supremizers},
 so that the inf-sup condition is satisfied at the ROM level too.
-
-The oscillating cylinder problem could be a good candidate 
-to test the formulation in more realistic setting.
 
 \end{document}

@@ -1,7 +1,70 @@
 \documentclass[thesis.tex]{subfiles}
 
+\newcommand{\inner}[2]{\left<#1, #2\right>}
+\newcommand{\alemap}{\ensuremath{\mathcal{A}}}
+\newcommand{\dt}{\ensuremath{\Delta t}}
+\newcommand{\pexp}{\ensuremath{\frac{2\gamma}{\left(\gamma-1\right)}}}
+\newcommand{\aleX}{\ensuremath{\mathcal{X}}}
+\newcommand{\Ah}[1]{\ensuremath{\vb{#1}^{n+1}_h}}
+\newcommand{\Ahn}[1]{\ensuremath{\vb{#1}^{n}_h}}
+
+\newcommand{\rbV}{\ensuremath{\mathbb{V}}}
+\newcommand{\rbVT}{\ensuremath{\rbV^T}}
+\newcommand{\epspod}{\ensuremath{\varepsilon_\text{POD}}}
 
 \begin{document}
+
+\section*{List of Symbols}
+\addcontentsline{toc}{section}{List of Symbols}
+
+\begin{table}[h]        
+    \begin{tabular}{cl}
+        % Symbol & Description \\
+        % \midrule
+        $t$ & time coordinate \\
+        $x$ & space coordinate in the physical domain \\
+        $\aleX$ & space coordinate in a fixed reference domain \\
+        $\alemap$ & Arbitrary Lagrangian Eulerian map \\
+        $d$ & mesh displacement \\
+        $w_m$ & mesh velocity \\
+        $J$ & Jacobian matrix \\
+        $J_\alemap$ & Jacobian transformation (matrix determinant) \\
+        $L_0$ & initial piston length \\
+        $L$ & piston movement in time \\
+        $u$ & flow velocity \\
+        $\hat{u}$ & flow velocity for the homogeneous problem \\
+        $u_h$ & flow velocity finite element representation \\ 
+        $g$ & Dirichlet boundary lifting \\ 
+        $p$ & pressure \\
+        $\rho$ & density \\
+        $\gamma$ & specific heat ratio \\
+        $MD$ & mass defect in time (numerical integration) \\
+        $\varepsilon$ & artificial viscosity value \\
+        $\varepsilon_{POD}$ & POD approximation error \\
+        $u_p$ & piston mach number \\
+        $a_0$ & reference speed of sound \\
+        $p_0$ & reference pressure \\
+        $\rho_0$ & reference density \\
+        $\delta$ & piston displacement from rest \\
+        $\omega$ & piston oscillating frequency  \\
+        $c$ & dimensionless convection velocity \\
+        $b_0$ & dimensionless constant convection coefficient \\
+        $b_L$ & dimensionless piston boundary condition \\
+        $\mathcal{F}$ & Gaussian bell \\
+        $x_c$ & Gaussian bell center \\
+        $\sigma_c$ & Gaussian bell dispersion factor \\
+        $y_c$ & Gaussian bell scaling factor \\
+        $N_h$ & number of finite element degrees of freedom \\ 
+        $N$ & number of reduced basis degrees of freedom \\ 
+        $V_h$ & space of Lagrangian functions\\ 
+        $V_N$ & space of solution modes\\ 
+        $\varphi_i$ & Lagrangian finite element function \\ 
+        $\psi_i$ & solution modes \\
+        $A_{h,q}$ & algebraic operator modes \\ 
+    \end{tabular}
+\end{table}
+
+\newpage 
 \section{Introduction}
 When a painter sets out to paint, she will probably use most of the available basic colours.
 However, if she knew beforehand that she was only going to paint landscapes, 
@@ -31,7 +94,7 @@ So far with metaphors.
 
 \subsection{Purpose and Layout}
 We are going to build and certify an
-{Hyper Reduced Order Model} 
+{hyper reduced order model} 
 for a one-dimensional parametrized piston problem, 
 whose movement is prescribed.
 The adjective \mbox{\textit{hyper}}\footnote{
@@ -44,6 +107,10 @@ a collateral basis will be created for each algebraic operator,
 on top of the one created for the solution space.
 The model PDE, the boundary conditions and the geometrical configuration will be parametrized.
 
+This work extends \cite{Santo_Manzoni_2019,2015_efficientModelReductionParametrizedSystemsMatrixDeim_Negri}
+(albeit for a simpler PDE), 
+which introduced the MDEIM technique for parametrized domains, whose mesh remained fixed in time.
+
 \subsubsection{Thesis Goal}
 Physical problems with moving boundaries may require 
 the introduction of a nonlinear transformation in the weak form,
@@ -51,34 +118,34 @@ to translate the PDE defined in a deforming space into a fixed,
 numerical grid.
 \mytodo{Sketch: Jacobian transformation.}
 This transformation can take many names, 
-such as \textit{generalized transformation}, 
-\textit{mapping},
-\textit{boundary-conforming coordinate transformation},
+such as generalized transformation, 
+mapping,
+boundary-conforming coordinate transformation,
 etc.
-% \textit{mapping},
-It usually involves the computation of a \textit{jacobian} matrix $J$,
+% mapping},
+It usually involves the computation of a Jacobian matrix $J$,
 whose determinant plays an important role in the aforementioned transformation.
 
-The elements of the jacobian matrix might be known explicitly,
+The elements of the Jacobian matrix might be known explicitly,
 if the deformation is known analytically and the domain is sufficiently simple.
 However, if the domain takes arbitrary shapes 
 (likely for real-life problems in higher dimensions than one),
 or we are dealing with an FSI problem (where the deformation is part of the solution),
-it is quite possible that we have to compute the jacobian transformation numerically.
+it is quite possible that we have to compute the Jacobian transformation numerically.
 This is likely to be an undesirable situation, 
 for the physical weak form will become contaminated with additional terms, 
 making it more cumbersome to implement and deal with\footnote{
     The discretization will not be formulated for the original variable~$\phi$,
     but rather for its distorted counterpart~$J \phi$.
     },
-and the inevitable overhead in computational costs.
+as well as the inevitable overhead in computational costs.
 
-This overhead created by the jacobian is likely to permeate in the Reduced Order Model (ROM),
-for in the context of Finite Elements, it is often built as a system with the same algebraic structure
+This overhead created by the Jacobian is likely to permeate to the Reduced Order Model (ROM),
+for in the context of Finite Elements, ROMs are often built as a system with the same algebraic structure
 as the departing Full Order Model (FOM),
 albeit with smaller matrices and vectors. 
 It might even be the case that we cannot completely uncouple the ROM from the FOM, 
-if the problem is complex enough, or that we need satellite ROMs to compute efficiently the jacobian matrix.
+if the problem is complex enough, or that we need satellite ROMs to compute the Jacobian matrix efficiently.
 
 Hence, to avoid all of the previous, 
 we are going to track down a formulation which allows us to remain in the physical domain, 
@@ -94,15 +161,15 @@ The layout of the document is as follows:
     in the physical domain,
     both at the continuous and discrete levels;
     \item in Section~\ref{sec:rom_definition} we explain the details of the reduction scheme, 
-    alongside with the system approximation technique (M)DEIM;
+    along with the system approximation technique (M)DEIM;
     \item in Section~\ref{sec:fom_calibration} we analyze the FOM discretization, 
-    show convergence figures and solutions for the moving piston for different parametrizations;
+    and show convergence figures and solutions for the moving piston for different parametrizations;
     \item finally, in Section~\ref{sec:results_and_certification} we present reduction results
-    and certify the reduction scheme with an efficient a posteriori error estimators via model truncation.
+    and certify the reduction scheme with an efficient a posteriori error estimators obtained via model truncation.
 \end{itemize}
 Before all that, we frame our work within the current body of knowledge 
 with a short literature review.
-Additional references will be done within the body of the document, 
+Additional references will be cited within the body of the document, 
 where their appearence is more accurate and helpful.  
 
 \subsection{Literature Review}

@@ -59,7 +59,7 @@ A detailed inspection of the matrix elements has not clarified our doubts.
 During the assembly of the nonlinear operator during the FOM integration, 
 the extrapolated velocity~$u^{*}$ is also expressed within the Lagrangian basis
 (as shown in Equation~(\ref{eq:u_star_approximation}), 
-it is a linear combination of the two previous timesteps).
+it is a linear combination of the two previous time steps).
 And yet, the snapshots compressed from that source lead to a hierarchical reduced basis.
 Therefore, the interaction between the finite element basis functions
 does not seem to be the problem. 
@@ -70,7 +70,7 @@ The remaining degrees of freedom are the coefficient values
 $\textcolor{blue}{\psi_k}$.
 Since the solution is smooth,
 when the snapshots are collected during the FOM simulation, 
-each of the $u_k^{*}$ values is quite similar to the ones from the previous timestep.
+each of the $u_k^{*}$ values is quite similar to the ones from the previous time step.
 However, when the reduced basis elements are used to create 
 the nonlinear operator snapshots, 
 for any two different basis elements $\psi_1(x)$ and $\psi_2(x)$,
@@ -217,7 +217,8 @@ we attempt to reconstruct the operator with a truncated basis.
     \label{fig:appendix_fourier_nmdeim_reconstruction_error}
 \end{figure}
 
-\subsection{N-MDEIM with One RB Element}
+\subsection{N-MDEIM with RB Modes}
+\label{sec:nmdeim_one_mode}
 What would happen if we only used one basis element to reduce the operator?
 Could we use that basis to approximate the trilinear operator evaluated with other functions?
 

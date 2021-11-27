@@ -21,7 +21,7 @@ They are derived departing from a known solution
 which we trim according to the implementations we want to exercise.
 Although this step could be seen like a loss of time, since we are not dealing with an actual problem of industrial or clinical application, it has many benefits.
 It gives us a known benchmark against which we can compare numerical solutions.
-This can not only help us find bugs in the implementation, but also certify the expected convergence rates in terms of mesh and timestep sizes.
+This can not only help us find bugs in the implementation, but also certify the expected convergence rates in terms of mesh and time step sizes.
 Later on, when we deal with an equation whose solution is unknown, we can be assured that the code we have written actually solves the equations written out on paper. 
 
 To simplify our equations, we chose~$\tilde{u}(x)$ such that
@@ -202,7 +202,7 @@ If we define the number $f_\infty$ to be smaller than unity, but very close to i
 \begin{equation}
     t_f \simeq - \frac{1}{\beta} \ln(1 - f_\infty).
 \end{equation}
-The larger $\beta$, the quicker the steady-state arrives, but also the smaller the discrete timestep $\Delta t$ will have to be to capture correctly the time evolution of the system.
+The larger $\beta$, the quicker the steady-state arrives, but also the smaller the discrete time step $\Delta t$ will have to be to capture correctly the time evolution of the system.
 
 The explicit expression for the forcing term is obtained from Equations~\eqref{eq:1d_fom_mfp_forcing_term} and \eqref{eq:1d_fom_mfp_diffusion_term},
 \begin{equation}

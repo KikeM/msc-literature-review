@@ -19,7 +19,7 @@
 \section{(Hyper) Reduced Order Model}
 \label{sec:rom_definition}
 For any unseen parameter value, our aim is to be able to assemble and solve a smaller algebraic problem, 
-and yet to obtain a solution close enough to that of the Full Order Model.
+and yet to obtain a solution close enough to that of the FOM.
 % We present now the formulation for the Reduced Order Model (ROM).
 In order to do so, first we need to obtain certain algebraic structures which capture the essence of the problem at hand.
 
@@ -127,7 +127,7 @@ By doing so, we find the following ROM for the time evolution problem,
 %     \end{align}
 % \end{subequations}
 If we collect terms and factor out the unknowns we get a linear system, 
-this time in the reduced space, to be solved for each timestep to advance the solution,
+this time in the reduced space, to be solved for each time step to advance the solution,
 % \begin{subequations}
 %     \label{eq:1d_rom_linear_system_timestep}
 %     \begin{align}
@@ -163,7 +163,7 @@ We could naively project it too,
     \vb{F}_{\vb{\hat{u}}_N}^{N} = \rbVT \vb{F}_{\vb{\hat{u}}_h}^{n},
 \end{equation}
 but this would force us to reconstruct the FE vector of the ROM at each time-step, making the integration cumbersome.
-To go around this issue, we can exploit the algebraic representation of $\vb{F}_{\vb{\hat{u}}_h}^{n}$, 
+To get around this issue, we can exploit the algebraic representation of $\vb{F}_{\vb{\hat{u}}_h}^{n}$, 
 given in Equation~\eqref{eq:1d_fom_forcing_term_time_mass_matrix} in terms of the mass matrix. 
 The forcing term due to the time discretization takes the following form in the ROM:
 \begin{equation}
@@ -225,7 +225,7 @@ defines which reduction method we are applying, along with their advantages and 
 The \emph{offline-online decomposition}: 
 that is, to uncouple the usage of FOM operators in as much as possible from the integration of the ROM. 
 Ideally, no FOM structures should be assembled during the online phase.
-In this naive scheme, we are clearly not meeting such requirement, since we need to assemble all the FOM operators and then project them \emph{for each timestep}.
+In this naive scheme, we are clearly not meeting such requirement, since we need to assemble all the FOM operators and then project them \emph{for each time step}.
 
 Hence, some additional sections need to be brought up, in order to complete our definition of the reducing scheme.
 We now treat the construction of the basis functions, Section~\ref{sec:1d_rom_burgers_basis_construction}; and the approximation of the algebraic operators, Section~\ref{sec:1d_rom_burgers_system_approximation_deim}.
@@ -235,59 +235,59 @@ We now treat the construction of the basis functions, Section~\ref{sec:1d_rom_bu
 \label{sec:1d_rom_burgers_basis_construction}
 Hereby we layout the details of the basis construction, that is, the definition of the $\psi_i(x)$ functions.
 There are many techniques to build such basis.
-We opt for an automatic and out-of-the-box technique: the nested POD approach. 
+We opt for an automatic and out-of-the-box technique: the nested POD approach
+\cite{Santo_Manzoni_2019}. 
 
-On paper, the most simple basis anyone could come up with is a collection of solution snaphsots for different parameter values and timesteps, 
+On paper, the most simple basis anyone could come up with is 
+a collection of solution snaphsots for different parameter values and time steps, 
 \begin{align}
     \Psi_{\hat{u}} &:= [\psi_i] \nonumber \\
     &= [\hat{u}_h(t^0; \mu_0), \hat{u}_h(t^1; \mu_0), 
     \ldots, \hat{u}_h(t^j; \mu_i), \ldots], \nonumber \\
     &= [\Psi_{\hat{u}}(\mu_0), \Psi_{\hat{u}}(\mu_1), \ldots, \Psi_{\hat{u}}(\mu_{N_{\mu}})]
 \end{align}
-Yet, this basis $\Psi_{\hat{u}}$ is unpractical from a computational point of view: we could not possibly store all the basis vectors and neiter compute efficiently all the required algebraic operations with them.
+Yet, this basis $\Psi_{\hat{u}}$ is unpractical from a computational point of view: we could not possibly store all the basis vectors or compute efficiently all the required algebraic operations with them.
 Additionally, it would probably lead to ill-posed linear systems, since the vectors are almost linearly dependent. 
 
-However, since all these vectors arise from the same PDE (although for different parametrizations of it), and for each timestep the solution is close to the previous one, in a way, we could expect there to be a lot of repeated information inside each $\Psi_{\hat{u}}(\mu_i)$, and consequently, inside $\Psi_{\hat{u}}$.
-We can exploit this fact by using a compression algorithm, such as the Proper Orthogonal Decomposition (POD), to find a set of vectors which capture sufficiently good the span of $\Psi_{\hat{u}}$, and yet do so with less number of basis vectors. 
+However, since all these vectors arise from the same PDE (although for different parametrizations of it), and for each time step the solution is close to the previous one, in a way, we could expect there to be a lot of repeated information inside each $\Psi_{\hat{u}}(\mu_i)$, and consequently, inside $\Psi_{\hat{u}}$.
+We can exploit this fact by using a compression algorithm, such as the Proper Orthogonal Decomposition (POD), to find a set of vectors which sufficiently capture the span of $\Psi_{\hat{u}}$, and yet do so with less basis vectors. 
 
-We call this the \emph{method of snapshots}. 
+% We call this the \emph{method of snapshots}. 
 
 % -----------------------------------------------------------------------------
 \subsubsection{POD Space Reduction}
 \label{sec:1d_rom_burgers_basis_construction_pod}
-We can see the Proper Orthogonal Decomposition (POD) as 
-an enhanced Gram-Schmidt orthonormalization procedure: not only an orthonormal basis is obtained, 
-but additionally the output basis vectors recover hierarchically the span of the original space 
-given by the input vectors.
-
-Let us define the $POD: X \rightarrow Y$ function between two normed spaces, 
+% We can see the Proper Orthogonal Decomposition (POD) as 
+% an enhanced Gram-Schmidt orthonormalization procedure: not only an orthonormal basis is obtained, 
+% but additionally the output basis vectors recover hierarchically the span of the original space 
+% given by the input vectors.
+We define the $POD: X \rightarrow Y$ function between two normed spaces, 
 such that $Y \subseteq  X$, 
-which takes as inputs a collection of~$N_S$ vectors and a prescribed tolerance error $\epspod$,
+which takes as inputs a collection of~$N_S$ vectors $y_k \in X$,
+a prescribed tolerance error $\epspod$,
 \begin{equation}
-    [\psi_i]_{i=1}^{N_{POD}} = POD\left([\varphi_i]_{i=1}^{N_S}, \epspod\right).
+    [\psi_i]_{i=1}^{N_{POD}} = POD\left([y_k]_{k=1}^{N_S}, \epspod\right).
 \end{equation}
-with $\varphi_i \in X$ and $\psi_i \in Y$.
+and returns a basis of modes $\psi_i \in Y$ to approximate the span of $y_k$.
 This function returns a collection of orthonormal $N_{POD}$ vectors, whose span is a subset of the input vector span.
-
-Internally, the POD is solving an optimality approximation problem in the $L^2$ norm. 
-Therefore, with a slight notation abuse, one could conceptually say
+The modes $\psi_i$ are obtained from an optimality problem in the $L^2$ norm,
 \begin{equation}
-    \spn{\varphi_i} = \spn{\psi_i} + \epspod,
+    (v_i, \psi_i) \, \text{s.t.} \, \min \sum_k \norm{y_k(x) - \sum_i v_i \psi_i}^2 \leq \epspod,
 \end{equation}
-that is, the representation of any vector in the original space can be reconstructed to a point with the output POD basis, 
+that is, the representation of any vector in the original space can be reconstructed the POD basis, 
 and the error in the $L^2$ norm should be less or equal to \epspod.
 
-There is a relation between the prescribed tolerance error \epspod and the outcoming number of basis elements $N_{POD}$, 
+There is a relation between the prescribed tolerance error $\epspod$ and the outcoming number of basis elements $N_{POD}$, 
 \begin{equation}
     N_{POD} = N_{POD}(\epspod).
 \end{equation}
 This functional relationship usually shows exponential decay, or a sharp drop beyond a given number of elements.
-That is, if a problem is reduceable, beyond a given number of elements, adding more will not improve significantly the approximation bondness. 
+If a problem can be reduced, beyond a given number of modes, including more in the approximation will not improve significantly the approximation bondness.
 
-Alternatively to a prescribed error, one could directly ask for a prescribed number of basis functions~$N^{*}_{POD} \leq N_S$,
-\begin{equation}
-    [\psi_i]_{i=1}^{N^{*}_{POD}} = POD\left([\varphi_i]_{i=1}^{N_S}, N^{*}_{POD}\right).
-\end{equation}
+% Alternatively to a prescribed error, one could directly ask for a prescribed number of basis functions~$N^{*}_{POD} \leq N_S$,
+% \begin{equation}
+%     [\psi_i]_{i=1}^{N^{*}_{POD}} = POD\left([\varphi_i]_{i=1}^{N_S}, N^{*}_{POD}\right).
+% \end{equation}
 
 % -----------------------------------------------------------------------------
 \subsubsection{Nested POD Basis Construction}
@@ -295,7 +295,7 @@ Alternatively to a prescribed error, one could directly ask for a prescribed num
 \mytodo{Sketch: Nested POD Basis Construction}
 A simple procedure to leverage the compression properties of the POD function, 
 and the nested structure of our PDE with respect to time and the parameters; 
-is to first build certain POD basis from the snapshots of the solution at different timesteps for a fixed parameter value,
+is to first build certain POD basis from the snapshots of the solution at different time steps for a fixed parameter value,
 \begin{align*}
     \Psi_{\mu_0} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_0), \ldots, \hat{u}_h(t^T; \mu_0)\right]\right), \\
     \Psi_{\mu_1} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_1), \ldots, \hat{u}_h(t^T; \mu_1)\right]\right), \\  
@@ -318,32 +318,39 @@ We say this to be an automatic and out-of-the-box procedure because it does not 
 beyond the storage of the snapshots and the implementation of the POD algorithm.
 It only requires the construction of a collection of parameter values to solve for.
 This can be done with random sampling techniques, 
-or if some physically-based knowledge is available, 
-a custom selection of the parameters for ranges in which we know the solution will strongly vary.
+or if some physical-drive knowledge is available, 
+a custom selection of parameter subsets for which the solution will present strong variations 
+(leading to the identification of rich solution modes).
 
-Naturally, more involved procedures exist to create the final basis $\Psi$, 
-but they need the capacity to evaluate how accurately or poorly 
-is the basis performing at capturing the problem dynamics.
-This can be dealt with the determination of sharp \emph{a priori} error estimators,
-but that again requires theoretical developments 
-(which we value deeply but consider out of our range at the moment).
+Since we are using an SVD-based POD, we need to set a threshold for
+the acceptable singular values/modes.
+We set this threshold at $10^{-7}$
+after visual inspection of the resulting modes revealed
+numerical noise beyond this figure.
+% Naturally, more involved procedures exist to create the final basis $\Psi$, 
+% but they need the capacity to evaluate how accurately or poorly 
+% is the basis performing at capturing the problem dynamics.
+% This can be dealt with the determination of sharp \emph{a priori} error estimators,
+% but that again requires theoretical developments 
+% (which we value deeply but consider out of our range at the moment).
 
 % We leave this for later.
 
 % -----------------------------------------------------------------------------
 \subsection{(M)DEIM: System Approximation}
 \label{sec:1d_rom_burgers_system_approximation_deim}
-Regarding the assembly of the reduced operators, if already during the offline stage, where the FOM problem is tackled, we had to assemble all the discrete operators for each timestep;
-during the online stage we have to additionally project them unto the reduced space too, as shown in Equations~\eqref{eq:1d_rom_linear_system_operators},
-increasing the overall cost of the integration procedure.
-
-This will be our main motivation to include a system approximation procedure,
+During the offline stage (where the FOM problem is solved), 
+we have to assemble all the discrete operators for each time step;
+during the online stage we additionally have to project them unto the reduced space too, as shown in Equations~\eqref{eq:1d_rom_linear_system_operators}.
+This projection step can keep a ROM still a costly procedure,
+if it only relies on solution modes to reduce the problem.
+This will be our main motivation to include a system approximation technique,
 with the goal of speeding up the construction of the operators.
 
 We talk about \emph{parameter and time separable} problems 
 (or the existence of an \emph{affine decomposition})
 when the spatial operators (bilinear or linear forms)
-present the following functional form
+present the following functional form:
 \begin{equation}
     \label{eq:1d_rom_burgers_separable_form_time_param}
     A_h(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q}.
@@ -366,7 +373,7 @@ If we had such a decomposition, once we had computed the basis matrix \rbV, we c
         A_N(t, \mu) &= \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{N,q}.
     \end{split}
 \end{equation}
-Since $A_{N, q}$ is fixed, provided that we had a way to evaluate each $\Theta_q^a(t, \mu)$, we would be able to build the reduced operator for a given parameter for each timestep without having to use any FOM operator. 
+Since $A_{N, q}$ is fixed, provided that we had a way to evaluate each $\Theta_q^a(t, \mu)$, we would be able to build the reduced operator for a given parameter for each time step without having to use any FOM operator. 
 
 % -----------------------------------------------------------------------------
 \subsubsection{Discrete Empirical Interpolation Method}
@@ -410,44 +417,61 @@ In the FE context it can be obtained by integrating the weak form locally.
 
 This leads to a determined system, where each $\Theta_q^a(t, \mu)$ is unknown.
 The indices $\mathcal{I}_a$ are selected during the offline stage, 
-according to error reduction arguments of the separable from \eqref{eq:1d_rom_burgers_system_approximation},
+according to error reduction arguments of the reconstruction error,
 \begin{equation}
     e_a(t, \mu) = \norm{A_h(t, \mu) - A_h^m(t, \mu)}.
 \end{equation}
 
 % -----------------------------------------------------------------------------
 \subsubsection{Reduction of the Nonlinear Term}
-The basis for the nonlinear operator $C_h$ can be built in many ways,
-but there is one that will allows us to make it as rich as possible in an efficient
-way. 
+The basis for the trilinear operator $N_h$ can be built with two strategies.
+% but there is one that will allows us to make it as rich as possible in an efficient
+% way.
+This operator depends on the test and trial functions,
+and an additional function.
+During the FOM simulation,
+this additional function is the extrapolation $u^{*}$ from previous time steps
+for the flow velocity. 
+At the continuous level, this term would be nonlinear,
+but at the discrete level, it is (tri)linear in all its arguments.
 
-The nonlinearity of this operator comes from the fact that it depends on the solution 
-from previous timesteps. 
-Thus, one way to approach the reduction of this operator would be to collect 
+The naive approach to reduce this operator is to collect 
 the operator snapshots during the offline phase of the FOM.
-The problem with this approach is that we would be tied by the parameter space 
-used for the reduced basis. 
+This would tie the operator snapshots to the parameter space
+used to identify the solution modes.
 
-Instead, if we use the reduced basis, we could span a larger parameter space.
-We run the offline phase for the nonlinear operator once we have obtained the 
-reduced basis. 
+Since the solution is going to be expressed in terms of the solution modes,
+why not use these modes to assemble the operator snapshots?
+This would allow us to span a larger parameter space,
+potentially larger than the one used to identify the solution modes. 
 
-We use a nested POD approach again, althoguh this time we have three levels.
-
-We fix a parameter, then for each reduced basis element we collect as many snapshots
-as timesteps.
-Then we compress these snapshots to obtain a collateral basis, which we store.
-When we are done with all the elements in the reduced basis, 
-we have a collection of collateral basis, which we compress.
-This gives us a basis which contains all the information about the solution for 
-that parameter.
-We repeat this procedure for each parameter, thus obtaining a collateral basis 
-for each parameter.
-Finally, we compress these collateral basis to obtain the final collateral basis
-with information about the solution and the parameter space. 
+We use a nested POD approach again, with three levels: 
+parameters, modes and time.
+We set a parameter, we pick a mode, collect as many snapshots
+as time steps, and compress:
+\begin{equation}
+    \Psi_{\mu_i, \psi_0} = POD(\qty{N^{n}_h(\psi_0)}^{n=T}).
+\end{equation}
+This gives us a basis for the parameter/mode tuple $\Psi_{\mu_i, \psi_0}$. 
+Then we pick the next mode, and obtain a basis for it, $\Psi_{\mu_i, \psi_1}$.
+So on and so forth, we get as many bases as modes for that given parameter.
+We then compress thoses bases altogether to obtain one final parameter basis,
+\begin{equation}
+    \Psi_{\mu_i} = POD(\qty{\Psi_{\mu_i, \psi_j}}^{j=N}),
+\end{equation}
+which collects the effects of each mode and time variation (for that specific parameter).
+We repeat the process again for another parameter, 
+until we end up with one operator basis,
+which is the result of compressing all parameter bases,
+\begin{equation}
+    \Psi_{N_h} = POD(\qty{\Psi_{\mu_i}}^{i=N_{\mu}}).
+\end{equation}
+An advantage of this procedure is that the FOM simulation 
+might not be available, 
+if the modes are obtained, e.g., from experimental data.
 
 % -----------------------------------------------------------------------------
-\subsection{Hyper Reduced Basis Method}
+\subsection{Hyper Reduced Order Model}
 With an approximation of the reduced operators available, 
 we can define yet another algebraic problem to integrate and 
 obtain the reduced solution in time for a given parametrization,
@@ -475,7 +499,7 @@ obtain the reduced solution in time for a given parametrization,
 \end{subequations}
 If we collect terms and factor out the unknowns we get a linear system, 
 in the reduced space and with approximated operators, 
-to be solved for each timestep to advance the solution,
+to be solved for each time step to advance the solution,
 \begin{subequations}
     \label{eq:1d_hrom_linear_system_timestep}
     \begin{align}
@@ -491,16 +515,15 @@ to be solved for each timestep to advance the solution,
         \vb{b}_{N}^{m, n+1} &= \vb{F}_{\vb{\hat{u}}_{N}}^{m,n} + \dt \vb{F}_{g,N}^{m, n+1}.
     \end{align}
 \end{subequations}
-Each of the operators present in the problem, 
-$\vb{M}_N, \vb{A}_N, \vb{F}_N \qqtext{and} \vb{F}_{g,N}$ will have associated 
+Each of the operators present in the problem will have associated 
 an operator basis and will require the solution of 
 the interpolation problem \eqref{eq:1d_rom_burgers_interpolation_problem} 
-to be solved for each timestep and parameter value.
+for each time step and parameter value.
 Although this could still seem like a costly procedure, 
 if the operators are actually reduceable, 
 the number of basis functions $Q_m, Q_a, Q_f, Q_{f,g}$ should be small,
 and thus way simpler problems than assembling the whole operator and 
-then carrying out the projection. 
+then carrying out the projection.
 
 % Note that the vector $\vb{F}_{\vb{\hat{u}}_N}^{n}$ is not approximated.
 % The projection of the previous solution is directly obtained in the reduced space.
@@ -508,8 +531,8 @@ then carrying out the projection.
 Once the reduced homogeneous solution $\hat{u}^{m}_N(x)$ is obtained 
 with approximated operators, it can be brought back to the original space $V_h$ 
 via Equation~\eqref{eq:1d_rom_burgers_projection_relation}, 
-and then add on top of it the FE representation of the Dirichlet lifting, 
-to obtain the final solution,
+and then added to the Dirichlet lifting, 
+to get the solution in the physical domain,
 \begin{equation}
     u(x, t; \mu) \simeq u_h^{m}(t, \mu) = \rbV \hat{u}^{m}_N(t, \mu) + g_h(t,\mu).
 \end{equation}
