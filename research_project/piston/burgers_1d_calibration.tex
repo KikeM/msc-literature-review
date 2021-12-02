@@ -14,49 +14,107 @@
 
 \section{FOM Calibration}
 \label{sec:fom_calibration}
-This section is devoted to present the Full Order Model in action.
-Certain parameters need to tweaked and defined,
+This section is devoted to present the full order model.
+Certain parameters need to be defined,
 along with consistency checks to validate the simulation.
 
 In Section~\ref{sec:fom_calibration_artificial_viscosity} we show the effects of artificial viscosity,
 in Section~\ref{sec:fom_calibration_bdf_convergence_rates} we explore the differences 
-between BDF-1 and BDF-2 time integration schemes;
-and finally in Section~\ref{sec:fom_calibration_system_forcing} we show how
-certain combinations within the parameter space produce unfeasible solutions\footnote{
-    Due to the lack of a proper stabilization scheme. 
-    We are comfortable with this choice since it was not mandatory to
-    showcase our reduction tools.
-}, 
-and so we explain how to sample within the feasible range.
+between BDF-1 and BDF-2 time integration schemes.
+
+% and finally in Section~\ref{sec:fom_calibration_system_forcing} we show how
+% certain combinations within the parameter space produce unfeasible solutions\footnote{
+%     Due to the lack of a proper stabilization scheme. 
+%     We are comfortable with this choice since it was not mandatory to
+%     showcase our reduction tools.
+% }, 
+% and so we explain how to sample within the feasible range.
+
+\subsection{Parameter Space and Discretization}
+To identify the reduced and collateral bases,
+we randomly sample the parameter space.
+We set the range for each parameter in Table~\ref{tab:parameter_range}.
+The discretization parameters are given in Table~\ref{tab:discretization_parameters}.
+
+\begin{table}[h]
+    \centering
+    \caption{Parameter range for random sampling.
+    We recall that mesh parametrizations which produce an invalid mesh
+    will be discarded at runtime.}
+    \begin{tabular}{ccc}
+    \toprule
+        Variable   & Min. & Max. \\ 
+        \midrule
+        $a_0$      & 18      & 25      \\
+        $\omega$   & 15      & 30      \\
+        $\delta$   & 0.15    & 0.3     \\
+        \midrule
+        $x_c$      & 0.2     & 0.75    \\
+        $\sigma_c$ & 0.1     & 0.2     \\
+        $y_c$      & 0.25    & 1.75    \\ 
+        \bottomrule
+    \end{tabular}
+    \label{tab:parameter_range}
+\end{table}
+% \begin{table}[h]
+%     \centering
+%     \caption{Piston parameter range for random sampling.}
+%     \begin{tabular}{cccc}
+%     \toprule
+%         Variable   & Minimum & Maximum & Units 
+%         \\ \midrule
+%         $a_0$      & 18      & 25      & m/s \\
+%         $\omega$   & 15      & 30      & 1/s \\
+%         $\delta$   & 0.15    & 0.3     & [-] \\
+%         $x_c$      & 0.2     & 0.75    & m   \\
+%         $\sigma_c$ & 0.1     & 0.2     & m   \\
+%         $y_c$      & 0.25    & 1.75    & [-] \\ 
+%         \bottomrule
+%     \end{tabular}
+%     \label{tab:parameter_range}
+% \end{table}
+
+\begin{table}[h]
+    \centering
+    \caption{Space-time domain definition, and discretization parameters.}
+    \begin{tabular}{cccccc}
+        \toprule
+        $L_0$ & $N_x$      & $T$ & $N_t$  & $\Delta x$     & $\Delta t$          \\ \midrule
+        1     & 1000       & 1.0 & 500    & $\sim 10^{-3}$ & $0.5 \cdot 10^{-3}$  \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:discretization_parameters}
+\end{table}
 
 \subsection{Artificial Viscosity}
 \label{sec:fom_calibration_artificial_viscosity}
 As stated previously in the document, 
 we included an artificial viscosity term in the final formulation
-to go around the need for more involved stabilization schemes, such as SUPG\footnote{
-Note that we could have used the same hyperreduction scheme,
-since the approach is purely algebraic.} 
-methods or others alike.
-
+to go around the need for more involved\footnote{
+    Note that the reduction approach used remains valid,
+    since it is purely algebraic.} 
+stabilization schemes.
 A value needs to be choosen for the viscosity constant~$\varepsilon$.
-Initially, it was set to be the square of the mesh size, 
+This constant should scale with the square of the mesh size, 
 \begin{equation*}
-    \varepsilon \sim (\Delta x)^2 \sim 10^{-6}.
+    \varepsilon \sim k (\Delta x)^2.
 \end{equation*}
-However, a parametric sweep for different viscosity values showed that
-this value, 
-no matter how small, was introducing measurable damping into the system.
+% A parametric sweep for different viscosity values show that this value, 
+% no matter how small, was introducing measurable damping into the system.
 
-The actual value that seems correct, keeping the system stable whilst purely convective (at least for the time-scale for which we are solving) seems to be a much smaller one,
+For a mesh size of $\Delta x \sim 10^{-3}$,
+the $k$-value which keeps the system stable whilst purely convective 
+(at least for our simulation time scale) is
 \begin{equation*}
-    \varepsilon \sim 10^{-10}.
+    k = 10^{-4} \rightarrow \varepsilon \sim 10^{-10}.
 \end{equation*}
 In Figure~\ref{fig:artificial_viscosity_comparison} we present a comparison for these two viscosity values.
 We show the motion of the fluid at the outflow and a phase plot, to ease the analysis of the correlation between the weak shock wave at the outflow and the piston motion.
-The smallest viscosity value, $(10^{-10})$ leads to a convection-like phase plot:
+The smallest viscosity value, $(10^{-10})$ leads to a \mbox{convection-like} phase plot:
 the shape of the input is distorted but the maximum and mimimum values are honored, 
 the same path is repeated over and over.
-Instead, the solution with a higher viscosity value (or at least the one that we thought would do the job) shows a diffusive pattern, reducing the extrema and changing its path on every pass.
+Instead, the solution with a higher viscosity value shows a diffusion pattern, 
+reducing the extrema and changing its path on every pass.
 \begin{figure}[!h]
     \centering
     \includegraphics[width=1.0\columnwidth]{research_project/piston/figures/artificial_viscosity/artificial_viscosity_comparison.png}
@@ -65,55 +123,121 @@ Instead, the solution with a higher viscosity value (or at least the one that we
     In dashed, the piston motion, to help in the visualization of the nonlinear distortion.
     (Bottom) Phase plot between the piston motion (x-axis) and the response at the outer boundary (y-axis) for the same artificial viscosity values.
     Due to the creation of a weak shock wave, the piston motion is distorted.
-    However, only the smallest viscosity value ($10^{-10}$) presents a stable phase plot, going over and over the same path. 
+    The viscosity value ($10^{-10}$) presents a stable phase plot, going over and over the same path. 
     }
     \label{fig:artificial_viscosity_comparison}
 \end{figure}
-Luckily, the complete reduction scheme\footnote{
-    Namely snapshot SVD compression and interpolation coefficients calculation.
-}
-seems to withstand such a small numerical viscosity term without incurring into round-off errors\footnote{If there were, we could always reduce the plain vanilla Laplace operator $\int \grad u \cdot \grad v \, \text{d}\Omega$ and scale it by $\varepsilon$ right before solving the system.}.
+% The complete reduction scheme\footnote{
+%     Namely snapshot SVD compression and interpolation coefficients calculation.
+% }
+% seems to withstand such a small numerical viscosity term without incurring into round-off errors\footnote{If there were, we could always reduce the plain vanilla Laplace operator $\int \grad u \cdot \grad v \, \text{d}\Omega$ and scale it by $\varepsilon$ right before solving the system.}.
 
-\subsection{BDF Scheme Convergence Rates}
+\subsection{BDF Convergence Rates}
 \label{sec:fom_calibration_bdf_convergence_rates}
-\mytodo{Convergence rates in space? What would be the expected rate for P1 FE?}
+% \mytodo{Convergence rates in space? What would be the expected rate for P1 FE?}
 The next concept we are going to look at to check the quality of our simulation is 
-the convergence rate for the two time-integration schemes, 
-BDF-1 and BDF-2.
+the convergence rate for the two time-integration schemes, BDF-1 and BDF-2.
+We analyze two convergence plots: the solution itself and mass preservation.
 
-We will analyze two convergence plots: the solution itself and mass preservation.
-For the solution, since we do not have an analytical reference, we need to establish one numerically.
-It will be the one corresponding to the solution for a small timestep, $dt \sim 10^{-4}$.
+For the solution, since we do not have an analytical reference, 
+we establish one numerically.
+It will be the one corresponding to the solution for a small time step, 
+$\Delta t = 10^{-4}$.
 In Figure~\ref{fig:bdf_convergence_solutions} we present the convergence rates for the solution,
-and in Figure~\ref{fig:bdf_convergence_mass} the ones corresponding to the mass defect.
+where the BDF-2 scheme ($1.98 \sim 2$) decreases twice as fast as the BDF-1 scheme ($0.95 \sim 1$).
 
-Expectedly, the BDF-2 scheme ($\sim 2$) decreases twice as fast as the BDF-1 scheme ($\sim 1$).
+For the mass defect, we do know it should tend to the analytical zero value.
+In Figure~\ref{fig:bdf_convergence_mass} we give the convergence rates for the mass defect,
+where the BDF-2 scheme ($2.08 \sim 2$) decreases again twice as fast as the BDF-1 scheme ($1.24 \sim 1$).
+Hence, the BDF-2 scheme is correctly implemented.
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/convergence_finest_solution.png}
     \caption{Convergence rates to numerical reference solution.
-    Both schemes decrease at the expected rate.}
+    The reference was obtained with a small time step, $\Delta t = 10^{-4}$.
+    Both schemes decrease at their expected rates.}
     \label{fig:bdf_convergence_solutions}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/bdf_convergence/convergence_rates_mass.png}
-    \caption{Convergence rates for mass defect.
-    Both schemes decrease at the expected rate.}
+    \caption{Convergence rates for mass defect $MD$.
+    The analytical solution of this variable is zero (mass is perfectly preserved).
+    Both schemes decrease at their expected rates.}
     \label{fig:bdf_convergence_mass}
 \end{figure}
 
-\subsection{Deforming Mesh Effects}
+% \subsection{Deforming Mesh Effects}
 
-\subsubsection{Mesh Velocity}
-\mytodo{Show mass conservation without ALE convective term.}
+% \subsubsection{Mesh Velocity}
+% \mytodo{Show mass conservation without ALE convective term.}
 
+\subsection{Arbitrary Mesh Displacement}
+Not all geometrical parametrizations of the mesh displacement are valid.
+As shown in Table~\ref{tab:mesh_disp_params}, some parametrizations
+lead to non-invertible mappings.
+This takes place when the displacement is so large locally 
+that the mesh nodes ordering is lost in the physical domain.
+When this happens, two points in the reference domain map to the same point in the physical space.
+\begin{table}[h]
+    \centering
+    \caption{Mesh deformation parametrizations.}
+    \begin{tabular}{lccccc}
+        \toprule
+        {}                                      & $\delta$ & $x_c$                & $\sigma_c$           & $y_0$  & Invertible \\
+        \midrule
+        Figure~\ref{fig:mesh_disp_compression}  & \multirow{3}{*}{0.3}         & \multirow{3}{*}{0.5} & \multirow{3}{*}{0.1} & 0.5    & \multirow{2}{*}{Yes} \\
+        Figure~\ref{fig:mesh_disp_expansion}    &          &           &                      & 0.75   & \\ 
+        % \midrule[0.01mm]
+        Figure~\ref{fig:mesh_disp_expansion_unfeasible} &  &           &                      & 1.75   & No \\
+        \bottomrule
+    \end{tabular}        
+    \label{tab:mesh_disp_params}
+\end{table}
 
-\subsubsection{Geometric Conservation Law}
-As mentioned in the Literature Review regarding deforming meshes, 
+The correct procedure to deal with the mesh feasibility problem 
+would be to compute the Jacobian analytically
+and derive from it upper and lower bounds for each parameter.
+However, for such a simple domain transformation, 
+we opt to check numerically at runtime if the mesh is feasible or not.
+In fact, to prevent round-off errors,
+we impose a lower bound on the mesh step size. 
+When it is breached,
+\begin{equation}
+    \forall \, i \quad &\Delta x_i < 10^{-6}, 
+\end{equation}
+we discard that parametrization.
+
+\newpage
+\begin{figure}[h]
+    \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/separable/mapping_mu_05_sigma_01_p_05_compression.png}
+    \caption{Feasible mesh compression. 
+    The green line shows the maximum piston compression.
+    The nodes are locally compressed to the left of the Gaussian curve.}
+    \label{fig:mesh_disp_compression}
+\end{figure}
+\begin{figure}[h]
+    \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/separable/mapping_mu_05_sigma_01_p_075_expansion.png}
+    \caption{Feasible mesh expansion. 
+    The green line shows the maximum piston expansion.
+    The nodes are locally compressed to the right of the Gaussian curve.}
+    \label{fig:mesh_disp_expansion}
+\end{figure}
+
+\newpage
+\begin{figure}[h]
+    \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/separable/mapping_mu_05_sigma_01_p_175_expansion.png}
+    \caption{Unfeasible mesh expansion.
+    Due to the large mesh distortion, the ordering is lost in the physical domain,
+    leading to negative mesh step sizes.}
+    \label{fig:mesh_disp_expansion_unfeasible}
+\end{figure}
+
+\subsection{Geometric Conservation Law}
+As mentioned in the literature review regarding deforming meshes, 
 in Section \ref{sec:literature_review_deforming_mesh},
-a proxy to check to asses how affected is a discretization by a moving mesh
+a proxy to determine how affected is a discretization by a moving mesh
 is to attempt the resolution of the constant solution.
 
 This is so because if the discretization is not correctly handling the movement of the mesh,
@@ -125,6 +249,17 @@ Our scheme seems unable to reproduce correctly the constant solution.
 This happens in a fixed and moving mesh setting (see Figure~\ref{fig:ale_effect_constant_solution}).
 Therefore, we believe it could be due to the accumulation of round-off errors, 
 as previous works have reported in the literature \cite{liu2019balancing}.
+
+In a way, we are surprised that this blowing-up effect does not show up in the piston problem.
+We hint towards the fact that, in that context, the constantly changing boundary conditions
+somehow lead to balanced round-off errors, which cancel out in time.
+
+Chasing to the detail this behaviour is certainly meaningful, 
+but since our reference solution (the piston) does not suffer from these effects,
+we limit ourselves to report this behaviour and skip any further investigation, 
+as we believe it falls out of the scope of this work. 
+
+\newpage
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/ale_effect/mean_fe_comparison_constant_solution.png}
@@ -136,33 +271,6 @@ as previous works have reported in the literature \cite{liu2019balancing}.
     \label{fig:ale_effect_constant_solution}
 \end{figure}
 
-In a way, we are surprised that this blowing-up effect does not show up in the piston problem.
-We hint towards the fact that, in that context, the constantly changing boundary conditions
-somehow lead to balanced round-off errors, which cancel out in time.
-
-Chasing to the detail this behaviour is certainly meaningful, 
-but since our reference solution (the piston) does not suffer from these effects,
-we limit ourselves to report this behaviour and skip any further investigation, 
-as we believe it falls out of the scope of this work. 
-
-\subsection{Parameter Range}
-For the construction of the reduced basis we are randomly sampling the parameter space.
-We set the range for each parameter in Table~\ref{tab:parameter_range}.
-
-\begin{table}[h]
-    \centering
-    \caption{Piston parameter range for random sampling.}
-    \begin{tabular}{cccc}
-    \toprule
-        Variable  & Minimum & Maximum & Units 
-        \\ \midrule
-        $a_0$     & 18      & 25      & m/s \\
-        $\omega$  & 15      & 30      & 1/s \\
-        $\delta$  & 0.15    & 0.3     & [-]
-        \\ \bottomrule
-    \end{tabular}
-    \label{tab:parameter_range}
-\end{table}
 
 % \section{Piston Motion Hyperreduction}
 
@@ -207,7 +315,7 @@ We set the range for each parameter in Table~\ref{tab:parameter_range}.
 
 % \subsubsection{Conclusions}
 % \begin{itemize}
-%     \item The scheme seems consistent in the time variable, for the smaller we make the timestep, 
+%     \item The scheme seems consistent in the time variable, for the smaller we make the time step, 
 %     the smaller the error in the conservation of mass, as shown by Figure~\ref{fig:l2_vs_dt}.
 %     \item Figures~\ref{fig:comparison_bdf} and \ref{fig:comparison_bdf_zoom} show a comparison between two time marching schemes.
 %     The BDF-2 scheme seems to capture better the dynamics, for the only part where the outflow is different from the density time variation is near the upper peak. 
@@ -250,8 +358,8 @@ We set the range for each parameter in Table~\ref{tab:parameter_range}.
 %     \label{tab:summary_basis_deim}
 % \end{table}
 % As we can see in Table~\ref{tab:summary_basis_deim}, linear operators can be resolved by a few number of basis.
-% This is so because their main nonlinearity is the implicit jacobian which is present due to the time-dependency of the domain.
-% Since it is a very simple domain (1D piston), the jacobian is a function of time and space,
+% This is so because their main nonlinearity is the implicit Jacobian which is present due to the time-dependency of the domain.
+% Since it is a very simple domain (1D piston), the Jacobian is a function of time and space,
 % \begin{equation}
 %     J \sim L'(t) x,
 % \end{equation}
@@ -265,7 +373,7 @@ We set the range for each parameter in Table~\ref{tab:parameter_range}.
 % Thus, the number of basis after the tree walk depends not only in the number of parameters, but also in the number of reduced basis elements.
 % Again, a three-level nested POD approach is used:
 % \begin{enumerate}
-%     \item For a given parameter, for each timestep:
+%     \item For a given parameter, for each time step:
 %     \begin{enumerate}
 %         \item Assemble for each basis element, compress, collect.
 %         \item Update time, repeat assemly and compression in reduced basis space.
@@ -434,7 +542,7 @@ We set the range for each parameter in Table~\ref{tab:parameter_range}.
 % Regarding discretization:
 % \begin{itemize}
 %     \item BDF-2 is a must (even higher order terms should be considered). 
-%     It allows the reduction of timesteps to use, which speeds up the offline stage,
+%     It allows the reduction of time steps to use, which speeds up the offline stage,
 %     which is already quite heavy.
 %     By introducing such scheme, for $t\in[0, 1.0]$, I could go from $Nt = 1000$ to $Nt = 500$, 
 %     which reduced the offline to about an hour instead of two/three hours.
@@ -444,7 +552,7 @@ We set the range for each parameter in Table~\ref{tab:parameter_range}.
 % \begin{itemize}
 %     \item The model captures correctly nonlinearities.
 %     \item Linear operators are so simple a few collateral basis elements are enough to reduce them. 
-%     This is due to the simplicity of the jacobian transformation between moving and reference domains.
+%     This is due to the simplicity of the Jacobian transformation between moving and reference domains.
 %     \begin{itemize}
 %         \item No point in playing with the tolerances for linear operators.
 %     \end{itemize}

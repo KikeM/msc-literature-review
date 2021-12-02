@@ -19,8 +19,8 @@ For the construction of the reduced basis we are randomly sampling the parameter
 Hence, we need to determine an acceptable range for each parameter.
 
 To do so, we sample a large space and visually check each of the solutions.
-Visual inspection reveals that certain solutions contain wiggles when a shock wave occurs, see Figure~\ref{fig:smooth_vs_wiggled}.
-Naturally, wiggles were not expected to be captured by this simple model, 
+Visual inspection reveals that certain solutions contain oscillations when a shock wave occurs, see Figure~\ref{fig:smooth_vs_wiggled}.
+Naturally, oscillations were not expected to be captured by this simple model, 
 so they must be due to the fact that the shock wave is becoming thinner than the mesh size.
 
 \begin{figure}[h]
@@ -31,7 +31,7 @@ so they must be due to the fact that the shock wave is becoming thinner than the
     \label{fig:smooth_vs_wiggled}
 \end{figure}
 To prevent these unrealistic solutions from polluting our reference solutions, we
-need to determine a safety margin in the sampling range prevent using a parametrization for which wiggles will take place.
+need to determine a safety margin in the sampling range prevent using a parametrization for which oscillations will take place.
 
 
 \subsection{System Forcing And Nonlinear Response}
@@ -78,8 +78,8 @@ There are several observations to be made about this pair plot.
 
 First of all, looking the raw parameters $a_0, \omega$ and $\delta$, we observe how 
 none of them individually explain how nonlinear the response of the system will be.
-There is certainly a trend, low values of $a_0$ and large values of $\delta$ and $\omega$ contain wiggles (as shown by the density plots). 
-However, points with low values of $a_0$ belong to the set without wiggles too. 
+There is certainly a trend, low values of $a_0$ and large values of $\delta$ and $\omega$ contain oscillations (as shown by the density plots). 
+However, points with low values of $a_0$ belong to the set without oscillations too. 
 Therefore, it must be the combination of them which explains the existence of wiggles.
 
 When we look at the correlation between~$u_p$ and~$\eta$, we observe a linear trend between them: the higher the forcing, the stronger the nonlinearity in the response.
@@ -89,7 +89,7 @@ This critical value~$u_M$ for the forcing seems to be in the neighborhood of~$u_
 With this empirical study of the system's response (and after running some tests) we choose the following ranges for our parameters:
 \begin{table}[h]
     \centering
-    \caption{Acceptable parameter range for random sampling. This configuration should prevent the existence of wiggles at the outflow.}
+    \caption{Acceptable parameter range for random sampling. This configuration should prevent the existence of oscillations at the outflow.}
     \begin{tabular}{cccc}
     \toprule
         Variable  & Minimum & Maximum & Units 
@@ -100,17 +100,4 @@ With this empirical study of the system's response (and after running some tests
         \\ \bottomrule
     \end{tabular}
 \end{table}
-
-
-\onecolumn
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=1\columnwidth]{research_project/piston/figures/wiggles/wiggle_correlation.png}
-    \caption{Parameter space split by wiggle presence.
-    We observe how wiggles are prone to appear for low values in the speed of sound,
-    large values in displacement and frequency; that is, when the forcing into the system is larger than a given threshold $u_M$.}
-    \label{fig:wiggle_correlation}
-\end{figure}
-\twocolumn
-
 \end{document}

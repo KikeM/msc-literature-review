@@ -11,7 +11,7 @@ One refers to this FEM model as the \textit{Full Order Model}~(FOM),
 When the problem is unsteady, that is, 
 when the differential operators contain terms that change in time,
 or the mesh moves in time (effectively changing the integrals of the weak form),
-the algebraic operators need to be reassembled for each timestep.
+the algebraic operators need to be reassembled for each time step.
 
 When this is the case, many-query procedures and access to field values or 
 calculated outputs for different parameter values $\mu$ can become cumbersome, 
@@ -25,7 +25,7 @@ However, due to the change in time of the operators,
 using a standalone reduced basis to represent the solution
 is not enough to remove all the overheads of the FEM model.
 The operators still need to be assembled 
-and projected in the reduced space for each timestep.
+and projected in the reduced space for each time step.
 The reduced basis of the solution does shrunk the overall dimension of the system,
 but it cannot remove the overhead derived from the inevitable change in the operators.
 We would state to have an \textit{offline-online coupling},
@@ -210,7 +210,7 @@ and the increase in the number of operator snapshots to be collected during the 
    cheaper to assemble and solve than the traditional finite element problem;
    and for problems with time-dependent matrices,
    even cheaper than assembling the operators and projecting them
-   unto the reduced basis for each timestep.}
+   unto the reduced basis for each time step.}
    \label{fig:overview_graph}
  \end{figure}
  \twocolumn

@@ -81,7 +81,7 @@ By doing so, we find the following ROM for the time evolution problem,
         \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
     \end{align}
 \end{subequations}
-If we collect terms and factor out the unknowns we get a linear system, this time in the reduced space, to be solved for each timestep to advance the solution,
+If we collect terms and factor out the unknowns we get a linear system, this time in the reduced space, to be solved for each time step to advance the solution,
 \begin{subequations}
     \label{eq:1d_rom_linear_system_timestep}
     \begin{align}
@@ -142,7 +142,7 @@ However, some aspects of it remain unattended:
     There are many methods to build them, and which combination of them we chose defines which reduction method we are applying, along with their advantages and requirements.
     \item The \emph{offline-online decomposition}: to uncouple the usage of FOM operators in as much as possible from the integration of the ROM. 
     Ideally, no FOM structures should be assembled during the online phase.
-    In this naive scheme, we are clearly not meeting such requirement, since we need to assemble all the FOM operators and then project them into $V_N$ \emph{for each timestep}.
+    In this naive scheme, we are clearly not meeting such requirement, since we need to assemble all the FOM operators and then project them into $V_N$ \emph{for each time step}.
 \end{itemize}
 Thus, some additional sections need to be brought up, in order to complete our definition of the reducing scheme.
 We now treat the construction of the basis functions, Section~\ref{sec:1d_rom_heat_equation_basis_construction}; and the approximation of the algebraic operators, Section~\ref{sec:1d_rom_heat_equation_system_approximation_deim}.
@@ -152,7 +152,7 @@ We now treat the construction of the basis functions, Section~\ref{sec:1d_rom_he
 Hereby we layout the details of the basis construction, that is, the definition of the $\psi_i(x)$ functions.
 There are many techniques to build such basis, but since we are laying out a toy problem, we explain an automatic and out-of-the-box technique: the nested POD approach. 
 
-On paper, the most simple basis anyone could come up with is a collection of solution snaphsots for different parameter values and timesteps, 
+On paper, the most simple basis anyone could come up with is a collection of solution snaphsots for different parameter values and time steps, 
 \begin{align}
     \Psi_{\hat{u}} &:= [\psi_i] \nonumber \\
     &= [\hat{u}_h(t^0; \mu_0), \hat{u}_h(t^1; \mu_0), 
@@ -162,7 +162,7 @@ On paper, the most simple basis anyone could come up with is a collection of sol
 Yet, this basis $\Psi_{\hat{u}}$ is unpractical from a computational point of view: we could not possibly store all the basis vectors and neiter compute efficiently all the required algebraic operations with them.
 Additionally, it would probably lead to ill-posed linear systems, since the vectors are almost linearly dependent. 
 
-However, since all these vectors arise from the same PDE (although for different parametrizations of it), and for each timestep the solution is close to the previous one, in a way, we could expect there to be a lot of repeated information inside each $\Psi_{\hat{u}}(\mu_i)$, and consequently, inside $\Psi_{\hat{u}}$.
+However, since all these vectors arise from the same PDE (although for different parametrizations of it), and for each time step the solution is close to the previous one, in a way, we could expect there to be a lot of repeated information inside each $\Psi_{\hat{u}}(\mu_i)$, and consequently, inside $\Psi_{\hat{u}}$.
 We can exploit this fact by using a compression algorithm, such as the Proper Orthogonal Decomposition, to find a set of vectors which capture sufficiently good the span of $\Psi_{\hat{u}}$, and yet do so with less number of basis vectors. 
 
 We call this the \emph{method of snapshots}. 
@@ -205,7 +205,7 @@ Alternatively to a prescribed error, one could directly ask for a prescribed num
 
 \subsubsection{Nested POD Basis Construction}
 \label{sec:1d_rom_heat_equation_basis_construction_nested}
-A simple procedure to leverage the compression properties of the POD function, and the nested structure of our PDE with respect to time and the parameters; is to first build certain POD basis from the snapshots of the solution at different timesteps for a fixed parameter value,
+A simple procedure to leverage the compression properties of the POD function, and the nested structure of our PDE with respect to time and the parameters; is to first build certain POD basis from the snapshots of the solution at different time steps for a fixed parameter value,
 \begin{align*}
     \Psi_{\mu_0} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_0), \ldots, \hat{u}_h(t^T; \mu_0)\right]\right), \\
     \Psi_{\mu_1} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_1), \ldots, \hat{u}_h(t^T; \mu_1)\right]\right), \\  
@@ -231,7 +231,7 @@ We leave this for later.
 
 \subsection{System Approximation}
 \label{sec:1d_rom_heat_equation_system_approximation_deim}
-Regarding the assembly of the reduced operators, if already during the offline stage, where the FOM problem is tackled, we had to assemble all the discrete operators for each timestep;
+Regarding the assembly of the reduced operators, if already during the offline stage, where the FOM problem is tackled, we had to assemble all the discrete operators for each time step;
 during the online stage we have to additionally project them unto the reduced space too, as shown in Equations~\eqref{eq:1d_rom_linear_system_operators},
 increasing the overall cost of the integration procedure.
 
@@ -257,7 +257,7 @@ If we had such a decomposition, once we had computed the basis matrix \rbV, we c
         A_N(t, \mu) &= \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{N,q}.
     \end{split}
 \end{equation}
-Since $A_{N, q}$ is fixed, provided that we had a way to evaluate each $\Theta_q^a(t, \mu)$, we would be able to build the reduced operator for a given parameter for each timestep without having to use any FOM operator. 
+Since $A_{N, q}$ is fixed, provided that we had a way to evaluate each $\Theta_q^a(t, \mu)$, we would be able to build the reduced operator for a given parameter for each time step without having to use any FOM operator. 
 
 \subsubsection{Discrete Empirical Interpolation Method}
 Naturally, not many problems are likely to present a separable form as the one shown above.
@@ -311,7 +311,7 @@ With an approximation of the reduced operators available, we can define yet anot
         \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
     \end{align}
 \end{subequations}
-If we collect terms and factor out the unknowns we get a linear system, in the reduced space and with approximated operators, to be solved for each timestep to advance the solution,
+If we collect terms and factor out the unknowns we get a linear system, in the reduced space and with approximated operators, to be solved for each time step to advance the solution,
 \begin{subequations}
     \label{eq:1d_rom_linear_system_approximation_timestep}
     \begin{align}
@@ -321,7 +321,7 @@ If we collect terms and factor out the unknowns we get a linear system, in the r
         \vb{\hat{u}}_N^{0} &= \vb{\hat{u}}_{N,0}.
     \end{align}
 \end{subequations}
-Each of the operators present in the problem, $\vb{M}_N, \vb{A}_N, \vb{F}_N \qqtext{and} \vb{F}_{g,N}$ will have associated an operator basis and will require the solution of the interpolation problem \eqref{eq:1d_rom_heat_equation_interpolation_problem} to be solved for each timestep and parameter value.
+Each of the operators present in the problem, $\vb{M}_N, \vb{A}_N, \vb{F}_N \qqtext{and} \vb{F}_{g,N}$ will have associated an operator basis and will require the solution of the interpolation problem \eqref{eq:1d_rom_heat_equation_interpolation_problem} to be solved for each time step and parameter value.
 Although this could still seem like a costly procedure, if the operators are actually reduceable, the number of basis functions $Q_m, Q_a, Q_f, Q_{f,g}$ should be small, and thus way simpler problems than assembling the whole operator and the carrying out the projection. 
 
 % Note that the vector $\vb{F}_{\vb{\hat{u}}_N}^{n}$ is not approximated.

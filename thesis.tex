@@ -9,6 +9,7 @@
 % \usepackage{hyperref}
 \usepackage{amssymb}
 \usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{float}  % used to fix location of images i.e.\begin{figure}[H]
 \usepackage{graphicx}  %needed to include png, eps figures
 \usepackage{mwe}
@@ -73,7 +74,16 @@
 \title{Skipping The Jacobian \\[5mm] \large{(Hyper) Reduced Order Models For Moving Meshes}}
 
 % author names 
-\author{Enrique Millán Valbuena \\ \normalsize{463 426 8}}% <-this % stops a space
+\author{Enrique Millán Valbuena \\ \normalsize{463 426 8}
+\\[5mm]
+(TU Delft) 
+\\[2mm]
+S. Hulshoff 
+\\[5mm]
+(Politecnico di Milano) 
+\\[2mm]
+N. Dal Santo, A. Manzoni, A. Quarteroni
+}% <-this % stops a space
         
 % The report headers
 \markboth{M. Sc. Aerospace Engineering, TU Delft}%do not delete next lines
@@ -83,41 +93,45 @@
 \maketitle
 
 \begin{abstract}
-   We present a Reduced Order Model (ROM) for a one-dimensional nonlinear gas dynamics problem:
+   We present a reduced order model (ROM) for a one-dimensional nonlinear gas dynamics problem:
    the isentropic piston.
    The main body of the PDE, 
-   the geometrical definition of the moving boundary, 
+   the geometrical definition of the mesh nodes, 
    and the boundary conditions are parametrized.
    The full order model is obtained with a Galerkin finite element discretization,
    under the Arbitrary Lagrangian Eulerian formulation (ALE).
    To stabilize the system, an artificial viscosity term is included.
-   The Reduced Basis to express the solution is obtained with the classical POD technique.
-   To overcome the explicit use of the jacobian transformation, 
+   The nonlinear convective term is linearized with a second-order extrapolation.
+   The reduced basis to express the solution is obtained with the compression POD technique.
+   To overcome the explicit use of the Jacobian transformation, 
    typical in the context of moving domains,
    a system approximation technique is used.
    The (Matrix) Discrete Empirical Interpolation Method, (M)DEIM, allows us
-   to work with a weak form defined in the physical domain (and hence the physical weak formulation)
-   whilst maintaining an
-   efficient assembly for the algebraic operators, 
-   despite their change with every timestep.
+   to work with a weak form defined in the physical domain 
+   (and hence the physical weak formulation)
+   whilst maintaining efficient assembly of the algebraic operators, 
+   despite their change with every time step.
+   Two alternative methods are presented to collect and compress the snapshots 
+   for the linearized solution-dependent convective term.
+   Each method leads to a different offline stage.
    All in all, our approach is purely algebraic
    and the reduced model makes no use of full order structures, 
    thus achieving a perfect \textit{offline-online} split.
-   A concise description of the reducing procedure is provided, 
-   together with a posteriori error estimations, obtained via model truncation,
-   to certify the Reduced Order Model.
+   A concise description of the reduction procedure is provided.
+   The reduced model is certified with a posteriori error estimations obtained via model truncation.
    % Numerical examples to showcase computational costs and implementation details are designed, 
    % implemented and validated with the Manufactured Solutions Method.
 \end{abstract}
 
 \begin{IEEEkeywords}
     \centering
-    Finite Elements, Galerkin, Reduced Order Models, 
-    Moving Piston, Deforming Mesh, ALE, 
-    (M)DEIM, POD, 
-    Model Truncation
+    finite elements, Galerkin, reduced order models, 
+    moving mesh, ALE, 
+    (M)DEIM, POD, SVD, 
+    model truncation
 \end{IEEEkeywords}
 
+\newpage
 \setcounter{tocdepth}{2}
 \tableofcontents
 
@@ -125,8 +139,9 @@
 \listoftodos
 
 \subfile{foreword.tex}
-\newpage
-\subfile{executive.tex}
+% \newpage
+% \subfile{executive.tex}
+
 
 \newpage
 \twocolumn
@@ -140,29 +155,41 @@
 % \subfile{research_project/research.tex}
 % \subfile{research_project/graph_layout.tex}
 \newpage
+\clearpage
 \subfile{research_project/piston/burgers_1d_fom.tex}
 \newpage
+\clearpage
 \subfile{research_project/piston/burgers_1d_rom.tex}
 \newpage
+\clearpage
 \subfile{research_project/piston/burgers_1d_calibration.tex}
 \newpage
+\clearpage
 \subfile{research_project/piston/burgers_1d_hrom.tex}
 \newpage
+\clearpage
 \subfile{conclusions.tex}
 
 \newpage
+\clearpage
 \printbibliography
 
 \begin{appendices}
     \newpage
     \subfile{research_project/piston/piston_movement.tex}
+    % \newpage
+    % \clearpage
+    % \subfile{research_project/piston/svd_analysis.tex}
+    % \newpage
+    % \clearpage
+    % \subfile{research_project/piston/nonlinear_displacement.tex}
+    % \newpage
+    % \clearpage
+    % \subfile{research_project/piston/parameter_range_selection.tex}
     \newpage
     \clearpage
-    \subfile{research_project/piston/svd_analysis.tex}
-    \newpage
-    \clearpage
-    \subfile{research_project/piston/parameter_range_selection.tex}
+    \onecolumn
+    \subfile{research_project/piston/large_graphics.tex}
 \end{appendices}
-
 
 \end{document}

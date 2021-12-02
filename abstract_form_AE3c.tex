@@ -1,0 +1,6 @@
+We present a Reduced Order Model (ROM) for a one-dimensional gas dynamics problem: the isentropic piston.
+The PDE, the geometrical definition of the moving boundary, and the boundary conditions are parametrized.
+The Full Order Model is obtained with a Galerkin Finite Element discretization,under the Arbitrary-Lagrangian formulation (ALE). An artificial viscosity term is included. The Reduced Basis is obtained with the classical POD technique.
+To overcome the explicit use of the Jacobian transformation, a system approximation technique is used.
+The (Matrix) Discrete Empirical Interpolation Method allows usto work with a weak form defined in the physical domainwhilst maintaining anefficient assembly for the algebraic operators.
+All in all, our approach to the construction of the Reduced Order Model is purely algebraicand makes no use of Full Order structures, achieving a perfect offline-online split. A posteriori error estimators, obtained via model truncation, are used to certify the model.

@@ -116,7 +116,7 @@ where $V$ is a suitable Hilbert space,
         u(x, 0) &= u_0(x).
     \end{align}
 \end{subequations}
-We have exploited the integration by parts rule to lower by one the derivative degree of the laplacian operator.
+We have exploited the integration by parts rule to lower by one the derivative degree of the Laplacian operator.
 % This is the reason to call this the \emph{weak form}, since the differentiability of the highest operator has been reduced.
 
 \subsubsection{Dirichlet Lifting}
@@ -188,7 +188,7 @@ Briefly, there is a trade-off between computational effort and stability in term
 For our needs, we opt for the maximization of stability, so we chose what is called an implicit scheme, which is unconditionally stable, in exchange for a more dense linear system to be solved. 
 
 The procedure is the following: a polynomial interpolation of the function $u(x,t)$ is built, 
-using previous timesteps $u(x,t^{n}), u(x,t^{n-1}), \ldots$.
+using previous time steps $u(x,t^{n}), u(x,t^{n-1}), \ldots$.
 Then, the interpolant's derivative at time $t^{n+1}$ is used as an approximation of the actual derivative.
 The accuracy of the scheme (and also its complexity) is determined by the number of previous timestamps used in the interpolation. 
 
@@ -305,7 +305,7 @@ This is equivalent to enforcing the orthogonality to each basis function of the 
 The spatial boundary conditions are encoded within the matrices and the vectors. 
 The computation of the discrete initial condition $\vb{\hat{u}}_{h,0}$ is addressed in Section~\ref{sec:1d_fom_projection_interpolation}.
 
-If we collect terms and factor out the unknowns, we get a linear system to be solved at each timestep to advance the solution,
+If we collect terms and factor out the unknowns, we get a linear system to be solved at each time step to advance the solution,
 \begin{subequations}
     \begin{align}
         \label{eq:1d_fom_linear_system_timestep}
@@ -315,7 +315,7 @@ If we collect terms and factor out the unknowns, we get a linear system to be so
         \vb{\hat{u}}_h^{0} &= \vb{\hat{u}}_{h,0}.
     \end{align}
 \end{subequations}
-Because the domain changes with time, even if we are solving a linear system, both the matrix and the RHS change at each timestep,
+Because the domain changes with time, even if we are solving a linear system, both the matrix and the RHS change at each time step,
 \begin{subequations}
     \label{eq:1d_fom_linear_system_operators}
     \begin{align}
@@ -339,7 +339,7 @@ Finally, the parameter $m_{\text{BDF}}$ changes according to the integration sch
     \frac{3}{4}, &\text{BDF-2}    
     \end{cases}
 \end{equation}
-as so does the vector linked to the previous timesteps, 
+as so does the vector linked to the previous time steps, 
 \begin{equation}
     \left[\vb{F}_{\vb{\hat{u}}_h}^{n}\right]_{i} = 
     \begin{cases}
@@ -348,7 +348,7 @@ as so does the vector linked to the previous timesteps,
         - \frac{3}{4}\inner{\hat{u}_h^{n-1}}{\varphi_i}, &\text{BDF-2}
     \end{cases}
 \end{equation}
-Although for the FOM model we can compute these inner products at each timestep, for the Reduced Order Model we will exploit an algebraic expression of these expressions.
+Although for the FOM model we can compute these inner products at each time step, for the Reduced Order Model we will exploit an algebraic expression of these expressions.
 In fact, the forcing term due to the previous solution can be expressed as the product between the mass matrix and the FE representation of the previous solution, 
 \begin{equation}
     \label{eq:1d_fom_forcing_term_time_mass_matrix}
@@ -360,14 +360,14 @@ In fact, the forcing term due to the previous solution can be expressed as the p
     \end{cases}
 \end{equation}
 
-Lastly, we point out how the timestep $\Delta t$ has been intentionally left out of the discrete operators definition.
+Lastly, we point out how the time step $\Delta t$ has been intentionally left out of the discrete operators definition.
 There are two reasons to back this decision:
 \begin{enumerate}
     \item Conceptually, each discrete operator encodes a spatial model, in terms of a differential operator or the presence of a forcing term.
-    The timestep $\Delta t$ shows up because we first discretized the continuous problem in time. 
+    The time step $\Delta t$ shows up because we first discretized the continuous problem in time. 
     Had we gone the other way around, discretizing the problem in space in the first place, we would have found a system of ODEs with the previously defined spatial operators. 
-    \item When we leverage the system approximation reduction technique, we will not want to have there the presence of the timestep.
-    The reduced model could use a different timestep, or the snapshots for different $\mu$ values could be collected for different timestep values.
+    \item When we leverage the system approximation reduction technique, we will not want to have there the presence of the time step.
+    The reduced model could use a different time step, or the snapshots for different $\mu$ values could be collected for different time step values.
 \end{enumerate} 
 
 \subsubsection{FE Representation of the Initial Condition}
