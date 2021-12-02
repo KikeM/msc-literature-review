@@ -112,11 +112,19 @@ This work extends \cite{Santo_Manzoni_2019,2015_efficientModelReductionParametri
 which introduced the MDEIM technique for parametrized domains, whose mesh remained fixed in time.
 
 \subsubsection{Thesis Goal}
-Physical problems with moving boundaries may require 
-the introduction of a nonlinear transformation in the weak form,
+Physical problems with moving meshes may require 
+the introduction of a transformation in the weak form,
 to translate the PDE defined in a deforming space into a fixed, 
-numerical grid.
-\mytodo{Sketch: Jacobian transformation.}
+numerical grid, as shown in Figure~\ref{fig:jacobianTransformation}.
+\begin{figure}[h]
+    \includegraphics[width=\columnwidth]{research_project/piston/figures/Jacobian_determinant_and_distortion.png}
+    \caption{Numerical fixed grid to the left, physical moving mesh to the right.
+    The Jacobian determinant establishes the connection between 
+    the evalaution of an integral over the red square.
+    Figure from \cite{jacobianTransformation}}
+    \label{fig:jacobianTransformation}
+\end{figure}
+
 This transformation can take many names, 
 such as generalized transformation, 
 mapping,

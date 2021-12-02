@@ -17,6 +17,7 @@
 \label{sec:fom_definition}
 The full order model for the parametrized one-dimensional piston problem is derived.
 
+
 We depart from the one-dimensional, compressible, and isentropic \mbox{Navier-Stokes} equations to end up with a non-linear Burgers-like equation.
 Therefore, this problem contains all the necessary ingredients to show how the ROM behaves 
 in the presence of a non-linear term within a moving domain.
@@ -40,10 +41,17 @@ The piston movement $L(t)$ is a real-valued smooth sinusoidal function,
     L(t) = L_0 \left[1 - \delta \left(1 - \cos \left(\omega t\right)\right)\right],
 \end{equation}
 where $\omega$ is the frequency at which it oscillates, 
-and $\delta \ll L_0$ is a scale variable to adjust how much it is displaced from its original position.
+and $\delta \ll L_0$ is a scale variable to adjust how much it is displaced from its original position. 
+A sketch is given in Figure~\ref{fig:piston}.
 The length $L_0$ is defined to keep physical dimensions sound, 
 but it will be fixed to $L_0=1$ for the remainder of the work.
 See Appendix~\ref{sec:appendix_piston_movement_law} for the derivation of this function.
+\begin{figure}[h]
+    \includegraphics[width=1.0\columnwidth]{research_project/piston/figures/piston.pdf}
+    \caption{Piston sketch. The flow departs from rest to the left of the piston.
+    Outflow (inflow) is represented by a negative (positive) velocity value.}
+    \label{fig:piston}
+\end{figure}
 
 To derive the equations of motion, 
 we follow and adapt to our geometry the derivations given in \cite{nonlinearDiffusiveWaves}. 
@@ -1092,7 +1100,7 @@ Equation (\ref{eq:semi_implicit_approximation_convective_term}),
 \end{subequations}
 
 \subsection{Discrete Problem: Space Discretization}
-To complete our discretization, we define a finite functional space $V_h \subset V$, where we can represent the solution as the linear combination of a set of Finite Elements (FE) basis functions $\varphi_i(x)$ with local support,
+To complete our discretization, we define a finite functional space $V_h \subset V$, where we can represent the solution as the linear combination of a set of finite elements (FE) basis functions $\varphi_i(x)$ with local support (Figure~\ref{fig:p1_fem}),
 \begin{subequations}
     \begin{align}
         \hat{u}^{n}(x) \simeq \hat{u}_h^n(x) &= \sum_j^{N_h} \hat{u}_{h_j}^n \varphi_j(x), 
@@ -1104,6 +1112,12 @@ We define the FE~vector $\vb{\hat{u}}_h^{n}$ to be the collection of
 coefficients~$\hat{u}_{h_j}^n$ which multiply the basis functions.
 In the FE~context with Lagrangian basis elements, 
 these coincide with the values of the function at each node.
+
+% \begin{figure}[h]
+%     \includegraphics[width=\columnwidth]{research_project/piston/figures/p1_fem.pdf}
+%     \caption{$\mathbb{P}1$ Lagrangian finite element functions.}
+%     \label{fig:p1_fem}
+% \end{figure}
 
 Applying the Galerkin principle to solve PDEs, 
 we enforce the orthogonality of the residual to the functional space $V_h$. 

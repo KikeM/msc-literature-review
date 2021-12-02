@@ -412,6 +412,17 @@ we enforce the approximation to actually match certain elements of the operator,
     [A_h(t, \mu)]_{k} = [A_h^m(t, \mu)]_{k} = \sum_q^{Q_a} \Theta_q^a(t, \mu) [A_{h, q}]_{k}
 \end{equation}
 for certain indices~$k \in \mathcal{I}_a$ such that~$\left|\mathcal{I}_a\right| = Q_a$.
+These indices $\mathcal{I}_a$ are known as the reduced mesh nodes, 
+sketched in Figure~\ref{fig:reduced_mesh}.
+\begin{figure}[h]
+    \includegraphics[width=0.99\columnwidth]{research_project/piston/figures/reduced_mesh_nodes.pdf}
+    \caption{Reduced mesh nodes $\mathcal{I}_a$ sketch 
+    for $\mathbb{P}1$ Lagrangian finite element basis functions. 
+    The weak form integral evaluation only takes place for a restricted subset of cells,
+    to assemble the entries corresponding to the selected nodes.  
+    In dashed are shown the interactions with adjacent cell basis functions.}
+    \label{fig:reduced_mesh}
+\end{figure}
 The notation $[A_h(t, \mu)]_{k}$ stands for the value of the operator at the given mesh node $k$.
 In the FE context it can be obtained by integrating the weak form locally.
 
