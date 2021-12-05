@@ -460,33 +460,35 @@ according to error reduction arguments of the reconstruction error,
 \subsubsection{Reduction of the Trilinear Term}
 We recall that the trilinear operator $N_h(u^{*})$ 
 from Equation~(\ref{eq:trilinear_weak_form})
-takes as input in its third argument an extrapolation of the velocity $u^{*}$.
+takes as input in its first argument an extrapolation of the velocity $u^{*}$.
 This extrapolation lives in the same function space as the solution:
 from Equation~(\ref{eq:u_star_approximation}),
-it is a linear combination of past solutions in time.
+it is a linear combination of past discrete timestamps.
 
-The general strategy to reduce this operator 
-is to collect and compress the operator snapshots 
+% This would allow us to span a larger parameter space,
+% potentially larger than the one used to identify the RB solution modes.
+Therefore, two approaches can be followed to build the the trilinear operator modes,
+\begin{itemize}
+    \item (\mbox{$u^{*}$-general}) collecting the snapshots from the FOM simulation \cite{Santo_Manzoni_2019};
+    \item (\mbox{$u^{*}$-restricted}) collecting the snapshots from evaluations of the operator with RB solution modes.
+\end{itemize}
+The first approach to simply 
+collect and compress the operator snapshots 
 during the offline phase of the FOM,
 with the general nested POD algorithm described 
 in Section~\ref{sec:1d_rom_burgers_basis_construction_nested}.
 This would tie the operator snapshots to the parameter space
 sampled to identify the RB solution modes.
 
-However, if the $u^{*}$ extrapolations are going to be expressed in terms of the RB solution modes,
-as by Equation~(\ref{eq:1d_rom_burgers_rb_expansion}),
+The second approach is to recognise that in the execution of the ROM,
+the first component of the trilinear term, the extrapolated solution, 
+will always be expressed in the finite-dimensional subspace of the RB solution modes
+(as by Equation~(\ref{eq:1d_rom_burgers_rb_expansion})),
 why not use these modes to assemble the operator snapshots?
-% This would allow us to span a larger parameter space,
-% potentially larger than the one used to identify the RB solution modes.
 
-Therefore, the trilinear operator modes can be built with two strategies,
-\begin{itemize}
-    \item (\mbox{$u^{*}$-general}) collecting the snapshots from the FOM simulation \cite{Santo_Manzoni_2019};
-    \item (\mbox{$u^{*}$-restricted}) collecting the snapshots from evaluations of the operator with RB solution modes.
-\end{itemize}
-These strategies are summarize in Table~\ref{tab:summary_trilinear_strategies}.
+The different aspect of these approaches are summarized in Table~\ref{tab:summary_trilinear_strategies}.
 
-The \mbox{$u^{*}$-restricted} requires a slight modification of the nested POD algorithm.
+The \mbox{$u^{*}$-restricted} strategy requires a slight modification of the nested POD algorithm.
 Instead of two, we have three nested levels: 
 parameters, modes and time, as sketched in Figure~\ref{fig:treewalk_trilinear_sketch}.
 \begin{figure}[h]
@@ -494,11 +496,11 @@ parameters, modes and time, as sketched in Figure~\ref{fig:treewalk_trilinear_sk
     \includegraphics[width=0.8\columnwidth]{research_project/piston/figures/treewalk-trilinear.pdf}
     \caption{Nested POD treewalk for the trilinear term, 
     \mbox{$u^{*}$-restricted} strategy.
-    The parameter space is sampled, for each parameter and RB mode 
+    The parameter space is sampled, for each parameter and RB solution mode 
     snaphsots are collected and compressed in time (red dots).
     This provides a collateral basis for each parameter.
     These bases are finally compressed into one, 
-    which summarizes the changes in time, parameters and RB modes.}
+    which summarizes the changes in time, parameters and RB solution modes.}
     \label{fig:treewalk_trilinear_sketch}
 \end{figure}
 
@@ -523,16 +525,24 @@ which is the result of compressing all parameter bases,
 \end{equation}
 An advantage of this procedure is that the FOM simulation 
 might not be available, 
-if the RB modes are obtained, e.g., from experimental data.
+if the RB solution modes are obtained, e.g., from experimental data.
 
 \begin{table}[h]
     \centering
-    \caption{Trilinear operator reduction strategies}
+    \caption{Trilinear operator N-MDEIM reduction approaches.
+    \\
+    The snapshots outset ("Op. assembly"), 
+    the first argument of the weak form ("1st argument"),
+    and the treewalk pattern are compared.
+    \\
+    The restricted strategy has an additional nesting level, 
+    but it can be run as an independent step during the offline stage
+    (provided that the RB solution modes are given).}
     \begin{tabular}{@{}lccc@{}}
     \toprule
-                       & Op. assembly      & 3rd argument          & Nested levels           \\ \midrule
-    $u^{*}$-general    & FOM simulation    & Extrapolation $u^{*}$ & 2 (param., time)        \\
-    $u^{*}$-restricted & Ind. offline step & RB solution modes     & 3 (param., modes, time) \\ \bottomrule
+                       & Op. assembly   & 1st argument          & Treewalk                                   \\ \midrule
+    $u^{*}$-general    & FOM simulation & Extrapolation $u^{*}$ & Figure~\ref{fig:treewalk_sketch}           \\
+    $u^{*}$-restricted & Ind. step      & RB solution modes     & Figure~\ref{fig:treewalk_trilinear_sketch} \\ \bottomrule
     \end{tabular}
     \label{tab:summary_trilinear_strategies}
 \end{table}

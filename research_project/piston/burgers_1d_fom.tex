@@ -472,7 +472,7 @@ $J_{\alemap}(0) = 1$
 if the reference domain coincided with the initial domain configuration of the transient domain.
 
 \subsubsection{ALE: Non-Uniform Mesh Displacement}
-We can also introduce an arbitrary distortion to the nodes,
+We also introduce a non-uniform distortion to the nodes,
 to mimick the effects of mesh adapting techniques.
 As a proxy, we take a generic density function with a Gaussian bell,
 \begin{equation}
@@ -498,10 +498,10 @@ we have the following transformation in terms of a mesh displacement,
     \end{align}
 \end{subequations}
 This displacement contains the piston oscillation 
-and the arbitrary concentration of the nodes.
+and the non-uniform concentration of the nodes.
 
 \subsubsection*{Effects on the Mesh Size}
-We demonstrate the effects of the arbitrary displacement in the mesh step size.
+We demonstrate the effects of the non-uniform displacement in the mesh step size.
 By evaluating Equation~(\ref{eq:displacement_definition}) at two consecutive nodes
 and computing their difference,
 \begin{subequations}    
@@ -601,7 +601,7 @@ linear and nonlinear convection terms:
     - c(x,t)\frac{\partial u}{\partial x} 
     - \varepsilon  \pdv[2]{u}{x} = 0.
 \end{equation}
-Before moving on to the derivation of the weak formulation, we apply the scaling to the mass conservation.
+% Before moving on to the derivation of the weak formulation, we apply the scaling to the mass conservation.
 
 \subsubsection{Dimensionless Mass Conservation}
 If the former rescaling is applied, Equation~(\ref{eq:mass_conservation_check}) 
@@ -1108,7 +1108,9 @@ Equation (\ref{eq:semi_implicit_approximation_convective_term}),
 \end{subequations}
 
 \subsection{Discrete Problem: Space Discretization}
-To complete our discretization, we define a finite functional space $V_h \subset V$, where we can represent the solution as the linear combination of a set of finite elements (FE) basis functions $\varphi_i(x)$ with local support (Figure~\ref{fig:p1_fem}),
+To complete our discretization, we define a finite functional space $V_h \subset V$, 
+where we can represent the solution as the linear combination of a set of 
+finite elements (FE) basis functions $\varphi_i(x)$ with local support,
 \begin{subequations}
     \begin{align}
         \hat{u}^{n}(x) \simeq \hat{u}_h^n(x) &= \sum_j^{N_h} \hat{u}_{h_j}^n \varphi_j(x), 
@@ -1118,7 +1120,7 @@ To complete our discretization, we define a finite functional space $V_h \subset
 \end{subequations}
 We define the FE~vector $\vb{\hat{u}}_h^{n}$ to be the collection of 
 coefficients~$\hat{u}_{h_j}^n$ which multiply the basis functions.
-In the FE~context with Lagrangian modes, 
+In the FE~context with Lagrangian functions, 
 these coincide with the values of the function at each node.
 
 % \begin{figure}[h]

@@ -5,20 +5,25 @@
 
 \section{Conclusions}
 % The Jacobian can be succesfully skipped!
-An hyperreduced order model has been succesfully created and certified for
+An hyper reduced order model has been succesfully created and certified for
 the one-dimensional isentropic moving piston.
 This is a simplified gas dynamics problem, 
 with all the ingredients that conform a real life problem in their milder versions:
 a Burgers-like nonlinear term and a moving mesh.
 We have dealt in a general way with the parametrized Dirichlet boundary conditions,
-without any assumption on the functional form.
+without any assumption on their functional form.
 Two parametrized moving meshes have been introduced: 
 one with uniform stretching of the mesh element size,
 and one with local node concentration, using a Gaussian bell density function as a proxy.
+Our reduction strategy permits us to remain in the physical domain, 
+thus skipping the Jacobian transformation.
+The methodology is not restricted to moving boundaries, 
+it could be used for domains whose mesh nodes move inside the domain 
+whilst remaining fixed at the boundaries.
 
-Our approach to the construction of the reduced order model is purely algebraic, 
+Our approach to the construction of the hyper reduced order model is purely algebraic, 
 with a non-intrusive approach that should allow its implementation on existing solvers.
-We have obtained a reduced basis with global support to carry out the Galerkin projection;
+We have obtained a reduced basis to carry out the Galerkin projection;
 and a collateral basis for each of the algebraic operators (vectors and matrices),
 to approximate their projection unto the reduced space 
 without explicitly assembling and projecting the original FOM operator.
@@ -28,20 +33,27 @@ no FOM operators are used during the online run.
 For the linear operators, the offline stage is carried out separately from the FOM simulation,
 so that a wider parameter range can be spanned. 
 
-This leads to obtaining a solution for an unsteady nonlinear parabolic PDE 
-with a moving mesh skipping the Jacobian transformation.
-The approach is general, as in that it could be used for domains with fixed boundaries, 
-whose mesh nodes move inside the domain.
+
+\subsection{Discretization Flexibility}
+The (M)DEIM technique determines certain operator entries which 
+have to be computed at runtime during the online stage 
+to carry out the empirical interpolation.
+In the finite element context, this is quite convenient.
+The restricted operator entries are computed by evaluating the weak form integral
+for the mesh elements associated with the restricted entries. 
+However, this technique is not tied to the the finite element formulation.
+All the content of this work could be reused in a finite difference or finite volume formulation,
+provided that the implementation is capable of an efficient calculation of the algebraic restricted entries.
 
 \subsection{Nonlinear Convection MDEIM}
 Due to the velocity extrapolation in Burgers' nonlinear convection term,
-a trilinear operator is present in the FEM discretization.
-We have compared two strategies to create the MDEIM basis for this operator:
+a trilinear operator is present in the FOM discretization.
+We have compared two approaches to create the MDEIM basis for this operator:
 \begin{itemize}
     \item (\mbox{$u^{*}$-general}) collecting the snapshots from the FOM simulation \cite{Santo_Manzoni_2019};
-    \item (\mbox{$u^{*}$-restricted}) collecting the snapshots from evaluations of the operator with RB modes.
+    \item (\mbox{$u^{*}$-restricted}) collecting the snapshots from evaluations of the operator with RB solution modes.
 \end{itemize}
-The \mbox{$u^{*}$-general} strategy has the following drawbacks:
+The \mbox{$u^{*}$-general} approach has the following drawbacks:
 \begin{itemize}
     \item it limits the sampling pool of the \mbox{N-MDEIM} to 
     the one used to identify the solution reduced basis;
@@ -49,25 +61,25 @@ The \mbox{$u^{*}$-general} strategy has the following drawbacks:
     if the reduced basis is identified from experimental data.
 \end{itemize}
 Our enhancement of the trilinear MDEIM offline stage (\mbox{$u^{*}$-restricted})
-tackles these two issues, by uncoupling snapshots collection from the FOM simulation.
+tackles these two issues, uncoupling snapshot collection from the FOM simulation.
 Once the modes have been identified, and trimed to a given threshold error,
 they can be used to build the \mbox{N-MDEIM} collateral basis.
 % The reduced basis modes are used to assemble trilinear snapshots to build the collateral basis.
 
-The \mbox{$u^{*}$-restricted} strategy is not limited to Burgers' nonlinear convective term.
+The \mbox{$u^{*}$-restricted} approach is not limited to Burgers' nonlinear convective term.
 It could be used with the nonlinear convective term in the Navier-Stokes equations too,
-and potentially with any trilinear form whose third argument is expressed
+and potentially with any trilinear form whose additional argument is expressed
 in terms of a linear combination of the solutions.
-In fact, if the third argument belonged to another space (different from the solution space),
+In fact, if the additional argument belonged to another space (different from the solution space),
 the modes\footnote{Not necessarily obtained with a POD decomposition.} of such function space could be used to sample the operator efficiently.
 
 \subsection{RB and MDEIM Interaction Error}
 The interaction between the RB and (M)DEIM errors has been analyzed.
-Both need to be taken into account to determine the HROM error.
-Additionally, if the (M)DEIM error is higher than the one present in the RB basis,
-the certification technique by truncation will fail.
+The number of RB solution and RB operators modes needs to be such that
+the (M)DEIM error is always smaller or equal to the RB solution error.
+Otherwise, the certification by truncation technique will fail.
 
-\subsection{Limitations}
+\subsection{Limitations and Future Work}
 We are aware of how we have benefited from solving our PDE in a one-dimensional domain.
 Despite including a nonlinear term and a moving mesh,
 the formulation of the problem remained benign. 
@@ -78,7 +90,6 @@ Although for one-dimensional domains scaling to higher order polynomials does no
 raise dimensionality issues, for actual three-dimensional domains it would.
 Therefore, we saw no need to rising our degree at this level either.
 
-\subsection{Future Work}
 The next natural step would be to extend the methodology to higher-dimensional domains.
 The oscillating cylinder problem is a good candidate 
 to test the formulation in a more realistic setting.
@@ -99,9 +110,10 @@ For the creation of the Navier-Stokes ROM, the velocity field needs to be enrich
 \cite{supremizers},
 so that the inf-sup condition is satisfied at the ROM level too.
 
+\newpage
 \subsection*{Funding}
 The author(s) disclosed receipt of the following financial support for the research, 
-authorship, and/or publication of this article: 
+authorship, and/or publication of this article.
 This work was done
 within the research project 
 "An Integrated Heart Model for the simulation of the cardiac function - iHEART" 

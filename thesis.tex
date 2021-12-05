@@ -106,14 +106,14 @@ A. Manzoni, A. Quarteroni
    under the Arbitrary Lagrangian Eulerian formulation (ALE).
    To stabilize the system, an artificial viscosity term is included.
    The nonlinear convective term is linearized with a second-order extrapolation.
-   The reduced basis to express the solution is obtained with the compression POD technique.
+   The reduced basis to express the solution is obtained with the POD technique.
    To overcome the explicit use of the Jacobian transformation, 
-   typical in the context of moving domains,
-   a system approximation technique is used.
+   typical in the context of moving meshes,
+   a system approximation technique is introduced.
    The (Matrix) Discrete Empirical Interpolation Method, (M)DEIM, allows us
    to work with a weak form defined in the physical domain 
    (and hence the physical weak formulation)
-   whilst maintaining efficient assembly of the algebraic operators, 
+   whilst maintaining an efficient assembly of the algebraic operators, 
    despite their change with every time step.
    Two alternative methods are presented to collect and compress the snapshots 
    for the linearized solution-dependent convective term.

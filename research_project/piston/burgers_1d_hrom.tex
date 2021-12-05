@@ -40,7 +40,33 @@ for ROM error estimation.
 Finally, in Section~\ref{sec:arbitrary_mesh_nmdeim_mode_evaluation} we show the bondness
 of the trilinear MDEIM obtained with mode snapshots as opposed to FOM simulation snapshots.
 
-\subsection{Uniform Stretching: ROM Error}
+\begin{table}[h]
+    \centering
+    \caption{Summary table with the included effects for each section.}
+    \begin{tabular}{@{}cccc@{}}
+    \toprule
+    Section                                             & Mesh Stretching              & (M)DEIM              & N-MDEIM Approach     \\ \midrule
+    \ref{sec:hrom_results_reduced_basis}                & \multirow{4}{*}{Uniform}     & No                   & -                    \\
+    \ref{sec:uniform_mdeim_errors}                      &                              & Yes                  & general + restricted \\
+    \ref{sec:hrom_results_posteriori_error_estimation}  &                              & No                   & -                    \\
+    \ref{sec:nonhierachical_pod_bases}                  &                              & Yes                  & restricted           \\
+    \midrule
+    \ref{sec:arbitrary_mesh_results}                    & \multirow{3}{*}{Non-Uniform} & \multirow{3}{*}{Yes} & general              \\
+    \ref{sec:certification_limits}                      &                              &                      & general              \\
+    \ref{sec:arbitrary_mesh_nmdeim_mode_evaluation}     &                              &                      & restricted           \\ 
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+% sec:hrom_results_reduced_basis
+% sec:uniform_mdeim_errors
+% sec:hrom_results_posteriori_error_estimation
+% sec:nonhierachical_pod_bases
+% sec:arbitrary_mesh_results
+% sec:certification_limits
+% sec:arbitrary_mesh_nmdeim_mode_evaluation
+
+\subsection{RB Solution Error}
 \label{sec:hrom_results_reduced_basis}
 We explore how the number of modes influences the approximation error of the FOM solution.
 We have trained our model with 10 samples such that
@@ -168,7 +194,7 @@ unless we include a sufficient number of RB solution modes.
 To fix this problem, certain techniques exist which enhance the POD basis 
 without adding excessive complexity \cite{weightedPOD}.
 
-\subsection{Uniform Stretching: (M)DEIM Error}
+\subsection{(M)DEIM Error}
 \label{sec:uniform_mdeim_errors}
 In this section we are going to explore the reduction of the trilinear operator
 under the uniform stretching mesh movement.
@@ -314,20 +340,20 @@ we would have to analyze and take into account both bases errors simultaneously.
 \subsubsection{N-MDEIM: Non-Hierarchical Basis}
 \label{sec:us_non-hierarchical_basis}
 Now we see what happens if we build the MDEIM basis 
-from trilinear snapshots assembled with RB modes.
+from trilinear snapshots assembled with RB solution modes.
 
 The first ten modes are used to assemble the operator for the ten parameters
 from Table~\ref{tab:mdeim_certification}.
 In Figure~\ref{fig:mdeim_error_approximation} we show the mean approximation error
-in time for the trilinear operator on these same RB modes. 
+in time for the trilinear operator on these same RB solution modes. 
 We see that unless the complete basis is used ($N=69$),
 the approximation error is quite poor.
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/nonlinear_error_decay.png}
-    \caption{N-MDEIM error approximation on the first ten RB modes 
+    \caption{N-MDEIM error approximation on the first ten RB solution modes 
     for different collateral basis size.
-    The first ten RB modes were used to assemble the operator.
+    The first ten RB solution modes were used to assemble the operator.
     The approximation is quite poor, unless the complete basis is used 
     ($N=69$).}
     \label{fig:mdeim_error_approximation}
@@ -358,6 +384,7 @@ because there is no decay in its singular value spectrum.
 
 We will clarify the loss of hierarchy in Section~\ref{sec:nonhierachical_pod_bases}.
 
+\newpage
 \subsection{HROM Certification}
 \label{sec:hrom_results_posteriori_error_estimation}
 To compute the HROM error in the preceding sections
@@ -404,7 +431,7 @@ we get an upper bound of the desired error in terms of the sacrificial ROM error
 \begin{equation}
     e_N \leq e_{\hat{N}} + \norm{\rbV_{\hat{N}} u_{\hat{N}} - \rbV_{N} u_{N}}.
 \end{equation}
-With sufficient RB modes, it should be safe to assert that the error made 
+With sufficient RB solution modes, it should be safe to assert that the error made 
 with additional modes should be smaller or equal to the one made without it,
 \begin{equation}
     e_{\hat{N}} \leq e_{N}.
@@ -479,12 +506,11 @@ one extra mode could do the job fairly well too, provided that the base ROM is w
 \label{sec:nonhierachical_pod_bases}
 We investigate further the non-hierarchical character of the N-MDEIM basis
 that showed up in Section~\ref{sec:us_non-hierarchical_basis}.
-After we linearized the nonlinear term, we obtained a trilinear form,
-whose first two arguments are the usual test and trial functions,
-with an additional third argument, used for the velocity extrapolation.
+After we discretized the nonlinear term we obtained a trilinear form,
+whose first argument is the velocity extrapolation.
 
-To build a basis, we proposed to obtain the snapshots from evaluations 
-of the trilinear operator with RB elements,
+To build a basis, we obtain the snapshots from evaluations 
+of the trilinear operator with RB solution modes,
 \begin{equation}
     \begin{split}
         \qty[\Ah{N}\left(\psi_{h}\right)]_{i,j}
@@ -689,11 +715,10 @@ and to validate our working hypothesis,
 we go back to the use of RB solution modes.
 
 \newpage
-\subsubsection{N-MDEIM with RB Modes}
+\subsubsection{N-MDEIM with RB Solution Modes}
 \label{sec:nmdeim_one_mode}
 What would happen if we only used one mode from the RB solution modes to reduce the operator?
 Could we use that basis to approximate the trilinear operator evaluated with other functions?
-
 We take the first three RB solution modes 
 and create a linear combination $f(x)$ with them,
 \begin{equation}
@@ -748,7 +773,8 @@ In the next section we explore what happens if a nonlinear function is present i
 We have shown in the previous section how 
 one can achieve a perfect collateral basis for the trilinear using exclusively one RB solution mode.
 
-We now show results for a form with a nonlinear function inside the weak form.
+We now show results for a form with a nonlinear function inside the weak form, e.g., 
+a non-uniform mesh displacement. 
 Hence, we take on the reduction of
 \begin{equation}
     \begin{split}
@@ -815,7 +841,8 @@ This is so because the SVD has created a linear combination of the orthogonal in
 
 Instead, under a nonlinear transformation,
 the reduction trick of using one RB element is unsufficient.
-More RB modes have to be used to obtain a collateral basis that appropriately spans the whole domain.
+More RB solution modes have to be used to obtain 
+a collateral basis that appropriately spans the whole domain.
 This time, the basis will be hierarchical, 
 and will allow for error control through basis truncation.
 
@@ -825,7 +852,7 @@ we couple the reduction of the RB space and the operator space.
 Hence, it is best to reduce trilinear forms with modes from the identified RB space.
 If the trilinear form does not contain any spatial or time nonlinearity, 
 one RB element will be enough.
-Instead, if nonlinearities are present within the integrand, more RB modes will be necessary 
+Instead, if nonlinearities are present within the integrand, more RB solution modes will be necessary 
 to build a satisfactory basis.
 One way or the other, this approach will reduce the number of snapshots to collect and compress,
 leading to a lighter offline stage.
@@ -833,7 +860,7 @@ leading to a lighter offline stage.
 % as would happen if we assemble the matrix entries in the physical space under nonlinear mesh displacements effects.
 
 \clearpage
-\subsection{Results for Non-Uniform Mesh Displacement}
+\subsection{Reduction Results for Non-Uniform Mesh Stretching}
 \label{sec:arbitrary_mesh_results}
 We now present results for a non-uniform mesh displacement. 
 % We present the reduction achieved by the nested POD.
@@ -861,7 +888,7 @@ We have purposefully used a different parameter sampling size
 for the FOM simulation and the collection of operator snapshots;
 to show a weakness of this methodology.
 Assembling operators is a time-consuming operation, 
-but it is cheaper than carrying out a full FEM simulation.
+but it is cheaper than carrying out a full FOM simulation.
 Hence, it is encouraged to have a methodology which splits the collection
 of operator snapshots and solution snapshots.
 The former are cheaper to obtain than the latter, 
@@ -944,14 +971,14 @@ not the overall displacement.}.
     \caption{Singular value decay for the two nested POD steps: 
     \mbox{time integration} (top) and \mbox{parameter space} (bottom).
     Both axes are represented in logarithmic scale.
-    We observe how due to the presence of the arbitrary displacement
+    We observe how due to the presence of the non-uniform displacement
     the operators are no longer trivially reduced.
     It takes several basis terms to accurately represent 
     the effects of the nonlinearity.
     The solution space and the trilinear operator have an identical decay.
     This is so because the trilinear form is equally affected by the 
     values of the extrapolated velocity $u^{*}$ 
-    and the effects of the arbitrary displacement.}
+    and the effects of the non-uniform displacement.}
     \label{fig:nlinear_disp_sep_loglog}
 \end{figure}
 
@@ -1039,13 +1066,13 @@ Tables~\ref{tab:certification_experiments_grid}
 and~\ref{tab:certification_experiments_results}.
 The online parametrization is given in Table~\ref{tab:parameters_online_arbitrary}.
 We want to determine the error estimator behaviour when 
-the solution RB approximation error is smaller or greater than the (M)DEIM error.
+the RB solution approximation error is smaller or greater than the (M)DEIM error.
 
-The conclusion of the experiments is that if the solution RB error is smaller than the (M)DEIM error,
+The conclusion of the experiments is that if the RB solution error is smaller than the (M)DEIM error,
 the HROM error is saturated by the (M)DEIM errors;
 and hence the model truncation technique cannot be used to certify the HROM results,
 because both HROMs produce the same result.
-When the solution RB error is above the (M)DEIM error, the trucation technique 
+When the RB solution error is above the (M)DEIM error, the trucation technique 
 will produce effective error estimations.
 
 \begin{table}[h]
@@ -1065,7 +1092,8 @@ will produce effective error estimations.
 \end{table}
 \begin{table}[h]
     \centering
-    \caption{Numerical experiments summary. The basis size and the error order of mag are provided.}
+    \caption{Numerical experiments summary.
+    The bases size and the order of magnitude of the error are provided.}
     \begin{tabular}{ccccc}
         \toprule
         Experiment                                                   & (M)DEIM    & ROM         & SROM       & Estimator \\
@@ -1085,7 +1113,7 @@ will produce effective error estimations.
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/truncation_error/no_deim/error_estimation_rom_15_srom_25_0.png}
     \caption{ROM vs. FOM approximation error, no (M)DEIM.
     The FOM operators are assembled and projected for each time step.
-    The certification-by-truncation procedure is accurate, with the estimator matching the ROM error.}
+    The certification by truncation procedure is accurate, with the estimator matching the ROM error.}
     \label{fig:nlinear_disp_no_deim_errors_above_threshold}
 \end{figure}
 
@@ -1124,13 +1152,13 @@ from snapshots obtained from mode evaluations
 (as opposed to snapshots collected during FOM simulation).
 
 We anticipate that we are going to find the same results as the ones that we obtained in
-Section~\ref{sec:nmdeim_one_mode}, despite the arbitrary shape of the mesh.
+Section~\ref{sec:nmdeim_one_mode}, despite the non-uniform spacing of the mesh.
 This is due to the following facts:
 \begin{itemize}
     \item The domain is one-dimensional.
     \item The FEM basis functions are $\mathbb{P}1$.
     \item The trilinear integrand is linear in all of its arguments (including the parameters).
-    \item The trilinear integrand contains the derivative of the trial function $u$.
+    \item The trilinear integrand contains one derivative (trial function $u$).
 \end{itemize}
 The last fact is crucial. 
 Due to this fact, the non-uniform mesh size goes unnoticed, 
@@ -1150,7 +1178,7 @@ the reconstruction error cannot be used as a proxy to determine the accuracy of 
 Our conclusion here is that for this trilinear form, 
 the basis error will be as good as the error associated to the RB basis used to assemble the snapshots.
 This is shown in Figure~\ref{fig:nlinear_disp_modes_5_rom_15}.
-The N-(M)DEIM has been assembled with the first five RB modes.
+The N-(M)DEIM has been assembled with the first five RB solution modes.
 In comparison to the results in Figure~\ref{fig:nlinear_disp_no_deim_errors_above_threshold},
 which only reflect the RB error (no (M)DEIM is active there);
 these ROMs underperform because the N-MDEIM captures the dynamics for the first five modes,
