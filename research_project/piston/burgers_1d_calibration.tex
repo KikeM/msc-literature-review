@@ -51,7 +51,7 @@ The discretization parameters are given in Table~\ref{tab:discretization_paramet
         \midrule
         $x_c$      & 0.2     & 0.75    \\
         $\sigma_c$ & 0.1     & 0.2     \\
-        $y_c$      & 0.25    & 1.75    \\ 
+        $y_c$      & 0.25    & 1.75    \\
         \bottomrule
     \end{tabular}
     \label{tab:parameter_range}
@@ -84,6 +84,20 @@ The discretization parameters are given in Table~\ref{tab:discretization_paramet
         \bottomrule
     \end{tabular}
     \label{tab:discretization_parameters}
+\end{table}
+There are two relevant dimensionless groups for this problem, presented in Table~\ref{tab:dimensionless_groups}.
+\begin{table}[h]
+    \centering
+    \caption{Relevant dimensionless groups.}
+    \begin{tabular}{cccc}
+    \toprule
+        Name                               & Expression                      & Min. & Max. \\ 
+        \midrule
+        Reduced frequency $\hat{\omega}$  & $\frac{\omega L_0}{a_0}$        & 0.6   & 1.65 \\[2mm]
+        Piston mach $u_p$                 & $\frac{\delta \omega L_0}{a_0}$ & 0.1  & 0.4   \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:dimensionless_groups}
 \end{table}
 
 \subsection{Artificial Viscosity}

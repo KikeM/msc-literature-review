@@ -69,7 +69,7 @@
 When a painter sets out to paint, she will probably use most of the available basic colours.
 However, if she knew beforehand that she was only going to paint landscapes, 
 she would fare well with a farsighted palette: greens, browns, blues, whites, etc.
-Such is the nature of Reduced Order Models, 
+Such is the nature of reduced order models, 
 to find a subset among the combinations of basic colours 
 to represent the solution to the problem of interest.
 
@@ -134,7 +134,7 @@ etc.
 It usually involves the computation of a Jacobian matrix $J$,
 whose determinant plays an important role in the aforementioned transformation.
 
-The elements of the Jacobian matrix might be known explicitly,
+The entries of the Jacobian matrix might be known explicitly,
 if the deformation is known analytically and the domain is sufficiently simple.
 However, if the domain takes arbitrary shapes 
 (likely for real-life problems in higher dimensions than one),
@@ -148,9 +148,9 @@ making it more cumbersome to implement and deal with\footnote{
     },
 as well as the inevitable overhead in computational costs.
 
-This overhead created by the Jacobian is likely to permeate to the Reduced Order Model (ROM),
-for in the context of Finite Elements, ROMs are often built as a system with the same algebraic structure
-as the departing Full Order Model (FOM),
+This overhead created by the Jacobian is likely to permeate to the reduced order model (ROM),
+for in the context of finite elements, ROMs are often built as a system with the same algebraic structure
+as the departing full order model (FOM),
 albeit with smaller matrices and vectors. 
 It might even be the case that we cannot completely uncouple the ROM from the FOM, 
 if the problem is complex enough, or that we need satellite ROMs to compute the Jacobian matrix efficiently.

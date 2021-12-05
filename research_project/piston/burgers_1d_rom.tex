@@ -283,7 +283,7 @@ and the outcoming number of modes $N_{POD}$,
 \begin{equation}
     N_{POD} = N_{POD}(\epspod).
 \end{equation}
-This function usually shows exponential decay, or a sharp drop beyond a given number of elements.
+This function usually shows exponential decay, or a sharp drop beyond a given number of modes.
 If a problem can be reduced, beyond a given number of modes, 
 including more in the approximation will not improve significantly the approximation error.
 
@@ -382,7 +382,7 @@ by stacking the columns\footnote{We used a CSR storage format.},
 and later on brought back to matrix form once any necessary operation has been carried out.
 
 If we had such a decomposition, once we had computed the basis matrix \rbV, 
-we could project each element of the operator basis $A_{h, q}$ to obtain an expression for the reduced operator, 
+we could project each mode of the operator basis $A_{h, q}$ to obtain an expression for the reduced operator, 
 \begin{equation}
     \begin{split}
         A_N(t, \mu) &= \rbVT A_h(t, \mu) \rbV,
@@ -425,8 +425,7 @@ has been projected unto the reduced space.
 % -----------------------------------------------------------------------------
 \subsubsection{Evaluation of the Coefficient Functions}
 To evaluate the $\Theta_q^a(t, \mu)$ functions, we set and solve an interpolation problem;
-that is, 
-we enforce the approximation to actually match certain elements of the operator, 
+that is, we enforce the approximation to actually match certain entries of the operator, 
 \begin{equation}
     \label{eq:1d_rom_burgers_interpolation_problem}
     [A_h(t, \mu)]_{k} = [A_h^m(t, \mu)]_{k} = \sum_q^{Q_a} \Theta_q^a(t, \mu) [A_{h, q}]_{k}

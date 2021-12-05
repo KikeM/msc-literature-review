@@ -80,22 +80,19 @@ the improvement and limits of the $u^{*}$-restricted approach.
 \subsection{RB Solution Basis Error}
 \label{sec:hrom_results_reduced_basis}
 We explore how the number of modes influences the approximation error of the FOM solution.
-We have trained our model with 10 samples such that
-\begin{align*}
-    u_p \sim \frac{\delta \omega L_0}{a_0},
-    \nonumber
-    \\
-    0.15 \leq u_p \leq 0.4.
-\end{align*}
+We have trained our model with 10 random samples according the parameter ranges given in
+Tables~\ref{tab:parameter_range} and~\ref{tab:dimensionless_groups}.  
 In Table~\ref{tab:uniform_stretching_basis_size} the resulting bases size are reported.
 Since the stretching is uniformly spread across the mesh elements, despite their change in time,
 all the linear operators are trivially reduced.
-The RHS requires two elements because it contains the lifting and its gradient.
+The RHS requires two RB operator modes because it contains the lifting and its gradient.
 \begin{table}[!h]
     \caption{For each operator,
     basis size after the tree walk and final size after tree walk compression.
     The trilinear term and the RB space have the same size, 
-    since the RB elements were used to evaluated the trilinear term.}
+    since the RB solution modes were used to evaluated the trilinear term.
+    The Nonlinear-lifting operator corresponds to the cross-term lifting matrix
+    that arises from the nonlinear convective term.}
     \centering
     \begin{tabular}{@{}rcc@{}}
     \toprule
@@ -106,7 +103,7 @@ The RHS requires two elements because it contains the lifting and its gradient.
     Stiffness         & 10             & 1                 \\
     Trilinear         & 690            & 69                \\
     Convection        & 20             & 2                 \\
-    Nonlinear-Lifting & 10             & 1                 \\ \bottomrule
+    Nonlinear-lifting & 10             & 1                 \\ \bottomrule
     \end{tabular}
     \label{tab:uniform_stretching_basis_size}
 \end{table}
@@ -121,7 +118,7 @@ each related to the other.
 The magnitude of each singular value $\sigma_i$ somehow encodes 
 how much information is carried by its associated mode about the original span.
 
-We define the energy of the basis that contains up to the $i$-th element as
+We define the energy of the basis that contains up to the $i$-th mode as
 \begin{equation}
     \mathcal{E}_i = \frac{\sum_{j=0}^{i}\sigma_j^2}{\sum \sigma_k^2}.
 \end{equation}
@@ -285,7 +282,7 @@ if some compromise is made in the error.
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/nonlinear_error_decay_by_parameter.png}
     \caption{N-MDEIM reconstruction error decay, 
-    as we truncate the elements from the MDEIM basis for some individual parametrizations.
+    as we truncate the modes from the MDEIM basis for some individual parametrizations.
     Due to the simplicity of the problem, 
     the (implicit) Jacobian and 
     the fact that the linearized term is trilinear in all of its arguments, 
@@ -454,7 +451,7 @@ when the snapshots are collected during the FOM simulation,
 each of the $u_k^{*}$ values is quite similar to the ones from the previous time step.
 However, when the modes are used to create 
 the trilinear operator snapshots, 
-for any two different basis elements $\psi_1(x)$ and $\psi_2(x)$,
+for any two different basis modes $\psi_1(x)$ and $\psi_2(x)$,
 we know that they satisfy an orthogonality condition,
 % \begin{equation}
 %     \int_\Omega \psi_1(x) \psi_2(x) \dd x = 0.
@@ -479,8 +476,9 @@ We kick-off by studying the effects of attempting an SVD over a Fourier basis,
 We are going to carry out two experiments:
 \begin{itemize}
     \item (I) Run the Fourier basis through the SVD and analyze its spectrum decay. 
-    We would expect no decay, since the basis is orthogonal\footnote{
-        It the modes are normalized with the $L_2$ norm, 
+    We would expect no decay, since the basis is orthogonal\footnote
+    {
+        It the input modes are normalized with the $L_2$ norm, 
         the singular values will be equal to one.
         Else, the singular values will be equal to the $L_2$ norm.
     }.
@@ -501,10 +499,15 @@ two rotations and one scaling,
 \begin{equation}
     A = U \Sigma V^T.
 \end{equation}
-If the matrix A is orthogonal ($AA^T = A^T A = I$),
+If the matrix A is orthogonal\footnote
+{
+    $AA^T = A^T A = I$
+},
 we would expect that the transformation is such that the modes
 remain unaltered,
-$U=A, \Sigma = I,$ and $V=I$ 
+\begin{equation*}
+    U=A, \Sigma = I, \, \text{and} \, V=I
+\end{equation*}
 (with their respective dimensions well set).
 However, the only guarantee we actually have is that $\Sigma = I$,
 the rotations $U$ and $V$ are not unique.
@@ -556,7 +559,7 @@ using the first five modes of the Fourier basis,
 \end{equation}
 Since the Jacobian transformation is a linear function of time, 
 despite the change in time of the domain, the trilinear form remains linear.
-If there were no third argument 
+If there were no additional argument 
 $\textcolor{blue}{\psi_k}$, 
 we would only require one mode to represent the whole operator.
 Therefore, we predict that we will only find 5 orthogonal resulting modes, that is, a non-hierarchical basis. 
@@ -622,8 +625,8 @@ and create a linear combination $f(x)$ with them,
 This is shown in Figure~\ref{fig:appendix_rb_linear_combination}.
 We now reduce the trilinear form with two strategies:
 \begin{itemize}
-    \item (a) Subspace: using only the first RB solution mode.
-    \item (b) Complete space: using the three RB solution modes.
+    \item \mbox{(a) Subspace}: using only the first RB solution mode.
+    \item \mbox{(b) Complete space}: using the three RB solution modes.
 \end{itemize}
 
 With each approach, we obtain a non-hierarchical orthogonal basis,
@@ -727,15 +730,15 @@ This orthogonality is preserved under the linear transformation of the trilinear
 As a consequence, the construction of the collateral basis can be achieved 
 collecting snapshots with the evaluation of the trilinear form with 
 only one RB mode.
-If more RB elements are used to build the snapshots, 
+If more RB solution modes are used to build the snapshots, 
 the POD will return a larger collateral basis,
 but one that will not have present the hierarchical property.
 That is, truncating that basis will consistently lead to poor approximation results.
 The full basis will have to be used.
 This is so because the SVD has created a linear combination of the orthogonal input snapshots.
 
-Instead, under a nonlinear transformation,
-the reduction trick of using one RB element is unsufficient.
+Instead, in the presence of a nonlinear function,
+the reduction trick of using one RB solution mode is unsufficient.
 More RB solution modes have to be used to obtain 
 a collateral basis that appropriately spans the whole domain.
 This time, the basis will be hierarchical, 
@@ -743,10 +746,9 @@ and will allow for error control through basis truncation.
 
 If we collect snapshots of the operator evaluated with the PDE solutions,
 we couple the reduction of the RB space and the operator space.
-
-Hence, it is best to reduce trilinear forms with modes from the identified RB space.
+Hence, it is best to reduce trilinear forms with RB solution modes.
 If the trilinear form does not contain any spatial or time nonlinearity, 
-one RB element will be enough.
+one RB solution mode will be enough.
 Instead, if nonlinearities are present within the integrand, more RB solution modes will be necessary 
 to build a satisfactory basis.
 One way or the other, this approach will reduce the number of snapshots to collect and compress,
@@ -817,7 +819,7 @@ The error estimator
 \begin{equation}
     \tilde{e}_{N}(\hat{N}) = \norm{\rbV_{\hat{N}} u_{\hat{N}} - \rbV_{N} u_{N}}
 \end{equation}
-can be expressed as a sum in terms of the RB elements.
+can be expressed as a sum in terms of the RB solution modes.
 Due to the hierarchical character of the RB basis, 
 $\rbV_{\hat{N}}$ contains the same columns 
 up to $N$ as $\rbV_{N}$.
@@ -833,18 +835,32 @@ Thus, the error between ROMs can be expressed like
         }.
     \end{split}
 \end{equation}
-The difference $(u^{\hat{N}}_{j} - u^{N}_{j})$ between ROM coefficients should be relatively small, 
+The difference $(u^{\hat{N}}_{j} - u^{N}_{j})$ between ROM coefficients is relatively small, 
 since it represents the difference between the two coefficients associated to the same mode.
 If they were notably different, 
 it would mean that the dynamics between the original ROM and the sacrificial one are different.
-Since the basis is hierarchical, this effect will not happen for sufficiently well resolved ROMs: 
+Since the RB solution basis is hierarchical, this effect will not happen for sufficiently well resolved ROMs: 
 adding an additional mode should only refine the solution, 
 not change drastically how the previous modes are scaled.
 They are not strictly the same because the ROM matrix changes if more modes are added to the basis,
-but again, it does so in a way that dynamics should be preserved.
+but again, it does so in a way that dynamics are preserved.
 
 In Figure~\ref{fig:estimator_accuracy_timewise} we show in the behaviour of the error estimator 
 for each time step.
+In Figure~\ref{fig:estimator_accuracy} we present how close is the estimator to the actual error,
+both aggregated in the time direction.
+We have computed the estimator for~\mbox{$\Delta N = 1, 5$} and~$10$ additional modes.
+Then, we compute \textit{estimator accuracy}, how far it is from the actual ROM error,
+aggregated for all time steps, 
+% \mytodo{Esitmator accuracy: make this a relative error.}
+\begin{equation}
+    \text{Estimator Accuracy} = \norm{e_t - \tilde{e}_t} 
+\end{equation}
+We conclude that it seems to be better to carry more than one mode.
+Nevertheless, if it is going to become too costly to compute all these additional modes,
+one extra mode could do the job fairly well too, provided that the base ROM is well resolved.
+
+\newpage
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/rb_certification/error_estimation_rom_10_srom_11.png}
@@ -852,15 +868,6 @@ for each time step.
     We observe how accurate the estimator is carrying only one additional mode.}
     \label{fig:estimator_accuracy_timewise}
 \end{figure}
-In Figure~\ref{fig:estimator_accuracy} we present how close is the estimator to the actual error,
-both aggregated in the time direction.
-We have computed the estimator for~\mbox{$\Delta N = 1, 5$} and~$10$ additional modes.
-Then, we compute \textit{estimator accuracy}, how far it is from the actual ROM error,
-aggregated for all time steps, 
-\mytodo{Esitmator accuracy: make this a relative error.}
-\begin{equation}
-    \text{Estimator Accuracy} = \norm{e_t - \tilde{e}_t} 
-\end{equation}
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/rb_certification/estimator_accuracy.png}
@@ -868,9 +875,6 @@ aggregated for all time steps,
     We see how it can become more effective to carry more additional modes than rather just one.}
     \label{fig:estimator_accuracy}
 \end{figure}
-We conclude that it seems to be better to carry more than one mode.
-Nevertheless, if it is going to become too costly to compute all these additional modes,
-one extra mode could do the job fairly well too, provided that the base ROM is well resolved.
 
 
 
@@ -929,7 +933,9 @@ In that case we have no alternative than to collect
 \begin{table}[h]
     \centering
     \caption{Basis size at each step of the nested POD strategy.
-    The operators are sorted by collateral basis final size.}
+    The operators are sorted by collateral basis final size.
+    The Nonlinear-lifting operator corresponds to the cross-term lifting matrix
+    that arises from the nonlinear convective term.}
     \begin{tabular}{lccc}
         \toprule
         {} &  Time int. ($N_t = 500$) &  Param. space & $N_{\mu}$ \\
@@ -963,7 +969,7 @@ which compresses (for each operator) all of the previous bases into one.
 In Figure~\ref{fig:nlinear_disp_sep_logy} we present 
 a zoom-in for the first ten singular values.
 This shows how some operators are reduced 
-to very few elements in the time direction.
+to very few modes in the time direction.
 
 % Discussion 
 Indeed, in the time direction most operators still remain simple to reduce, 
@@ -979,6 +985,25 @@ the piston oscillation could be captured by sampling one parametrization,
 two at most\footnote{The oscillating frequency $\omega$ is inside a sinusoidal function,
 but this was only relevant for the mesh velocity, 
 not the overall displacement.}.
+
+\subsubsection{Operators Error Decay}
+Now that we have multiple operators with a non-trivial basis, 
+we have to tune simultaneously all of their errors.
+We plot in Figure~\ref{fig:nlinear_disp_operators_error_decay}
+the error decay for each operator as a function of the basis percentile size.
+The offline and online sampling pools are shown in
+Figure~\ref{fig:nlinear_disp_operators_sampling_space} in the Appendix.
+
+All the errors decay as the basis size increases, 
+but each operator needs a different basis size to reach the same error threshold.
+For the offline samples, as the basis size is shrunk, 
+the errors remain concentrated for different parametrizations.
+For the online samples, this behaviour is not present, 
+with more dispersion between the different parametrizations.
+The errors with the full basis are smaller for the offline pool, 
+compared to those from the online pool.
+This is an expected behaviour, 
+since the basis is optimized for the offline sample.
 
 \begin{figure}[h]
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/separable/sigmas_loglog.png}
@@ -1007,25 +1032,6 @@ not the overall displacement.}.
     \label{fig:nlinear_disp_sep_logy}
 \end{figure}
 
-\subsubsection{Operators Error Decay}
-Now that we have multiple operators with a non-trivial basis, 
-we have to tune simultaneously all of their errors.
-We plot in Figure~\ref{fig:nlinear_disp_operators_error_decay}
-the error decay for each operator as a function of the basis percentile size.
-The offline and online sampling pools are shown in
-Figure~\ref{fig:nlinear_disp_operators_sampling_space} in the Appendix.
-
-All the errors decay as the basis size increases, 
-but each operator needs a different basis size to reach the same error threshold.
-For the offline samples, as the basis size is shrunk, 
-the errors remain concentrated for different parametrizations.
-For the online samples, this behaviour is not present, 
-with more dispersion between the different parametrizations.
-The errors with the full basis are smaller for the offline pool, 
-compared to those from the online pool.
-This is an expected behaviour, 
-since the basis is optimized for the offline sample.
-
 \begin{figure}[h]
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/separable/operators_error_decay_percentile.png}
     \caption{Operator error decay as a function of basis size percentile. \\
@@ -1051,7 +1057,6 @@ how the RB and MDEIM approximation errors could
 set a lower bound to the HROM error.
 Now, we are going to further show how this interaction can make 
 the HROM certification by truncation fail.
-
 \begin{table}[h]
     \centering
     \caption{Online parametrization.
@@ -1172,7 +1177,6 @@ This is due to the following facts:
     \item The domain is one-dimensional.
     \item The FEM basis functions are $\mathbb{P}1$ polynomials.
     \item The trilinear integrand is linear in all of its arguments (including parameters).
-    \item The Gaussian bell $\mathcal{F}$ only affects the mesh spacing.
     \item The trilinear integrand contains one derivative (trial function $u$).
 \end{itemize}
 The last fact is crucial, making the non-uniform mesh size go unnoticed.
@@ -1208,16 +1212,16 @@ where the ROM and the SROM have 15 and 25 respectively.
 Instead, when the \mbox{N-MDEIM} is assembled with 15 modes, the ROM recovers its original accuracy,
 see Figure~\ref{fig:nlinear_disp_modes_15_rom_15}.
 
-Furthermore, for non-hierarchical bases, removing one or more modes is not equivalent
-to having collected the snapshots without the removed modes; 
-since the SVD might have potentially created a linear combination of the orthogonal inputs.
+Furthermore, since the SVD creates a linear combination of the inputs;
+for non-hierarchical operator bases, trucating the RB operator basis is 
+not equivalent to collecting the snapshots without the same number of removed RB solution modes.
 
 \newpage
 \begin{figure}[h]
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/arbitrary/error_estimation_rom_15_srom_25_modes_5.png}
     \caption{ROM vs. FOM approximation error.
     The (M)DEIM bases size for the linear operators is such that the error is $10^{-6}$.
-    The trilinear N-MDEIM has been assembled with $N=5$ modes.
+    The trilinear N-MDEIM has been assembled with $N=5$ RB solution modes.
     The ROM and the SROM are poorly resolved due to unsufficient representation of the excess
     modes they carry with respect to the N-MDEIM training modes.}
     \label{fig:nlinear_disp_modes_5_rom_15}
@@ -1226,12 +1230,11 @@ since the SVD might have potentially created a linear combination of the orthogo
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/arbitrary/error_estimation_rom_15_srom_25_modes_15.png}
     \caption{ROM vs. FOM approximation error.
     The (M)DEIM bases size for the linear operators is such that the error is $10^{-6}$.
-    The trilinear N-MDEIM has been assembled with $N=15$ modes. 
+    The trilinear N-MDEIM has been assembled with $N=15$ RB solution modes. 
     The ROM recovers its original accuracy, since the N-MDEIM is accurately represented for 
     that number of modes.
-    Instead, the SROM presents larger errors than expected, 
-    due to unsufficient representation of the excess
-    modes that it carries with respect to the N-MDEIM training modes.}
+    Instead, the SROM presents a larger error than expected, 
+    due to the excess RB solution modes it carries with respect to the N-MDEIM training modes.}
     \label{fig:nlinear_disp_modes_15_rom_15}
 \end{figure}
 

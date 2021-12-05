@@ -13,16 +13,18 @@ a Burgers-like nonlinear term and a moving mesh.
 We have dealt in a general way with the parametrized Dirichlet boundary conditions,
 without any assumption on their functional form.
 Two parametrized moving meshes have been introduced: 
-one with uniform stretching of the mesh element size,
-and one with local node concentration, using a Gaussian bell density function as a proxy.
+uniform and non-uniform mesh stretching, 
+using a Gaussian bell density function as a proxy
+for more elaborate mesh moving techniques.
+We are not restricted to moving boundaries, 
+the conclusions and methods are also valid for domains 
+whose mesh nodes move inside the domain, 
+whilst remaining fixed at the boundaries.
 Our reduction strategy permits us to remain in the physical domain, 
 thus skipping the Jacobian transformation.
-The methodology is not restricted to moving boundaries, 
-it could be used for domains whose mesh nodes move inside the domain 
-whilst remaining fixed at the boundaries.
 
-Our approach to the construction of the hyper reduced order model is purely algebraic, 
-with a non-intrusive approach that should allow its implementation on existing solvers.
+The methodology is purely algebraic, 
+with a non-intrusive property that should allow its implementation on existing solvers.
 We have obtained a reduced basis to carry out the Galerkin projection;
 and a collateral basis for each of the algebraic operators (vectors and matrices),
 to approximate their projection unto the reduced space 
@@ -33,17 +35,16 @@ no FOM operators are used during the online run.
 For the linear operators, the offline stage is carried out separately from the FOM simulation,
 so that a wider parameter range can be spanned. 
 
-
 \subsection{Discretization Flexibility}
 The (M)DEIM technique determines certain operator entries which 
 have to be computed at runtime during the online stage 
 to carry out the empirical interpolation.
 In the finite element context, this is quite convenient.
 The restricted operator entries are computed by evaluating the weak form integral
-for the mesh elements associated with the restricted entries. 
+for the mesh elements associated with the selected entries. 
 However, this technique is not tied to the the finite element formulation.
 All the content of this work could be reused in a finite difference or finite volume formulation,
-provided that the implementation is capable of an efficient calculation of the algebraic restricted entries.
+provided that the implementation is capable of an efficient calculation of individual operator entries.
 
 \subsection{Nonlinear Convection MDEIM}
 Due to the velocity extrapolation in Burgers' nonlinear convection term,
@@ -62,12 +63,13 @@ The \mbox{$u^{*}$-general} approach has the following drawbacks:
 \end{itemize}
 Our enhancement of the trilinear MDEIM offline stage (\mbox{$u^{*}$-restricted})
 tackles these two issues, uncoupling snapshot collection from the FOM simulation.
-Once the modes have been identified, and trimed to a given threshold error,
+Once the RB solution modes have been identified 
+(and trimed to a given threshold error)
 they can be used to build the \mbox{N-MDEIM} collateral basis.
 % The reduced basis modes are used to assemble trilinear snapshots to build the collateral basis.
 
 The \mbox{$u^{*}$-restricted} approach is not limited to Burgers' nonlinear convective term.
-It could be used with the nonlinear convective term in the Navier-Stokes equations too,
+It could be used with the nonlinear convective term present in the Navier-Stokes equations,
 and potentially with any trilinear form whose additional argument is expressed
 in terms of a linear combination of the solutions.
 In fact, if the additional argument belonged to another space (different from the solution space),

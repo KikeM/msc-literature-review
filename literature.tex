@@ -243,7 +243,7 @@ and it must be computationally efficient.
 
 The most plain vanilla version of reduced basis is 
 a collection of solutions for several parametrizations.
-However, the elements of this basis are likely to be almost linearly dependent\footnote{
+However, the modes of this basis are likely to be almost linearly dependent\footnote{
     A strong assumption underlying reduced basis methods in this context
     is that the solutions of the parametrized PDE
     change smoothly when the parametrization varies.
@@ -253,9 +253,9 @@ and no approximation arguments have been used to obtain it.
 % Greedy
 So, the first step one can take is to use a greedy procedure
 \cite{Buffa2012APC, Veroy2003}.
-That is, the elements of the basis are still solutions of the PDE, 
+That is, the modes of the basis are still solutions of the PDE, 
 but they are combined iteratively,
-by choosing the next element which minizimes 
+by choosing the next mode which minizimes 
 the error made by the current basis within a randomly selected parameter space
 (hence the name greedy, in terms of approximation accuracy).
 This procedure only requires the finite element discretization,

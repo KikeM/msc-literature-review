@@ -20,8 +20,8 @@ After we linearized the nonlinear term, we obtained a trilinear form,
 whose first two arguments are the usual test and trial functions,
 with an additional third argument, used for the velocity extrapolation.
 
-To build a basis, we proposed to obtain the snapshots from evaluations 
-of the trilinear operator with RB elements,
+In approach $u^{*}-restriced$ we collected the snapshots from evaluations 
+of the trilinear operator with RB solution modes,
 \begin{equation}
     \begin{split}
         \qty[\Ah{N}\left(\psi_{h}\right)]_{i,j}
@@ -30,14 +30,14 @@ of the trilinear operator with RB elements,
         &= b_0 \int_{0}^{L(t^{n+1})} \psi_h(x) \grad \varphi_j \varphi_i \dd x.
     \end{split}
 \end{equation}
-Now, the reduced basis elements are expressed themselves in terms of 
+Now, the reduced basis modes are expressed themselves in terms of 
 the finite element Lagrangian basis functions,
 \begin{equation}
     \psi_h(x) = \sum_{k} 
     \textcolor{blue}{\psi_k} 
     \varphi_{k}(x),
 \end{equation}
-which leads to the following exact expression for each of the entries of the nonlinear term,
+which leads to the following exact expression for each of the entries of the trilinear term,
 \begin{equation}
     \begin{split}
         \qty[\Ah{N}\left(\psi_{h}\right)]_{i,j}
