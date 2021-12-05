@@ -18,9 +18,10 @@
 The full order model for the parametrized one-dimensional piston problem is derived.
 
 
-We depart from the one-dimensional, compressible, and isentropic \mbox{Navier-Stokes} equations to end up with a non-linear Burgers-like equation.
+We depart from the one-dimensional, compressible, and isentropic \mbox{Navier-Stokes} equations 
+to end up with a nonlinear Burgers-like equation.
 Therefore, this problem contains all the necessary ingredients to show how the ROM behaves 
-in the presence of a non-linear term within a moving domain.
+in the presence of a nonlinear term within a moving domain.
 
 The model will be derived in the continuous, semi-discrete and fully discrete contexts for a generic parametrization and forcing term.
 We shall use the Galerkin projection principle to find a weak form, which we later discretize using the Finite Element Method. 
@@ -339,18 +340,27 @@ Thus, the differential model in the physical space is given by the following PDE
         u(x, 0) &= 0. 
     \end{align}
 \end{subequations}
-At the right boundary, the moving piston, a Dirichlet condition sets the flow velocity equal to the one of the moving wall,
+The notation for the time derivative,
+\begin{equation*}
+    \left.\frac{\partial u}{\partial t}\right|_{x},
+\end{equation*}
+indicates that the derivative takes place in the physical domain. 
+This is relevant for the ALE formulation, which we explain in the following section.
+
+\subsubsection{Boundary conditions}
+At the right boundary (moving piston) a Dirichlet condition sets the flow velocity equal to the one of the moving wall,
 \begin{equation}
     L'(t) = - \delta L_0 \omega \sin(\omega t).
 \end{equation}
-Towards the left boundary, we have to find a procedure to deal with the fact that our piston is infinite, 
-and hence the fact that the far region of the flow is not aware of the piston's motion. 
+At the left boundary, we have to find a procedure to model 
+the condition that our piston tube is infinite, 
+and hence that the far region of the flow is not aware of the piston's motion. 
 This is an artificial boundary condition, which we choose to deal with by
 setting the normal derivate in space to zero
 \begin{equation}
     \pdv{u}{x} \qty(0, t) &= 0.
 \end{equation}
-This simplified model reflects the fact that, due to the absence of
+This simplified model reflects that, due to the absence of
 incoming waves from the infinite tube,
 the solution does not change in space once it is far away from the piston motion.
 % We postpone this discussion for the moment,
@@ -358,13 +368,6 @@ the solution does not change in space once it is far away from the piston motion
 % moving mesh in the physical domain.
 % We shall deal with it once we are dealing with the weak form,
 % in Section~\ref{sec:outer_boundary}.
-
-The notation for the time derivative,
-\begin{equation*}
-    \left.\frac{\partial u}{\partial t}\right|_{x},
-\end{equation*}
-indicates that the derivative takes place in the physical domain. 
-This is relevant for the ALE formulation, which we explain in the following section.
 
 \subsubsection{ALE Formulation}
 Despite the fact that we will be solving the problem in the physical moving domain, 
@@ -386,7 +389,7 @@ that connects a point in the fixed reference domain $\mathcal{X}$ with a point i
 We assume this map to be regular enough for all the operations that we will carry with it.
 Then, we define the mesh velocity $w_m(x,t)$ function as the time derivative of the spatial coordinate, which will coincide with the time derivative of the ALE map:
 \begin{equation}
-    w_m(x,t) = \pdv{x}{t} = \pdv{\alemap}{t} \ (x, t) = \pdv{\alemap}{t} \ (\alemap^ (\aleX,t), t).
+    w_m(x,t) = \pdv{x}{t} = \pdv{\alemap}{t} \ (x, t) = \pdv{\alemap}{t} \ (\alemap(\aleX,t), t).
 \end{equation}
 % Due to our algebraic approach, this mesh velocity can be computed in the 
 % reference domain $\aleX$.
@@ -429,7 +432,7 @@ For our piston-like one-dimensional geometry, we have a very simple transformati
     J_{\alemap} = L(t),
     \label{eq:jacobian_trivial}
 \end{equation}
-which spreads out the deformation of the domain uniformly across all the mesh cells.
+which spreads out the deformation of the domain uniformly across all the mesh elements.
 Since the Jacobian does not depend on space,
 we could pull it out of the integral, 
 \begin{equation}
@@ -468,7 +471,7 @@ It is an ODE whose initial condition would be
 $J_{\alemap}(0) = 1$
 if the reference domain coincided with the initial domain configuration of the transient domain.
 
-\subsubsection{ALE: Arbitrary Mesh Displacement}
+\subsubsection{ALE: Non-Uniform Mesh Displacement}
 We can also introduce an arbitrary distortion to the nodes,
 to mimick the effects of mesh adapting techniques.
 As a proxy, we take a generic density function with a Gaussian bell,
@@ -541,7 +544,7 @@ An additional convective term shows up, to take into account the movement of the
 We will show in the results section how, if we remove this term, mass is no longer conserved.
 
 % -----------------------------------------------------------------------------
-\subsubsection{Nondimensional Equations}
+\subsubsection{Dimensionless Equations}
 Finally, we carry out a non-dimensionalization of the velocity and the spatial coordinate,
 \begin{subequations}
     \begin{align}
@@ -574,7 +577,7 @@ For the sake of clear notation, we condense the coefficients
         c(x,t) &= \left(\frac{a_0}{L_0}\right)\left(1 - \frac{w_m}{a_0}\right),
     \end{align}
 \end{subequations}
-and drop the $\tilde{u}$ notation to prevent an overloaded notation.
+and drop the $\tilde{u}$ notation to avoid an overloaded notation.
 The coefficient 
 \begin{equation}
     u_p = \left(\frac{\delta L_0 \omega}{a_0}\right)    
@@ -590,17 +593,17 @@ The larger it is,
 the stronger the nonlinear response will become (steepening shock wave). 
 % We shall exploit this fact to build our reduced space, by sampling smartly through the parameter space.
 
-With all of this done, we obtain a familiar PDE structure with diffusion, linear and non-linear convection terms:
+With all of this done, we obtain a familiar PDE structure with diffusion, 
+linear and nonlinear convection terms:
 \begin{equation}
     \left.\frac{\partial u}{\partial t}\right|_{\aleX} 
     + b_0 u \frac{\partial u}{\partial x} 
     - c(x,t)\frac{\partial u}{\partial x} 
     - \varepsilon  \pdv[2]{u}{x} = 0.
 \end{equation}
-Before moving on to the derivation of the weak formulation, we apply the scaling to the mass conservation 
-and derived variables expressions.
+Before moving on to the derivation of the weak formulation, we apply the scaling to the mass conservation.
 
-\subsubsection{Mass Conservation}
+\subsubsection{Dimensionless Mass Conservation}
 If the former rescaling is applied, Equation~(\ref{eq:mass_conservation_check}) 
 for mass conservation needs to be updated, 
 to take into account the fact that the velocity variable is now scaled with the speed of sound.
@@ -635,7 +638,8 @@ we define the $L^2(\Omega)$ inner product to transform the strong formulation in
     %\inner{u}{v}_{(t, \mu)} = \int_{\Omega(t, \mu)} uv\ d\Omega.
     \inner{u}{v} = \int_0^L uv\ \dd\Omega.
 \end{equation}
-This inner product induces the so called \emph{eyeball} norm, since it checks if two functions look alike,
+This inner product induces the so called \emph{eyeball} norm, 
+if two functions \textit{look} alike $\norm{f-g}$ will return a small value,
 \begin{equation}
     % \norm{f-g}_{(t, \mu)}  = \sqrt{\int_{\Omega(t, \mu)} (f - g)^2\ d\Omega}.
     \norm{f-g}  = \sqrt{\int_0^L (f - g)^2\ \dd\Omega}.
@@ -755,13 +759,13 @@ We express the solution of our problem like the linear combination of the soluti
     \label{eq:1d_fom_homogeneous_plus_lifting}
     u(x,t) = \hat{u}(x,t) + g(x,t).
 \end{equation}
-There are two conditions to be met by the lifting of the boundary conditions:
-\begin{enumerate}
-    \item To reach the prescribed values at the boundary nodes.
-    \item To be sufficiently smooth within the domain.
-\end{enumerate}
+The lifting of the boundary conditions has to meet two restrictions:
+\begin{itemize}
+    \item reach the prescribed values at the boundary nodes;
+    \item be sufficiently smooth within the domain.
+\end{itemize}
 In a one-dimensional setting, the definition of a lifting function $g(x,t)$ is straigtforward, 
-and can be done using a linear interpolation of the boundary values:
+and can be done using a linear interpolation of the boundary values,
 \begin{equation}
     \label{eq:1d_fom_dirichlet_lifting}
     g(x,t) = b_L(t) \left(\frac{x}{L}\right).
@@ -796,7 +800,9 @@ Taking this into account, we find the following \textit{lifted} weak formulation
         \textcolor{NavyBlue}{- \inner{b_0 g \grad g}{v}},
     \end{align}
 \end{subequations}
-where we have reorganized the terms to show in order: linear dependency with the solution, terms due to cross-product effects, and finally the actual non-linearity.
+where we have reorganized the terms to show in order: 
+linear dependency with the solution, 
+terms due to cross-product effects, and finally the actual nonlinearity.
 
 Thanks to the lifting, we find the homogenization of the left boundary condition for all time $t$,
 \begin{subequations}
@@ -979,7 +985,7 @@ provided that the forcing term due to the time integration scheme is generalized
     \end{cases}
     \label{eq:bdf_forcing_term_generalization}
 \end{equation}
-and the parameter $m_{\text{BDF}}$ determines the time integration scheme used,
+and the parameter $m_{\text{BDF}}$ is modified accordingly for each time integration scheme,
 \begin{equation}
     m_{\text{BDF}} = 
     \begin{cases}
@@ -1003,8 +1009,9 @@ which represents the nonlinear convection term from our original model.
 
 In the presence of nonlinearities, one can opt to evaluate certain terms 
 with known information from the past.
-This trick can be used in problems such as the Navier-Stokes equations, 
-where going fully implicit leads to a non-linear algebraic system. 
+This trick can be used in problems such as Burgers's equation, 
+(or the Navier-Stokes equations)
+where going fully implicit leads to a nonlinear algebraic system. 
 If the convective velocity term is extrapolated, 
 one recovers a linear system, and yet reaches a satisfactory numerical solution.
 
@@ -1065,7 +1072,8 @@ otherwise the accuracy benefits of the BDF-2 scheme are lost;
 falling back to order one convergence rates, 
 despite the second order approximation of the time derivative.
 
-We point out how the nonlinear term has now become a trilinear one.
+At the continuous level, this term is nonlinear,
+but at the discrete level, it is trilinear in all its arguments.
 
 \subsubsection{Semi-Discrete Weak Formulation}
 All in all, the complete semi-discretized weak formulation for the original problem 
@@ -1110,7 +1118,7 @@ To complete our discretization, we define a finite functional space $V_h \subset
 \end{subequations}
 We define the FE~vector $\vb{\hat{u}}_h^{n}$ to be the collection of 
 coefficients~$\hat{u}_{h_j}^n$ which multiply the basis functions.
-In the FE~context with Lagrangian basis elements, 
+In the FE~context with Lagrangian modes, 
 these coincide with the values of the function at each node.
 
 % \begin{figure}[h]
@@ -1139,7 +1147,8 @@ both the matrices and the vectors change for each time step,
         &= -\inner{c \grad \varphi_j}{\varphi_i}^{n+1}, 
         \\
         \left[\vb{N}_{h}^{n+1}\right]_{ij}           
-        &= b_0 \inner{u^{n} \grad \varphi_j}{\varphi_i}^{n+1}, 
+        &= b_0 \inner{u^{*, n} \grad \varphi_j}{\varphi_i}^{n+1}, 
+        \label{eq:trilinear_weak_form}
         \\
         \left[\vb{\hat{N}}_{h}^{n+1}\right]_{ij}     
         &= b_0 \left(
@@ -1203,7 +1212,7 @@ It can be expressed as the product between the mass matrix and the FE representa
 \end{equation}
 We point out how the time step $\dt$ has been intentionally left out of the discrete operators definition.
 There are two reasons to back this decision:
-\begin{enumerate}
+\begin{itemize}
     \item Conceptually, each discrete operator encodes a spatial model, 
     in terms of a differential operator or the presence of a forcing term.
     The time step $\dt$ shows up because we first discretized the continuous problem in time. 
@@ -1213,7 +1222,7 @@ There are two reasons to back this decision:
     we will not want to have inside the operator the presence of the time step.
     The reduced model could use a different time step, 
     or the snapshots for different parameters could be gathered for different time step values.
-\end{enumerate}
+\end{itemize}
 % The computation of the discrete initial condition $\vb{\hat{u}}_{h,0}$ is addressed in Section~\ref{sec:1d_fom_projection_interpolation}.
 
 If we collect terms and factor out the unknowns, we get a compact linear system to be solved at each time step to advance the solution,

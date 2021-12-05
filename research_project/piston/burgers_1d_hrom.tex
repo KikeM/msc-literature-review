@@ -19,7 +19,7 @@
 \label{sec:results_and_certification}
 We are now going to see the HROM in action.
 This section is large, for it will contain results for 
-the uniform and arbitrary mesh displacements, 
+the uniform and non-uniform mesh displacements, 
 as well as discussions on the effects observed during the reduction process.
 
 Sections~\ref{sec:hrom_results_reduced_basis} and~\ref{sec:uniform_mdeim_errors}
@@ -33,7 +33,7 @@ the loss of hierarchy present in the resulting collateral basis
 of the trilinear form. 
 
 From Section~\ref{sec:arbitrary_mesh_results} onwards, 
-we present results for the proxy arbitrary mesh displacement.
+we present results for the proxy non-uniform mesh displacement.
 In Section~\ref{sec:certification_limits} we discuss the limits of modal trunction
 for ROM error estimation. 
 
@@ -51,7 +51,7 @@ We have trained our model with 10 samples such that
     0.15 \leq u_p \leq 0.4.
 \end{align*}
 In Table~\ref{tab:uniform_stretching_basis_size} the resulting bases size are reported.
-Since the stretching is uniformly spread across the cells, despite their change in time,
+Since the stretching is uniformly spread across the mesh elements, despite their change in time,
 all the linear operators are trivially reduced.
 The RHS requires two elements because it contains the lifting and its gradient.
 \begin{table}[!h]
@@ -62,7 +62,7 @@ The RHS requires two elements because it contains the lifting and its gradient.
     \centering
     \begin{tabular}{@{}rcc@{}}
     \toprule
-                      & After Treewalk & Final \\ \midrule
+                      & After Treewalk & Final Size \\ \midrule
     RB                & 295            & 69                \\
     RHS               & 20             & 2                 \\
     Mass              & 10             & 1                 \\
@@ -78,13 +78,11 @@ we attempt to relate POD a posteriori error estimations with
 the actual error between ROM and FOM.
 
 \subsubsection{POD: A Posteriori Errors}
-The POD returns a collection of vectors and sigular values, 
+The POD returns a collection of modes and sigular values, 
 $(\psi_i(x), \sigma_i)$,
 each related to the other.
 The magnitude of each singular value $\sigma_i$ somehow encodes 
-how much information is carried by its associated vector about the original span.
-% Departing from the idea that we need at least \textit{one} basis element to solve our problem,
-% and that we have a finite amount of 
+how much information is carried by its associated mode about the original span.
 
 We define the energy of the basis that contains up to the $i$-th element as
 \begin{equation}
@@ -95,9 +93,9 @@ for a POD reconstruction, where the following inequality holds,
 \begin{equation}
     \norm{y(x) - \sum_{j=0}^{n} w_j \psi_j(x)}_{2}^{2} \leq \sum_{i = n+1}^{N} \sigma_i^2,
 \end{equation}
-with $y(x)$ belonging to the snapshots matrix used to build the POD basis.
-This inequality is telling us that if up to~$n$ basis vectors are used
-to reconstruct a vector belonging to the original span,
+with $y(x)$ belonging to the snapshots used to build the POD basis.
+This inequality is telling us that if up to~$n$ basis modes are used
+to reconstruct a function belonging to the original span,
 the average error in the $L_2$ sense will be smaller or equal
 to the sum of the remaining squared singular values.
 
@@ -125,27 +123,29 @@ but the way in which we approach its search would suit any RB problem.
 \end{table}
 
 In Figure~\ref{fig:error_decay} we present the ROM error with respect to 
-the number of basis elements and the energy of the truncated basis.
+the number of RB solution modes and the energy of the truncated basis. 
+At this stage, the (M)DEIM approximation is not used
+(the FOM operators are projected at each stage).
 \begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{research_project/piston/figures/rb_certification/error_decay.png}
-    \caption{Error decay for number of basis elements and basis energy level.
-    Expectedly, the more basis elements we have, the lower the error.}
+    \caption{Error decay vs. the number of RB solution modes and basis energy level.
+    Expectedly, the more RB solution modes we have, the lower the error.}
     \label{fig:error_decay}
 \end{figure}
-The more elements in the basis, the smaller the error.
+The more RB solution modes, the smaller the error.
 The more energy the basis contains, the better the approximation.
 
 We present in Figures~\ref{fig:outflow_model_comparison_N_5} 
 and \ref{fig:outflow_model_comparison_N_10} 
 the actual solution at the outflow for each model (FOM and ROM).
-We can see how the ROM model is inaccurately resolved for $N=5$, as reflected by the error,
+We can see how the ROM model is not accurately resolved for $N=5$, as reflected by the error,
 but how it improves for $N=10$.
-Clearly, the problem is quite simple if these few modes are sufficient to reduce the problem.
+Clearly, the problem is quite simple to reduce if these few modes are sufficient to reduce the problem.
 \begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{research_project/piston/figures/rb_certification/outflow_probes_comparison_rom_5_srom_15_online_4.png}
-    \caption{Outflow velocities for different models. The ROM model for $N=5$. 
+    \caption{Outflow velocities for different models, for $N=5$ RB solution modes. 
     It is inaccurately resolved at the beginning of the transient 
     and some difussion is introduced, reducing the extrema values.}
     \label{fig:outflow_model_comparison_N_5}
@@ -154,7 +154,7 @@ Clearly, the problem is quite simple if these few modes are sufficient to reduce
     \centering
     \includegraphics[width=\columnwidth]{research_project/piston/figures/rb_certification/outflow_probes_comparison_rom_10_srom_20_online_4.png}
     \caption{Outflow velocities for different models. 
-    The ROM model is better resolved for $N=10$.}
+    The ROM model is better resolved for $N=10$ RB solution modes.}
     \label{fig:outflow_model_comparison_N_10}
 \end{figure}
 The flow departs from rest as the piston starts to move.
@@ -164,7 +164,7 @@ but remains still along the rest of the tube.
 However, for most of the time interval, this kind of nonlinearity will not be present again,
 since the flow will be in constant motion, flowing in and out of the system.
 Hence, it is an expected behaviour that for this interval the ROM is inaccurate,
-unless we include a sufficient number of basis elements.
+unless we include a sufficient number of RB solution modes.
 To fix this problem, certain techniques exist which enhance the POD basis 
 without adding excessive complexity \cite{weightedPOD}.
 
@@ -185,36 +185,29 @@ We refer to the collateral basis of the trilinear operator as the N-MDEIM basis.
 
 \subsubsection{N-MDEIM: Hierarchical Basis}
 \label{sec:us_hierarchical_basis}
-% The previous results show that the basis obtained using
-% snapshots built with the RB basis elements is not hierarchical.
-% This is an unconvenient result.
-
-% Although the assembly of the nonlinear operator has been simplified
-% in terms of computational costs,
-% there are no degrees of freedom to adjust the reconstruction error,
-% which is a common operation in the field of Reduced Models.
-
-% Hence, we explore an alternative approach, 
+We present the results for the \mbox{$u^{*}$-general} strategy,
+for the uniform stretching mesh displacement.
 During the simulation of the FOM, 
 we collect snapshots of the trilinear term and compress them with the same  
-nested POD strategy as we did for the reduced basis.
+nested POD strategy as we did for the reduced basis, 
+Section~\ref{sec:1d_rom_burgers_basis_construction_nested}.
 
 By doing so, we obtain a hierarchical basis, which allows us to tune the error,
 as proved by the singular value decay (Figure~\ref{fig:sigmas_decay_from_fom}).
-The basis for the trilinear operator presents the same pattern 
-as the solution reduced basis.
-This has to do with the fact that this operator is a trilinear form.
-Hence, the reduction difficulty is the same as the one
+The singular value decay for the trilinear operator presents the same pattern 
+as the one for the solution.
+% This has to do with the fact that this operator is a trilinear form.
+The reduction difficulty is the same as the one
 required for the reduced basis.
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/sigmas_problem_from_fom.png}
     \caption{Singular values decay for the reduced basis and the trilinear operator.
-    The dashed vertical line corresponds to the number of basis elements, $N=69$.
+    The dashed vertical line corresponds to the number of modes, $N=69$.
     The basis for the trilinear operator presents the same pattern 
     (and hence the same size)
     as the solution reduced basis.
-    This is due to the fact that the linearized operator is a trilinear form.
+    This is due to the fact that the operator is a trilinear form.
     Hence, due to the simplicity of the Jacobian, the reduction difficulty is similar to the one
     required for the reduced basis.}
     \label{fig:sigmas_decay_from_fom}
@@ -272,11 +265,12 @@ if some compromise is made in the error.
 
 \subsubsection{RB and N-MDEIM Error Interaction}
 \label{sec:reduced_basis_mdeim_error_interaction}
-With two basis which show error decay, we can truncate them (solution and trilinear operator)
-simultaneously, to determine the interaction between both of them.
+With two bases (solution and trilinear operator) which show error decay, 
+we can truncate them simultaneously, 
+to determine their interaction.
 In Table~\ref{tab:nonlinear_error_decay_heatmap} we present 
-the timewise $L_2$ error for different numbers of reduced basis 
-and trilinear operator basis elements.
+the timewise $L_2$ error for different numbers of RB solution 
+and RB trilinear modes.
 In Figure~\ref{fig:nonlinear_error_decay_heatmap} we present the same table,
 albeit in a heatmap plot. 
 
@@ -341,19 +335,20 @@ the approximation error is quite poor.
 
 This has to do with the fact that the modes,
 which form an orthogonal basis, were used to assemble the trilinear operator snapshots.
-Hence, all the POD basis elements contain fundamental information,
+Hence, all the POD modes contain fundamental information,
 as hinted by the abrupt drop in the singular value, see Figure~\ref{fig:sigmas_decay}. 
 \begin{figure}
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/mdeim_certification/sigmas_problem.png}
     \caption{Singular values decay for the reduced basis and the trilinear operator.
-    The dashed vertical line corresponds to the number of reduced basis elements, $N=69$.
-    The basis for the trilinear operator does not present the same pattern as the 
-    one for the reduced basis.
-    All of the elements of the trilinear operator basis 
-    seem to contain the same amount of information from the span.
+    The dashed vertical line corresponds to the number of reduced modes, $N=69$.
+    The singular value decay for the trilinear operator does 
+    not present the same pattern as the one for the reduced basis.
+    All RB trilinear operator modes 
+    seem to contain the same amount of information from the original span.
     This has to do with the fact that the modes,
-    which form an orthogonal basis, were used to assemble the trilinear operator snapshots.}
+    which form an orthogonal basis, 
+    were used to assemble the trilinear operator snapshots.}
     \label{fig:sigmas_decay}
 \end{figure}
 We have obtained a basis that allows us to reduce the assembly of the operator, 
@@ -450,8 +445,6 @@ adding an additional mode should only refine the solution,
 not change drastically how the previous modes are scaled.
 They are not strictly the same because the ROM matrix changes if more modes are added to the basis,
 but again, it does so in a way that dynamics should be preserved.
-% \mytodo{Plot: Common mode amplitudes for ROM and SROM. 
-% We expect the coefficients to coincide when a sufficient number of basis elements are included.}
 
 In Figure~\ref{fig:estimator_accuracy_timewise} we show in the behaviour of the error estimator 
 for each time step.
@@ -500,7 +493,7 @@ of the trilinear operator with RB elements,
         &= b_0 \int_{0}^{L(t^{n+1})} \psi_h(x) \grad \varphi_j \varphi_i \dd x.
     \end{split}
 \end{equation}
-Now, the reduced basis elements are expressed themselves in terms of 
+Now, the RB solution modes are expressed themselves in terms of 
 the finite element Lagrangian basis functions,
 \begin{equation}
     \psi_h(x) = \sum_{k} 
@@ -555,23 +548,32 @@ trilinear form are orthogonal, so will be the resulting POD base,
 and hence non-hierarchical 
 (there is no reduction capacity, since the input is already forming a base).
 
+\newpage
 \subsubsection{Fourier Basis: Insights}
 We kick-off by studying the effects of attempting an SVD over a Fourier basis, 
 \begin{equation}
     \psi_q = \qty{\cos(2 \pi \omega_q x) \, : \, \omega_q \in \qty{1, \ldots, 3}}.
 \end{equation}
+
 We are going to carry out two experiments:
 \begin{itemize}
     \item (I) Run the Fourier basis through the SVD and analyze its spectrum decay. 
-    We would expect to find no decay at all, since the basis is orthogonal.
-    \item (II) Compute snapshots of the trilinear operator term with the Fourier basis
+    We would expect no decay, since the basis is orthogonal\footnote{
+        It the modes are normalized with the $L_2$ norm, 
+        the singular values will be equal to one.
+        Else, the singular values will be equal to the $L_2$ norm.
+    }.
+    \item (II) Compute snapshots of the trilinear operator with the Fourier basis
     and run them through the SVD as well.
-    We shall look at the spectrum decay to establish conclusions. 
+    The spectrum decay will be used to establish conclusions. 
 \end{itemize}
 
 \subsubsection{(I) SVD of a Fourier Basis}
-When the POD is applied to a naturally orthogonal basis, 
-the resulting basis is formed by linear combinations of the original functions.
+When the POD is applied to a basis of orthogonal modes, 
+the resulting basis is potentially\footnote{
+    This is an implementation-wise feature.
+} formed 
+by linear combinations of the original modes.
 
 Our implementation of the POD is based on the SVD breakdown, which splits a matrix into 
 two rotations and one scaling,
@@ -579,7 +581,7 @@ two rotations and one scaling,
     A = U \Sigma V^T.
 \end{equation}
 If the matrix A is orthogonal ($AA^T = A^T A = I$),
-we would expect that the transformation is such that the basis elements
+we would expect that the transformation is such that the modes
 remain unaltered,
 $U=A, \Sigma = I,$ and $V=I$ 
 (with their respective dimensions well set).
@@ -587,7 +589,7 @@ However, the only guarantee we actually have is that $\Sigma = I$,
 the rotations $U$ and $V$ are not unique.
 And so is the case with the implementation we are using of the SVD.
 
-Instead of returning the original Fourier basis, 
+Instead of returning the original Fourier modes, 
 it is creating linear combinations of it, 
 where the coefficients of the linear combination are collected in the columns of
 \begin{equation}
@@ -619,15 +621,15 @@ as shown in Table~\ref{tab:appendix_fourier_spectrum}.
 \begin{figure}[h]
     \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/fourier_pod_bases.png}
     \caption{Fourier basis and its SVD transformation. 
-    Since the Fourier basis is naturally orthogonal, 
-    the resulting SVD transformation is simply a linear combination of Fourier modes.}
+    Since the Fourier basis is orthogonal, 
+    the resulting SVD transformation is a linear combination of Fourier modes.}
 \end{figure}
 
 \subsubsection{(II) N-MDEIM with Fourier Basis}
 To confirm our working hypothesis, 
 we build the trilinear form 
 (Equation~(\ref{eq:appendix_exact_representation_triliear_form}))
-using the first five elements of the Fourier basis,
+using the first five modes of the Fourier basis,
 \begin{equation}
     \psi_q(x) = \qty{\cos(2 \pi \omega_q x) \, : \, \omega_q \in \qty{1, \ldots, 5}}.
 \end{equation}
@@ -635,7 +637,7 @@ Since the Jacobian transformation is a linear function of time,
 despite the change in time of the domain, the trilinear form remains linear.
 If there were no third argument 
 $\textcolor{blue}{\psi_k}$, 
-we would only require one basis element to represent the whole operator.
+we would only require one mode to represent the whole operator.
 Therefore, we predict that we will only find 5 orthogonal resulting modes, that is, a non-hierarchical basis. 
 This is confirmed by the singular value decay, 
 shown in Table~\ref{tab:ndeim_with_fourier_modes}
@@ -644,7 +646,7 @@ shown in Table~\ref{tab:ndeim_with_fourier_modes}
 \begin{table}[h]
     \centering
     \caption{Singular value spectrum for the N-MDEIM reduction with a Fourier basis.
-    We have built the snapshots in time for two parameters and five Fourier basis elements.
+    We have built the snapshots in time for two parameters and five Fourier modes.
     Since we know the resulting bases will be of the same size as the original input,
     we expect to have only 5 non-zero singular values, which is the case.
     To be aligned with the code, a 0-indexing presentation is used.}
@@ -674,32 +676,34 @@ we attempt to reconstruct the operator with a truncated basis.
     \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/fourier_basis_mdeim_truncation_errors_comparison.png}
     \caption{N-MDEIM reconstruction error.
     The basis for this N-MDEIM has been built using 
-    the first five Fourier basis elements to evaluate the trilinear form.
+    the first five Fourier modes to evaluate the trilinear form.
     According to the singular value decay, the basis is not hierarchical, 
-    that is, all the basis elements (continuous) needs to be used to 
-    create an accurate representation of the space.
-    Hence, when one element is removed (dashed), 
-    the approximation error increases to unaffordable values.}
+    that is, all the operator modes (continuous) need to be used to 
+    recover an accurate representation of the space.
+    Hence, when one operator mode is removed (dashed), 
+    the approximation error increases to unaffordable values for a simulation.}
     \label{fig:appendix_fourier_nmdeim_reconstruction_error}
 \end{figure}
 Now that we have been able to reproduce the same behaviour, 
 and to validate our working hypothesis,
-we go back to the use of RB modes.
+we go back to the use of RB solution modes.
 
+\newpage
 \subsubsection{N-MDEIM with RB Modes}
 \label{sec:nmdeim_one_mode}
-What would happen if we only used one mode to reduce the operator?
+What would happen if we only used one mode from the RB solution modes to reduce the operator?
 Could we use that basis to approximate the trilinear operator evaluated with other functions?
 
-We get the first three RB basis elements and create a function $f(x)$ as a linear combination of them,
+We take the first three RB solution modes 
+and create a linear combination $f(x)$ with them,
 \begin{equation}
-    f(x) = 2 \psi_0(x) + \psi_1(x) + 3 \psi_0(x).
+    f(x) = 2 \psi_0(x) + \psi_1(x) + 3 \psi_2(x).
 \end{equation} 
 This is shown in Figure~\ref{fig:appendix_rb_linear_combination}.
-We now reduce the trilinear form with two approaches:
+We now reduce the trilinear form with two strategies:
 \begin{itemize}
-    \item (a) Subspace: using only the first RB mode.
-    \item (b) Complete space: using the three RB modes.
+    \item (a) Subspace: using only the first RB solution mode.
+    \item (b) Complete space: using the three RB solution modes.
 \end{itemize}
 
 With each approach, we obtain a non-hierarchical orthogonal basis,
@@ -710,43 +714,42 @@ However, it succeeds as well as approach (b).
 This is proved by Figures~\ref{fig:appendix_rb_trilinear_num_1} 
 and~\ref{fig:appendix_rb_trilinear_num_3}.
 Additionally in Figure~\ref{fig:appendix_rb_trilinear_num_3} we have included 
-the reconstruction error for the truncated base (we have removed one element). 
+the reconstruction error for the truncated base (we have removed operator mode). 
 
-Using \textit{one} RB element is sufficient to construct a perfect collateral basis
-due to the linearity of the integrand within the trilinear form 
+Using \textit{one} RB solution mode is sufficient to construct a perfect collateral basis
+due to the linearity of the integrand within the trilinear form,
 and the linearity of the Jacobian transformation.
 Despite the fact that the function $f(x)$ contains other modes, 
 the collateral basis built with one mode is able to reproduce its effect on the operator perfectly. 
 \begin{figure}[h]
     \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/linear_combination.png}
-    \caption{Function $f(x)$, created as a linear combination of the first three RB modes 
-    from the piston problem.
-    The first three RB modes are shown in dashed.}
+    \caption{First three RB solution modes and a linear combination $f(x)$ of them.  
+    The RB solution modes are shown in dashed.}
     \label{fig:appendix_rb_linear_combination}
 \end{figure}
 \begin{figure}[h]
     \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/trilinear_nonlinear/rb_basis_mdeim_errors_trilinear_num_1.png}
-    \caption{Reconstruction error for the trilinear operator evaluated with function $f(x)$.
-    The basis has been obtained only using the first RB mode.}
+    \caption{Reconstruction error for the trilinear operator evaluated with linear combination $f(x)$.
+    The basis has been obtained only using the first RB solution mode.}
     \label{fig:appendix_rb_trilinear_num_1}
 \end{figure}
 \begin{figure}[h]
     \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/trilinear_nonlinear/rb_basis_mdeim_errors_trilinear_num_3.png}
-    \caption{Reconstruction error for the trilinear operator evaluated with function $f(x)$.
-    The basis has been obtained using the three RB mode.
-    In dashed is the approximation error using a truncated basis ($N=2$). 
-    The truncated basis fails because the original basis is non-hierarchical, 
-    hence all the elements are required.}
+    \caption{Reconstruction error for the trilinear operator evaluated with linear combination $f(x)$.
+    The basis has been obtained using the three RB solution modes.
+    In dashed is the approximation error using a truncated basis ($N=2$ operator modes). 
+    The truncated basis shows a poor approximation error because the original basis is non-hierarchical, 
+    hence all the operator modes are required to reconstruct the operator.}
     \label{fig:appendix_rb_trilinear_num_3}
 \end{figure}
-In the next section we explore what happens if a nonlinear function was present in the integrand.
+In the next section we explore what happens if a nonlinear function is present in the integrand.
 
 \subsubsection{N-MDEIM with a Nonlinearity in Space}
 We have shown in the previous section how 
-one can achieve a perfect collateral basis for the trilinear using exclusively one RB element.
+one can achieve a perfect collateral basis for the trilinear using exclusively one RB solution mode.
 
-We now show results for a form with a nonlinear function took place inside the weak form.
-Hence, we approach the reduction of
+We now show results for a form with a nonlinear function inside the weak form.
+Hence, we take on the reduction of
 \begin{equation}
     \begin{split}
         \qty[\Ah{W}\left(\psi_{h}\right)]_{i,j}
@@ -760,34 +763,35 @@ and~\ref{fig:appendix_rb_nonlinear_num_3}.
 Both figures include the reconstruction error for a truncated base.
 
 We find out that in the presence of a nonlinearity it is unsufficient to use only 
-one basis element of the function space. 
-When the basis built with approach (a) is truncated, the approximation error goes up by a lot,
+one RB solution mode. 
+When the basis built with approach (a) is truncated, the approximation error goes up 
+to values near unity,
 leading to poor reconstruction results.
 
-Instead, when the whole basis of the function space is used to build the collateral basis,
-truncating the outcome leads to a feasible basis. 
+Instead, when the first three RB solution modes are used to build the collateral basis,
+truncating the outcome leads to a feasible basis.
 The truncation leads to a higher approximation error, but still sufficiently small to produce
-meaningful results if used in a simulation.    
+meaningful results if it were used in a simulation.    
 
 \begin{figure}[h]
     \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/trilinear_nonlinear/rb_basis_mdeim_errors_nonlinear_num_1.png}
     \caption{Reconstruction error for the nonlinear operator evaluated with function $f(x)$.
-    The basis has been obtained only using the first RB element ($N_{\text{full}}=7$).
+    The basis has been obtained only using the first RB solution mode ($N_{\text{full}}=7$).
     In dashed is the approximation error using a truncated basis, 
-    from which only one mode has been removed ($N_{\text{truncated}}=6$). 
-    The truncated basis fails because due to the presence of the nonlinearity, 
-    it is now unsufficient to use only one RB basis function 
+    from which only one operator mode has been removed ($N_{\text{truncated}}=6$). 
+    The truncated basis fails, due to the presence of the nonlinearity, 
+    it is now unsufficient to use only one RB solution mode 
     to construct a collateral basis which accurately represents the whole space.}
     \label{fig:appendix_rb_nonlinear_num_1}
 \end{figure}
 \begin{figure}[h]
     \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/trilinear_nonlinear/rb_basis_mdeim_errors_nonlinear_num_3.png}
     \caption{Reconstruction error for the nonlinear operator evaluated with function $f(x)$.
-    The basis has been obtained using the three RB element ($N_{\text{full}}=19$).
+    The basis has been obtained using the three RB solution modes ($N_{\text{full}}=19$).
     In dashed is the approximation error using a truncated basis, 
-    from which several modes have been removed ($N_{\text{truncated}}=10$). 
-    The truncated basis does not fail as the previous ones did, it simply presents a higher error,
-    but still acceptable.}
+    from which several operator modes have been removed ($N_{\text{truncated}}=10$). 
+    The truncated basis does not fail as drastically as the previous ones did, it simply presents a higher error,
+    but still within an acceptable order of magnitude.}
     \label{fig:appendix_rb_nonlinear_num_3}
 \end{figure}
 
@@ -829,9 +833,9 @@ leading to a lighter offline stage.
 % as would happen if we assemble the matrix entries in the physical space under nonlinear mesh displacements effects.
 
 \clearpage
-\subsection{Arbitrary Mesh: Reduction Results}
+\subsection{Results for Non-Uniform Mesh Displacement}
 \label{sec:arbitrary_mesh_results}
-We now present results for an arbitrary mesh displacement. 
+We now present results for a non-uniform mesh displacement. 
 % We present the reduction achieved by the nested POD.
 % We recall that this algorithm is used for the solution and the snapshots of each operator.
 % The reduction methodology introduced by the (M)DEIM technique 
@@ -954,9 +958,9 @@ not the overall displacement.}.
 \begin{figure}[h]
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/separable/sigmas_logy.png}
     \caption{This figure is a zoom-in of Figure~\ref{fig:nlinear_disp_sep_loglog}.
-    Only the first ten singular values (basis elements) are shown.
+    Only the first ten singular values (modes) are shown.
     We can see how for the time integration step most operators 
-    are perfectly summarized with two to six basis elements.
+    are perfectly summarized with two to six modes.
     This is due to the fact that the displacement is separable in time and space;
     and only the space function is not linear.}
     \label{fig:nlinear_disp_sep_logy}
@@ -1011,7 +1015,9 @@ the HROM certification by truncation fail.
 
 \begin{table}[h]
     \centering
-    \caption{Online parametrization for arbitrary mesh runs.}
+    \caption{Online parametrization.
+    The results will only be obtained for one parameter,
+    since the conclusions scale for many.}
     \begin{tabular}{ccc}
     \toprule
         Variable   & Value  \\ 
@@ -1032,21 +1038,21 @@ To do so, we set the experiments shown in
 Tables~\ref{tab:certification_experiments_grid} 
 and~\ref{tab:certification_experiments_results}.
 The online parametrization is given in Table~\ref{tab:parameters_online_arbitrary}.
-The idea is to see what happens with the error estimator when 
-the RB approximation error is below or above the (M)DEIM error.
+We want to determine the error estimator behaviour when 
+the solution RB approximation error is smaller or greater than the (M)DEIM error.
 
-The conclusion of the experiments is that when the RB error is below the (M)DEIM error,
-the HROM error is saturated by the operators errors;
+The conclusion of the experiments is that if the solution RB error is smaller than the (M)DEIM error,
+the HROM error is saturated by the (M)DEIM errors;
 and hence the model truncation technique cannot be used to certify the HROM results,
-because both ROMs produce the same result.
-When the RB error is above the (M)DEIM error, the trucation technique 
+because both HROMs produce the same result.
+When the solution RB error is above the (M)DEIM error, the trucation technique 
 will produce effective error estimations.
 
 \begin{table}[h]
     \centering
     \caption{Numerical experiments configuration. 
     Pure ROM means no (M)DEIM is used.
-    HROM means all reduced and collateral bases are used.}
+    HROM means all collateral bases are used.}
     \begin{tabular}{ccc}
         \toprule                                                           
         & Pure ROM & HROM \\ 
@@ -1111,7 +1117,7 @@ will produce effective error estimations.
 \end{figure}
 
 \clearpage
-\subsection{Arbitrary Mesh: N-MDEIM by Mode Evaluation}
+\subsection{Non-Uniform Mesh: N-MDEIM by Mode Evaluation}
 \label{sec:arbitrary_mesh_nmdeim_mode_evaluation}
 In this final section we build the N-MDEIM basis for the trilinear term
 from snapshots obtained from mode evaluations 
@@ -1127,7 +1133,7 @@ This is due to the following facts:
     \item The trilinear integrand contains the derivative of the trial function $u$.
 \end{itemize}
 The last fact is crucial. 
-Due to this fact, the arbitrary mesh size goes unnoticed, 
+Due to this fact, the non-uniform mesh size goes unnoticed, 
 since the derivative of the Lagrangian function gets cancelled by the integration.
 This is a known fact of convection-like forms, 
 for which the mesh size does not show up in the FEM matrix.

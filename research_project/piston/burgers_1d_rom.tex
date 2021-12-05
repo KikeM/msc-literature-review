@@ -51,11 +51,11 @@ We do so to motivate the operator reduction procedures we will include later on.
 
 In the reduced context, we use a finite space $V_N \subset V_h$, where we can represent the solution as the linear combination of a set of orthonormal\footnote{If they were not, we can always make them so via Gram-Schmidt.} \mbox{problem-based} basis functions~$\psi_i(x)$,
 \begin{equation}
-    \label{eq:1d_rom_burgers_rb_expansion}
     \hat{u}_N(x) = \sum_j^{N} \hat{u}_{N_j} \psi_j(x).
+    \label{eq:1d_rom_burgers_rb_expansion}
 \end{equation}
-These basis functions~$\psi_i(x)$ have global support, since their goal is to capture the problem dynamics. 
-This is why we usually expect or desire to have $N \ll N_h$, since we want to reduce the number of basis functions we need to represent our solution. 
+Their goal is to capture the problem dynamics, so these RB solution modes~$\psi_i(x)$ have global support.
+Since we want to reduce the number of modes we need to represent our solution, we usually expect or desire to have $N \ll N_h$, . 
 
 To maintain focus and in favor of generality, let us assume at this point that the global basis functions are given, and that they are zero at the boundary.
 We will give details on how to obtain them later on.
@@ -99,7 +99,7 @@ The assembly of matrices based on a FE basis can be easily done in parallel due 
 whereas the integration of functions with global support is not necessarily computationally efficient.
 
 
-By doing so, we find the following ROM for the time evolution problem,
+By doing so, we find the following pure ROM problem for the time evolution problem,
 \begin{subequations}
     \label{eq:1d_rom_weak_formulation_discrete}
     \begin{align}
@@ -156,7 +156,7 @@ All of the previous has the same algebraic pattern as the FOM problem.
 The only difference is the size of the operators, much smaller due to the small size of $N$. 
 
 % -----------------------------------------------------------------------------
-\subsubsection*{Time-Discretization Forcing Term}
+\subsubsection{ROM Time Discretization Forcing Term}
 The forcing term $\vb{F}_{\vb{\hat{u}}_h}^{n}$ due to the time discretization has been intentionally left out in the previous section.
 We could naively project it too, 
 \begin{equation}
@@ -193,7 +193,7 @@ Since we are dealing with an orthonormal basis, we can use the matrix~$\rbV$ to 
 Regarding the spatial boundary conditions, at this point of the naive reduction scheme, two facts come into play, which we first present and then put together:
 \begin{enumerate}
     \item The weak form has homogeneous boundary conditions.
-    \item The ad-hoc basis elements~$\psi_i(x)$ are zero at the boundaries,
+    \item The ad-hoc RB solution modes~$\psi_i(x)$ are zero at the boundaries,
     \begin{equation*}
         \psi_i(x) = 0 \quad \forall \, x \in \partial \Omega.
     \end{equation*}
@@ -208,7 +208,8 @@ is always true.
 Once the reduced homogeneous solution~$\hat{u}_N(x)$ is obtained, 
 it can be brought back to the original space~$V_h$ via 
 Equation~\eqref{eq:1d_rom_burgers_projection_relation}, 
-and then add on top of it the FE representation of the Dirichlet lifting, to obtain the final solution
+and then added to the FE representation of the Dirichlet lifting, 
+to obtain the solution $u_h(t, \mu)$ in the physical domain,
 \begin{equation}
     u(x, t; \mu) \simeq u_h(t, \mu) = \rbV \hat{u}_N(t, \mu) + g_h(t,\mu).
 \end{equation}
@@ -277,12 +278,14 @@ The modes $\psi_i$ are obtained from an optimality problem in the $L^2$ norm,
 that is, the representation of any vector in the original space can be reconstructed the POD basis, 
 and the error in the $L^2$ norm should be less or equal to \epspod.
 
-There is a relation between the prescribed tolerance error $\epspod$ and the outcoming number of basis elements $N_{POD}$, 
+There is a relation between the prescribed tolerance error $\epspod$ 
+and the outcoming number of modes $N_{POD}$, 
 \begin{equation}
     N_{POD} = N_{POD}(\epspod).
 \end{equation}
-This functional relationship usually shows exponential decay, or a sharp drop beyond a given number of elements.
-If a problem can be reduced, beyond a given number of modes, including more in the approximation will not improve significantly the approximation bondness.
+This function usually shows exponential decay, or a sharp drop beyond a given number of elements.
+If a problem can be reduced, beyond a given number of modes, 
+including more in the approximation will not improve significantly the approximation error.
 
 % Alternatively to a prescribed error, one could directly ask for a prescribed number of basis functions~$N^{*}_{POD} \leq N_S$,
 % \begin{equation}
@@ -292,24 +295,38 @@ If a problem can be reduced, beyond a given number of modes, including more in t
 % -----------------------------------------------------------------------------
 \subsubsection{Nested POD Basis Construction}
 \label{sec:1d_rom_burgers_basis_construction_nested}
-\mytodo{Sketch: Nested POD Basis Construction}
-A simple procedure to leverage the compression properties of the POD function, 
-and the nested structure of our PDE with respect to time and the parameters; 
-is to first build certain POD basis from the snapshots of the solution at different time steps for a fixed parameter value,
+% A simple procedure to leverage the compression properties of the POD function, 
+% and the nested structure of our PDE with respect to time and the parameters; 
+We are going to describe the nested POD algorithm, 
+sketched in Figure~\ref{fig:treewalk_sketch}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{research_project/piston/figures/treewalk.pdf}
+    \caption{Nested POD treewalk.
+    The parameter space is sampled, for each parameter a simulation is run,
+    and snaphsots are collected and compressed in time (red dots).
+    This provides a collateral basis for each parameter.
+    These bases are finally compressed into one, 
+    which summarizes the changes in time and parameters.}
+    \label{fig:treewalk_sketch}
+\end{figure}
+First, for a fixed parameter value, build a POD basis from the snapshots at different time steps,
 \begin{align*}
     \Psi_{\mu_0} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_0), \ldots, \hat{u}_h(t^T; \mu_0)\right]\right), \\
     \Psi_{\mu_1} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_1), \ldots, \hat{u}_h(t^T; \mu_1)\right]\right), \\  
     \ldots, \\
     \Psi_{\mu_{N_{\mu}}} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_{N_{\mu}}), \ldots, \hat{u}_h(t^T; \mu_{N_{\mu}})\right]\right).
 \end{align*}
-Then, all the $\mu$-fixed POD basis, which sum up the information contained in the time evolution direction, are compressed again using a POD,
+Then, all the $\mu$-fixed POD basis 
+(which sum up the information contained in the time evolution direction), 
+are compressed again using a POD,
 \begin{equation*}
     \rbV := \Psi = POD_{\varepsilon} \left(\left[\Psi_{\mu_0}, \Psi_{\mu_1}, \ldots, \Psi_{\mu_{N_{\mu}}}\right]\right).
 \end{equation*}
-In the end, this gives us a unique basis $\Psi = [\psi_i] = \rbV$, 
+In the end, we obtain a basis $\Psi = [\psi_i] = \rbV$, 
 which contains information for parameter variations and time evolution.
-It has been built in a computationally efficienty manner, 
-at least in terms of storage.
+%It has been built in a computationally efficient manner, 
+This leads to an efficient basis, in terms of storage and numerical stability
 
 Different error tolerances could be prescribed at the time and parameter compression stages
 for demanding problems.
@@ -320,7 +337,7 @@ It only requires the construction of a collection of parameter values to solve f
 This can be done with random sampling techniques, 
 or if some physical-drive knowledge is available, 
 a custom selection of parameter subsets for which the solution will present strong variations 
-(leading to the identification of rich solution modes).
+(leading to the identification of richer RB solution modes).
 
 Since we are using an SVD-based POD, we need to set a threshold for
 the acceptable singular values/modes.
@@ -343,27 +360,29 @@ During the offline stage (where the FOM problem is solved),
 we have to assemble all the discrete operators for each time step;
 during the online stage we additionally have to project them unto the reduced space too, as shown in Equations~\eqref{eq:1d_rom_linear_system_operators}.
 This projection step can keep a ROM still a costly procedure,
-if it only relies on solution modes to reduce the problem.
+if it only relies on RB solution modes to reduce the problem.
 This will be our main motivation to include a system approximation technique,
 with the goal of speeding up the construction of the operators.
 
-We talk about \emph{parameter and time separable} problems 
-(or the existence of an \emph{affine decomposition})
-when the spatial operators (bilinear or linear forms)
-present the following functional form:
+An essential ingredient for our system approximation is the concept of \emph{parameter and time separable} problems 
+(or the existence of an \emph{affine decomposition}).
+This takes place when the spatial operators (bilinear or linear forms)
+present the following functional separable form:
 \begin{equation}
     \label{eq:1d_rom_burgers_separable_form_time_param}
-    A_h(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q}.
+    A_h(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q},
 \end{equation}
-The coefficient functions are real-valued, \mbox{$\Theta_q^a(t, \mu) \in \mathbb{R}$}, 
-and the operator basis elements $A_{h,q}$ are parameter-independent.
+where the coefficient functions are real-valued, \mbox{$\Theta_q^a(t, \mu) \in \mathbb{R}$};
+and the RB operator modes $A_{h,q}$ are parameter-independent.
 
 This expansion can be used for both matrices or vectors provided 
 the topology of the mesh does not change.
-If this is the case, the matrices can be transformed into vectors, 
+If this is the case, the matrices can be transformed into vectors
+by stacking the columns\footnote{We used a CSR storage format.}, 
 and later on brought back to matrix form once any necessary operation has been carried out.
 
-If we had such a decomposition, once we had computed the basis matrix \rbV, we could project each element of the operator basis $A_{h, q}$ to obtain an expression for the reduced operator, 
+If we had such a decomposition, once we had computed the basis matrix \rbV, 
+we could project each element of the operator basis $A_{h, q}$ to obtain an expression for the reduced operator, 
 \begin{equation}
     \begin{split}
         A_N(t, \mu) &= \rbVT A_h(t, \mu) \rbV,
@@ -373,7 +392,8 @@ If we had such a decomposition, once we had computed the basis matrix \rbV, we c
         A_N(t, \mu) &= \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{N,q}.
     \end{split}
 \end{equation}
-Since $A_{N, q}$ is fixed, provided that we had a way to evaluate each $\Theta_q^a(t, \mu)$, we would be able to build the reduced operator for a given parameter for each time step without having to use any FOM operator. 
+Since $A_{N, q}$ is fixed, provided that we had a way to evaluate each $\Theta_q^a(t, \mu)$, 
+we would be able to build the reduced operator for a given parameter for each time step without having to use any FOM operator. 
 
 % -----------------------------------------------------------------------------
 \subsubsection{Discrete Empirical Interpolation Method}
@@ -415,12 +435,14 @@ for certain indices~$k \in \mathcal{I}_a$ such that~$\left|\mathcal{I}_a\right| 
 These indices $\mathcal{I}_a$ are known as the reduced mesh nodes, 
 sketched in Figure~\ref{fig:reduced_mesh}.
 \begin{figure}[h]
-    \includegraphics[width=0.99\columnwidth]{research_project/piston/figures/reduced_mesh_nodes.pdf}
+    \centering
+    \includegraphics[width=0.90\columnwidth]{research_project/piston/figures/reduced_mesh_nodes.pdf}
     \caption{Reduced mesh nodes $\mathcal{I}_a$ sketch 
     for $\mathbb{P}1$ Lagrangian finite element basis functions. 
-    The weak form integral evaluation only takes place for a restricted subset of cells,
+    The weak form integral evaluation only takes place for a restricted subset of mesh elements,
     to assemble the entries corresponding to the selected nodes.  
-    In dashed are shown the interactions with adjacent cell basis functions.}
+    In dashed are shown the interactions with adjacent finite elements basis functions.
+    A sketch for a 2D domain can be found in \cite{2015_efficientModelReductionParametrizedSystemsMatrixDeim_Negri}.}
     \label{fig:reduced_mesh}
 \end{figure}
 The notation $[A_h(t, \mu)]_{k}$ stands for the value of the operator at the given mesh node $k$.
@@ -433,31 +455,53 @@ according to error reduction arguments of the reconstruction error,
     e_a(t, \mu) = \norm{A_h(t, \mu) - A_h^m(t, \mu)}.
 \end{equation}
 
+\newpage
 % -----------------------------------------------------------------------------
-\subsubsection{Reduction of the Nonlinear Term}
-The basis for the trilinear operator $N_h$ can be built with two strategies.
-% but there is one that will allows us to make it as rich as possible in an efficient
-% way.
-This operator depends on the test and trial functions,
-and an additional function.
-During the FOM simulation,
-this additional function is the extrapolation $u^{*}$ from previous time steps
-for the flow velocity. 
-At the continuous level, this term would be nonlinear,
-but at the discrete level, it is (tri)linear in all its arguments.
+\subsubsection{Reduction of the Trilinear Term}
+We recall that the trilinear operator $N_h(u^{*})$ 
+from Equation~(\ref{eq:trilinear_weak_form})
+takes as input in its third argument an extrapolation of the velocity $u^{*}$.
+This extrapolation lives in the same function space as the solution:
+from Equation~(\ref{eq:u_star_approximation}),
+it is a linear combination of past solutions in time.
 
-The naive approach to reduce this operator is to collect 
-the operator snapshots during the offline phase of the FOM.
+The general strategy to reduce this operator 
+is to collect and compress the operator snapshots 
+during the offline phase of the FOM,
+with the general nested POD algorithm described 
+in Section~\ref{sec:1d_rom_burgers_basis_construction_nested}.
 This would tie the operator snapshots to the parameter space
-used to identify the solution modes.
+sampled to identify the RB solution modes.
 
-Since the solution is going to be expressed in terms of the solution modes,
+However, if the $u^{*}$ extrapolations are going to be expressed in terms of the RB solution modes,
+as by Equation~(\ref{eq:1d_rom_burgers_rb_expansion}),
 why not use these modes to assemble the operator snapshots?
-This would allow us to span a larger parameter space,
-potentially larger than the one used to identify the solution modes. 
+% This would allow us to span a larger parameter space,
+% potentially larger than the one used to identify the RB solution modes.
 
-We use a nested POD approach again, with three levels: 
-parameters, modes and time.
+Therefore, the trilinear operator modes can be built with two strategies,
+\begin{itemize}
+    \item (\mbox{$u^{*}$-general}) collecting the snapshots from the FOM simulation \cite{Santo_Manzoni_2019};
+    \item (\mbox{$u^{*}$-restricted}) collecting the snapshots from evaluations of the operator with RB solution modes.
+\end{itemize}
+These strategies are summarize in Table~\ref{tab:summary_trilinear_strategies}.
+
+The \mbox{$u^{*}$-restricted} requires a slight modification of the nested POD algorithm.
+Instead of two, we have three nested levels: 
+parameters, modes and time, as sketched in Figure~\ref{fig:treewalk_trilinear_sketch}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{research_project/piston/figures/treewalk-trilinear.pdf}
+    \caption{Nested POD treewalk for the trilinear term, 
+    \mbox{$u^{*}$-restricted} strategy.
+    The parameter space is sampled, for each parameter and RB mode 
+    snaphsots are collected and compressed in time (red dots).
+    This provides a collateral basis for each parameter.
+    These bases are finally compressed into one, 
+    which summarizes the changes in time, parameters and RB modes.}
+    \label{fig:treewalk_trilinear_sketch}
+\end{figure}
+
 We set a parameter, we pick a mode, collect as many snapshots
 as time steps, and compress:
 \begin{equation}
@@ -479,7 +523,19 @@ which is the result of compressing all parameter bases,
 \end{equation}
 An advantage of this procedure is that the FOM simulation 
 might not be available, 
-if the modes are obtained, e.g., from experimental data.
+if the RB modes are obtained, e.g., from experimental data.
+
+\begin{table}[h]
+    \centering
+    \caption{Trilinear operator reduction strategies}
+    \begin{tabular}{@{}lccc@{}}
+    \toprule
+                       & Op. assembly      & 3rd argument          & Nested levels           \\ \midrule
+    $u^{*}$-general    & FOM simulation    & Extrapolation $u^{*}$ & 2 (param., time)        \\
+    $u^{*}$-restricted & Ind. offline step & RB solution modes     & 3 (param., modes, time) \\ \bottomrule
+    \end{tabular}
+    \label{tab:summary_trilinear_strategies}
+\end{table}
 
 % -----------------------------------------------------------------------------
 \subsection{Hyper Reduced Order Model}
@@ -517,12 +573,12 @@ to be solved for each time step to advance the solution,
         \vb{K}_{N}^{m, n+1} \vb{\hat{u}}_{N}^{m, n+1} &= \vb{b}_{N}^{m, n+1}, 
         \\
         \vb{\hat{u}}_{N}^{0} &= \vb{\hat{u}}_{N,0};
-        \\
+        \\[5mm]
         \vb{K}_{N}^{m, n+1} &= m_{\text{BDF}} \Ahm{M} + \dt \left[\Ahm{A} + \Ahm{C} \right. 
         \nonumber 
         \\
                         &\left. + \Ahm{\hat{N}} + \Ahm{N}\left(\vb{\hat{u}}_{N}^{m, *}\right)\right],
-        \\
+        \\[2mm]
         \vb{b}_{N}^{m, n+1} &= \vb{F}_{\vb{\hat{u}}_{N}}^{m,n} + \dt \vb{F}_{g,N}^{m, n+1}.
     \end{align}
 \end{subequations}

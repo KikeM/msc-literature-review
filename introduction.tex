@@ -57,10 +57,10 @@
         $N_h$ & number of finite element degrees of freedom \\ 
         $N$ & number of reduced basis degrees of freedom \\ 
         $V_h$ & space of Lagrangian functions\\ 
-        $V_N$ & space of solution modes\\ 
-        $\varphi_i$ & Lagrangian finite element function \\ 
-        $\psi_i$ & solution modes \\
-        $A_{h,q}$ & algebraic operator modes \\ 
+        $V_N$ & space of RB solution modes\\ 
+        $\varphi_i$ & Lagrangian finite element basis function \\ 
+        $\psi_i$ & RB solution modes \\
+        $A_{h,q}$ & algebraic operator modes (collateral basis)\\ 
     \end{tabular}
 \end{table}
 
@@ -121,7 +121,7 @@ numerical grid, as shown in Figure~\ref{fig:jacobianTransformation}.
     \caption{Numerical fixed grid to the left, physical moving mesh to the right.
     The Jacobian determinant establishes the connection between 
     the evalaution of an integral over the red square.
-    Figure from \cite{jacobianTransformation}}
+    Figure from \cite{jacobianTransformation}.}
     \label{fig:jacobianTransformation}
 \end{figure}
 

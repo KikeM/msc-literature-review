@@ -13,7 +13,7 @@ a Burgers-like nonlinear term and a moving mesh.
 We have dealt in a general way with the parametrized Dirichlet boundary conditions,
 without any assumption on the functional form.
 Two parametrized moving meshes have been introduced: 
-one with uniform stretching of the cell size,
+one with uniform stretching of the mesh element size,
 and one with local node concentration, using a Gaussian bell density function as a proxy.
 
 Our approach to the construction of the reduced order model is purely algebraic, 
@@ -28,36 +28,47 @@ no FOM operators are used during the online run.
 For the linear operators, the offline stage is carried out separately from the FOM simulation,
 so that a wider parameter range can be spanned. 
 
-Due to the linearization of the Navier-Stokes nonlinear convection term,
-a trilinear operator was present in the discretization.
+This leads to obtaining a solution for an unsteady nonlinear parabolic PDE 
+with a moving mesh skipping the Jacobian transformation.
+The approach is general, as in that it could be used for domains with fixed boundaries, 
+whose mesh nodes move inside the domain.
+
+\subsection{Nonlinear Convection MDEIM}
+Due to the velocity extrapolation in Burgers' nonlinear convection term,
+a trilinear operator is present in the FEM discretization.
 We have compared two strategies to create the MDEIM basis for this operator:
 \begin{itemize}
-    \item collecting the snapshots from the FOM simulation;
-    \item collecting the snapshots from evaluations of the operator with RB modes.
+    \item (\mbox{$u^{*}$-general}) collecting the snapshots from the FOM simulation \cite{Santo_Manzoni_2019};
+    \item (\mbox{$u^{*}$-restricted}) collecting the snapshots from evaluations of the operator with RB modes.
 \end{itemize}
-The first solution is a standard approach, but it has the following drawbacks:
-it limits the parameter range of the \mbox{N-MDEIM} to 
-the one used to identify the solution reduced basis;
-the FOM simulation might not be available if the reduced basis is identified
-from experimental data.
-Our enhancement of the trilinear MDEIM offline stage tackles these two issues,
-by uncoupling the snapshot collection from the offline simulation.
-The reduced basis modes can be used to assemble trilinear snapshots to build the collateral basis.
+The \mbox{$u^{*}$-general} strategy has the following drawbacks:
+\begin{itemize}
+    \item it limits the sampling pool of the \mbox{N-MDEIM} to 
+    the one used to identify the solution reduced basis;
+    \item the FOM operators from the simulation would not be available 
+    if the reduced basis is identified from experimental data.
+\end{itemize}
+Our enhancement of the trilinear MDEIM offline stage (\mbox{$u^{*}$-restricted})
+tackles these two issues, by uncoupling snapshots collection from the FOM simulation.
 Once the modes have been identified, and trimed to a given threshold error,
 they can be used to build the \mbox{N-MDEIM} collateral basis.
+% The reduced basis modes are used to assemble trilinear snapshots to build the collateral basis.
 
+The \mbox{$u^{*}$-restricted} strategy is not limited to Burgers' nonlinear convective term.
+It could be used with the nonlinear convective term in the Navier-Stokes equations too,
+and potentially with any trilinear form whose third argument is expressed
+in terms of a linear combination of the solutions.
+In fact, if the third argument belonged to another space (different from the solution space),
+the modes\footnote{Not necessarily obtained with a POD decomposition.} of such function space could be used to sample the operator efficiently.
+
+\subsection{RB and MDEIM Interaction Error}
 The interaction between the RB and (M)DEIM errors has been analyzed.
 Both need to be taken into account to determine the HROM error.
 Additionally, if the (M)DEIM error is higher than the one present in the RB basis,
 the certification technique by truncation will fail.
 
-All the above has allowed to solve an unsteady nonlinear parabolic PDE 
-with a moving mesh skipping the Jacobian transformation. 
-The approach is general, as in that it could be used for domains with fixed boundaries, 
-whose mesh moves on the inside.
-
 \subsection{Limitations}
-We are aware of how much we have benefited from solving our PDE in a one-dimensional domain.
+We are aware of how we have benefited from solving our PDE in a one-dimensional domain.
 Despite including a nonlinear term and a moving mesh,
 the formulation of the problem remained benign. 
 
@@ -71,16 +82,17 @@ Therefore, we saw no need to rising our degree at this level either.
 The next natural step would be to extend the methodology to higher-dimensional domains.
 The oscillating cylinder problem is a good candidate 
 to test the formulation in a more realistic setting.
-
 Most of the problem algebraic formulation would remain the same (albeit larger matrices),
 except for a difficulty which was not present in this work: 
 the calculation of the Dirichlet lifting. 
-Indeed, in this work we leveraged the advantage that the lifting could be computed analytically.
-In higher dimension, the boundary conditions need to be numerically extended to the domain,
-either via harmonic extensions
+
+In this work we have leveraged the fact that the lifting could be computed analytically.
+For higher dimensions, the boundary conditions need to be numerically extended to the domain, 
+e.g., via harmonic extensions
 \cite{formaggiaALE},
 or solving the elastodynamic equations
 \cite{1995_farhat_elasticEquations}.
+These extension problems can be expressed as HROMs too \cite{Santo_Manzoni_2019}.
 
 These are not the only challenges when the problem is dealt with in higher dimensions.
 For the creation of the Navier-Stokes ROM, the velocity field needs to be enriched

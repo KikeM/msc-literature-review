@@ -205,7 +205,7 @@ as shown by the reduction of the remaining operators.
 \begin{table}[h]
     \centering
     \caption{Basis size at each step of the nested POD strategy.
-    The operators are sorted by collateral basis final size.}
+    The operators are sorted by their collateral basis size.}
     \begin{tabular}{lccc}
         \toprule
         {} &  Time int. ($N_t = 500$) &  Param. space & $N_{\mu}$ \\
@@ -276,9 +276,9 @@ not the overall displacement.}.
 \begin{figure}[h]
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/separable/sigmas_logy.png}
     \caption{This figure is a zoom-in of Figure~\ref{fig:nlinear_disp_sep_loglog}.
-    Only the first ten singular values (basis elements) are shown.
+    Only the first ten singular values (modes) are shown.
     We can see how for the time integration step most operators 
-    are perfectly summarized with two to six basis elements.
+    are perfectly summarized with two to six modes.
     This is due to the fact that the displacement is separable in time and space;
     and only the space function is nonlinear.}
     \label{fig:nlinear_disp_sep_logy}
@@ -430,7 +430,7 @@ This is due to the following facts:
     \item The trilinear integrand contains the derivative of the trial function $u$.
 \end{itemize}
 The last fact is crucial. 
-Due to this fact, the arbitrary mesh size goes unnoticed, 
+Due to this fact, the non-uniform mesh size goes unnoticed, 
 since the derivative of the Lagrangian function gets cancelled by the integration.
 This only happens in the specific context described in the list above.
 

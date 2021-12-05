@@ -191,7 +191,7 @@ Therefore, with a slight notation abuse, one could conceptually say
 that is, the representation of any vector in the original space can be reconstructed to a point with the output POD basis, 
 and the error in the $L^2$ norm should be less or equal to \epspod.
 
-There is a relation between the prescribed tolerance error \epspod and the outcoming number of basis elements $N_{POD}$, 
+There is a relation between the prescribed tolerance error \epspod and the outcoming number of modes $N_{POD}$, 
 \begin{equation}
     N_{POD} = N_{POD}(\epspod).
 \end{equation}
@@ -244,7 +244,8 @@ when the spatial operators (bilinear or linear forms), which depend on time and 
     \label{eq:1d_rom_heat_equation_separable_form_time_param}
     A_h(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q},
 \end{equation}
-where the coefficient functions are real-valued, \mbox{$\Theta_q^a(t, \mu) \in \mathbb{R}$}, and the operator basis elements $A_{h,q}$ are parameter-independent.
+where the coefficient functions are real-valued, \mbox{$\Theta_q^a(t, \mu) \in \mathbb{R}$}, 
+and the RB operator modes $A_{h,q}$ are parameter-independent.
 
 This expansion can be used for both matrices or vectors provided the topology of the mesh does not change in time.
 If this is the case, the matrices can be transformed into vectors, and later on brought back to matrix form once any necessary operation has been carried out.
