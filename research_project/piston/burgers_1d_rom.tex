@@ -484,8 +484,7 @@ the first component of the trilinear term, the extrapolated solution,
 will always be expressed in the finite-dimensional subspace of the RB solution modes
 (as by Equation~(\ref{eq:1d_rom_burgers_rb_expansion})),
 why not use these modes to assemble the operator snapshots?
-
-The different aspect of these approaches are summarized in Table~\ref{tab:summary_trilinear_strategies}.
+Both approaches are summarized in Table~\ref{tab:summary_trilinear_strategies}.
 
 The \mbox{$u^{*}$-restricted} strategy requires a slight modification of the nested POD algorithm.
 Instead of two, we have three nested levels: 
@@ -541,7 +540,7 @@ if the RB solution modes are obtained, e.g., from experimental data.
     \toprule
                        & Op. assembly   & 1st argument          & Treewalk                                   \\ \midrule
     $u^{*}$-general    & FOM simulation & Extrapolation $u^{*}$ & Figure~\ref{fig:treewalk_sketch}           \\
-    $u^{*}$-restricted & Ind. step      & RB solution modes     & Figure~\ref{fig:treewalk_trilinear_sketch} \\ \bottomrule
+    $u^{*}$-restricted & Ind. offline step      & RB solution modes     & Figure~\ref{fig:treewalk_trilinear_sketch} \\ \bottomrule
     \end{tabular}
     \label{tab:summary_trilinear_strategies}
 \end{table}
