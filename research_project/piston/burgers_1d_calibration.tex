@@ -89,7 +89,13 @@ The discretization parameters are given in Table~\ref{tab:discretization_paramet
     \label{tab:discretization_parameters}
 \end{table}
 There are two relevant dimensionless groups for this problem, 
-presented in Table~\ref{tab:dimensionless_groups}.
+presented in Table~\ref{tab:dimensionless_groups}. 
+Dimensionless groups are useful to sample the parameter space 
+wisely, probing different dynamical scenarios rather
+than different parametrizations which actually represent the same kind of response.
+For our sampling during the offline stage (and online testing), 
+we determined that taking into consideration the piston mach $u_p$ was sufficient
+to collect physically distinct system responses.
 \begin{table}[h]
     \centering
     \caption{Relevant dimensionless groups.
@@ -147,7 +153,8 @@ to go around the need for more involved\footnote{
     since it is purely algebraic.} 
 stabilization schemes.
 A value needs to be choosen for the viscosity constant~$\varepsilon$.
-This constant should scale with the square of the mesh size, 
+For consistency with the PDE, 
+this constant should scale with the square of the mesh size, 
 \begin{equation*}
     \varepsilon \sim k \cdot (\Delta x)^2.
 \end{equation*}
@@ -187,8 +194,8 @@ reducing the extrema and changing its path on every pass.
 \subsection{BDF Convergence Rates}
 \label{sec:fom_calibration_bdf_convergence_rates}
 % \mytodo{Convergence rates in space? What would be the expected rate for P1 FE?}
-The next concept we are going to look at to check the quality of our simulation is 
-the convergence rate for the two time-integration schemes, BDF-1 and BDF-2.
+To check the quality of our simulations we examine 
+the convergence rates for the two time-integration schemes, BDF-1 and BDF-2.
 We analyze two convergence plots: the solution itself and mass preservation.
 
 For the solution, since we do not have an analytical reference, 
@@ -198,9 +205,10 @@ $\Delta t = 10^{-4}$.
 In Figure~\ref{fig:bdf_convergence_solutions} we present the convergence rates for the solution,
 where the BDF-2 scheme ($1.98 \sim 2$) decreases twice as fast as the BDF-1 scheme ($0.95 \sim 1$).
 
-For the mass defect, we do know it should tend to the analytical zero value.
+For the mass defect, we do know it should tend to zero analytically.
 In Figure~\ref{fig:bdf_convergence_mass} we give the convergence rates for the mass defect,
-where the BDF-2 scheme ($2.08 \sim 2$) decreases again twice as fast as the BDF-1 scheme ($1.24 \sim 1$).
+where the BDF-2 scheme ($2.08 \sim 2$) is seen to converge 
+twice as fast as the BDF-1 scheme ($1.24 \sim 1$).
 Hence, the BDF-2 scheme is correctly implemented.
 \begin{figure}[h]
     \centering
@@ -292,12 +300,13 @@ in Section \ref{sec:literature_review_deforming_mesh},
 a proxy to determine how affected is a discretization by a moving mesh
 is to attempt the resolution of the constant solution.
 
-This is so because if the discretization is not correctly handling the movement of the mesh,
+This is so because if the discretization is not handling the movement of the mesh correctly,
 artificial fluxes of information might be introduced. 
-Nevertheless, evidence points towards both directions regarding this test,
-succesfully integrating the constant solution seems to be a sufficient but not necessary condition for stability.
+Nevertheless, no strict conclusions can be reached with this numerical test.
+Succesfully integrating the constant solution seems 
+to be a sufficient but not a necessary condition for stability.
 
-Our scheme seems unable to reproduce correctly the constant solution.
+Our implementation seems unable to reproduce correctly the constant solution.
 This happens in a fixed and moving mesh setting (see Figure~\ref{fig:ale_effect_constant_solution}).
 Therefore, we believe it could be due to the accumulation of round-off errors, 
 as previous works have reported in the literature \cite{liu2019balancing}.
@@ -305,6 +314,8 @@ as previous works have reported in the literature \cite{liu2019balancing}.
 In a way, we are surprised that this blowing-up effect does not show up in the piston problem.
 We hint towards the fact that, in that context, the constantly changing boundary conditions
 somehow lead to balanced round-off errors, which cancel out in time.
+In the constant solution test, the boundary condition is constant,
+thus potentially preventing round-off error cancellation.
 
 Chasing to the detail this behaviour is certainly meaningful, 
 but since our reference solution (the piston) does not suffer from these effects,

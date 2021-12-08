@@ -19,7 +19,7 @@
 \label{sec:results_and_certification}
 We are now going to see the HROM in action.
 This section is divided in two conceptual blocks, 
-as shown by Table~\ref{tab:results_sections_summary}.
+summarized in Table~\ref{tab:results_sections_summary}.
 
 The first block will show HROM results with a uniform mesh stretching.
 This scenario is interesting to establish certain procedures and results,
@@ -36,7 +36,7 @@ which we discuss and clarify in Section~\ref{sec:nonhierachical_pod_bases}.
 Finally, in Section~\ref{sec:hrom_results_posteriori_error_estimation} we show 
 how to certify the HROM solution by mode truncation.
 
-To compensate for the simplicity of the bilinear operators reduction, 
+To compensate for the simplicity of the bilinear operator reductions, 
 we introduce a second block,
 where the HROM will be applied in the presence of a non-uniform mesh stretching
 (all operators then require a non-trivial number of RB operator modes). 
@@ -55,15 +55,15 @@ the improvement and limits of the $u^{*}$-restricted approach.
     to isolate effects.}
     \begin{tabular}{@{}cccc@{}}
     \toprule
-    Section                                             & Mesh Stretching              & (M)DEIM              & N-MDEIM Approach     \\ \midrule
-    \ref{sec:hrom_results_reduced_basis}                & \multirow{4}{*}{Uniform}     & No                   & -                    \\
-    \ref{sec:uniform_mdeim_errors}                      &                              & Yes                  & general / restricted \\
-    \ref{sec:nonhierachical_pod_bases}                  &                              & Yes                  & restricted           \\
-    \ref{sec:hrom_results_posteriori_error_estimation}  &                              & No                   & -                    \\
+    Mesh Stretching                                     & Section                                             & (M)DEIM              & N-MDEIM Approach     \\ \midrule
+    \multirow{4}{*}{Uniform}                            & \ref{sec:hrom_results_reduced_basis}                & No                   & -                    \\
+                                                        & \ref{sec:uniform_mdeim_errors}                      & Yes                  & general / restricted \\
+                                                        & \ref{sec:nonhierachical_pod_bases}                  & Yes                  & restricted           \\
+                                                        & \ref{sec:hrom_results_posteriori_error_estimation}  & No                   & -                    \\
     \midrule
-    \ref{sec:arbitrary_mesh_results}                    & \multirow{3}{*}{Non-Uniform} & \multirow{3}{*}{Yes} & general              \\
-    \ref{sec:certification_limits}                      &                              &                      & general              \\
-    \ref{sec:arbitrary_mesh_nmdeim_mode_evaluation}     &                              &                      & restricted           \\ 
+    \multirow{3}{*}{Non-Uniform}                        & \ref{sec:arbitrary_mesh_results}                    & \multirow{3}{*}{Yes} & general              \\
+                                                        & \ref{sec:certification_limits}                      &                      & general              \\
+                                                        & \ref{sec:arbitrary_mesh_nmdeim_mode_evaluation}     &                      & restricted           \\ 
     \bottomrule
     \end{tabular}
     \label{tab:results_sections_summary}
@@ -195,9 +195,10 @@ The flow departs from rest as the piston starts to move.
 Therefore, the first snapshots contain a nonlinearity in the sense that the flow starts to move on one side, 
 but remains still along the rest of the tube.
 
-However, for most of the time interval, this kind of nonlinearity will not be present again,
-since the flow will be in constant motion, flowing in and out of the system.
-Hence, it is an expected behaviour that for this interval the ROM is inaccurate,
+However, for most of the time interval, 
+this kind of nonlinearity is not present again,
+since the flow is in constant motion, flowing in and out of the system.
+Hence, it is an expected behaviour that for the initial interval the ROM is inaccurate,
 unless we include a sufficient number of RB solution modes.
 To fix this problem, certain techniques exist which enhance the POD basis 
 without adding excessive complexity \cite{weightedPOD}.
@@ -369,9 +370,9 @@ the approximation error is quite poor.
     \label{fig:mdeim_error_approximation}
 \end{figure}
 
-This has to do with the fact that the modes,
+This has to do with the fact that the RB solution modes,
 which form an orthogonal basis, were used to assemble the trilinear operator snapshots.
-Hence, all the POD modes contain fundamental information,
+Hence, all the result RB operator modes contain fundamental information,
 as hinted by the abrupt drop in the singular value, see Figure~\ref{fig:sigmas_decay}. 
 \begin{figure}
     \centering
@@ -391,7 +392,6 @@ We have obtained a basis that allows us to reduce the assembly of the operator,
 but it doesn't allow us to tune the error.
 We name such basis \textit{non-hierarchical}, 
 because there is no decay in its singular value spectrum.
-
 We will clarify the loss of hierarchy in Section~\ref{sec:nonhierachical_pod_bases}.
 
 \newpage
@@ -402,8 +402,8 @@ that showed up in Section~\ref{sec:us_non-hierarchical_basis}.
 After we discretized the nonlinear term we obtained a trilinear form,
 whose first argument is the velocity extrapolation.
 
-To build a basis, we obtain the snapshots from evaluations 
-of the trilinear operator with RB solution modes,
+To build a basis in the $u^{*}-restricted$ approach, 
+we obtain the snapshots from evaluations of the trilinear operator with RB solution modes,
 \begin{equation}
     \begin{split}
         \qty[\Ah{N}\left(\psi_{h}\right)]_{i,j}
@@ -430,7 +430,7 @@ which leads to the following exact expression for each of the entries of the tri
     \end{split}
     \label{eq:appendix_exact_representation_triliear_form}
 \end{equation}
-Each summand is going to take a nonzero value only when the local support of the three
+Each summand takes a nonzero value only when the local support of the three
 basis functions coincides simultaneously.
 
 % A detailed inspection of the matrix elements has not clarified our doubts.
@@ -459,7 +459,7 @@ we know that they satisfy an orthogonality condition,
 To determine if this condition is playing a role, 
 we remove the complexity of the reduced basis construction 
 (application of the POD on the solutions from the PDE);
-by using functions from a naturally orthogonal basis:
+and consider an example using functions from a naturally orthogonal basis:
 the Fourier basis.
 
 Our working hypothesis is that if the functions used to evaluate the 
@@ -473,7 +473,7 @@ We kick-off by studying the effects of attempting an SVD over a Fourier basis,
     \psi_q = \qty{\cos(2 \pi \omega_q x) \, : \, \omega_q \in \qty{1, \ldots, 3}}.
 \end{equation}
 
-We are going to carry out two experiments:
+We carry out two experiments:
 \begin{itemize}
     \item (I) Run the Fourier basis through the SVD and analyze its spectrum decay. 
     We would expect no decay, since the basis is orthogonal\footnote
@@ -686,8 +686,8 @@ The results are shown in Figures~\ref{fig:appendix_rb_nonlinear_num_1}
 and~\ref{fig:appendix_rb_nonlinear_num_3}.
 Both figures include the reconstruction error for a truncated base.
 
-We find out that in the presence of a nonlinearity it is unsufficient to use only 
-one RB solution mode. 
+We find out that in the presence of a nonlinearity, 
+it is unsufficient to use only one RB solution mode. 
 When the basis built with approach (a) is truncated, the approximation error goes up 
 to values near unity,
 leading to poor reconstruction results.
@@ -725,24 +725,23 @@ and a linear Jacobian transformation.
 
 Our first conclusion was that the POD of an orthogonal basis will produce
 another orthogonal basis, as a linear combination of the input vectors.
-
 This orthogonality is preserved under the linear transformation of the trilinear form.
 As a consequence, the construction of the collateral basis can be achieved 
 collecting snapshots with the evaluation of the trilinear form with 
 only one RB mode.
 If more RB solution modes are used to build the snapshots, 
 the POD will return a larger collateral basis,
-but one that will not have present the hierarchical property.
+but one that will not have the hierarchical property.
 That is, truncating that basis will consistently lead to poor approximation results.
 The full basis will have to be used.
 This is so because the SVD has created a linear combination of the orthogonal input snapshots.
 
-Instead, in the presence of a nonlinear function,
+In the presence of a non-uniform mesh movement,
 the reduction trick of using one RB solution mode is unsufficient.
 More RB solution modes have to be used to obtain 
 a collateral basis that appropriately spans the whole domain.
-This time, the basis will be hierarchical, 
-and will allow for error control through basis truncation.
+Then, the basis is hierarchical, 
+and allows for error control through basis truncation.
 
 If we collect snapshots of the operator evaluated with the PDE solutions,
 we couple the reduction of the RB space and the operator space.
@@ -763,14 +762,13 @@ To compute the HROM error in the preceding sections
 we required the assembly and solution of the FOM model.
 This is an undesirable fact, since if to validate our ROM solution
 we need to compute its FOM counterpart, 
-we are better off computing straightaway the FOM model 
+we are better off computing the FOM model straightaway
 (which will be more accurate by definition).
-
 Hence, we need an efficient a posteriori error estimator.
 
 \subsubsection{Sacrificial ROM}
 We use the model truncation technique.
-That is, we are going to carry with us \textit{two} ROMs,
+That is, we carry with us \textit{two} ROMs,
 with different basis sizes.
 The additional ROM is called \textit{sacrificial} ROM (SROM).
 It will be used to compute the actual error for the smaller ROM,
@@ -780,12 +778,12 @@ By doing so, we bound the SROM error.
 We assume it is smaller than the one of base ROM, since it contains more modes,
 but we cannot know how much smaller it is.
 Hence, we would bound the SROM errors by using a smaller ROM, 
-but would use the SROM to present results.
+but would use the SROM to calculate and present results.
 
-For this error estimation procedure, the question we seek answering is:
-how many more nodes needs the SROM to carry to estimate accurately the base ROM error?
+For this error estimation procedure, the question we seek to answer is:
+how many more modes does the SROM need to carry to estimate accurately the base ROM error?
 Again, the answer to this question is problem-dependent,
-but our approach to find it could be used for any other problem.
+but our approach to find it could be used for any problem.
 
 \subsubsection{Error Estimation}
 We depart from the error with respect to the FOM, which we seek to bound.
@@ -823,7 +821,7 @@ can be expressed as a sum in terms of the RB solution modes.
 Due to the hierarchical character of the RB basis, 
 $\rbV_{\hat{N}}$ contains the same columns 
 up to $N$ as $\rbV_{N}$.
-Thus, the error between ROMs can be expressed like
+Thus, the error between ROMs can be expressed as
 \begin{equation}
     \begin{split}
         \norm{\rbV_{\hat{N}} u_{\hat{N}} - \rbV_{N} u_{N}} 
@@ -839,7 +837,8 @@ The difference $(u^{\hat{N}}_{j} - u^{N}_{j})$ between ROM coefficients is relat
 since it represents the difference between the two coefficients associated to the same mode.
 If they were notably different, 
 it would mean that the dynamics between the original ROM and the sacrificial one are different.
-Since the RB solution basis is hierarchical, this effect will not happen for sufficiently well resolved ROMs: 
+Since the RB solution basis is hierarchical, 
+this will not be the case for sufficiently well resolved ROMs: 
 adding an additional mode should only refine the solution, 
 not change drastically how the previous modes are scaled.
 They are not strictly the same because the ROM matrix changes if more modes are added to the basis,
@@ -847,8 +846,9 @@ but again, it does so in a way that dynamics are preserved.
 
 In Figure~\ref{fig:estimator_accuracy_timewise} we show in the behaviour of the error estimator 
 for each time step.
-In Figure~\ref{fig:estimator_accuracy} we present how close is the estimator to the actual error,
-both aggregated in the time direction.
+In Figure~\ref{fig:estimator_accuracy} 
+we present how close the estimator is to the actual error,
+where both are aggregated in the time direction.
 We have computed the estimator for~\mbox{$\Delta N = 1, 5$} and~$10$ additional modes.
 Then, we compute \textit{estimator accuracy}, how far it is from the actual ROM error,
 aggregated for all time steps, 
@@ -857,8 +857,9 @@ aggregated for all time steps,
     \text{Estimator Accuracy} = \norm{e_t - \tilde{e}_t} 
 \end{equation}
 We conclude that it seems to be better to carry more than one mode.
-Nevertheless, if it is going to become too costly to compute all these additional modes,
-one extra mode could do the job fairly well too, provided that the base ROM is well resolved.
+Nevertheless, if to compute all these additional modes becomes too costly,
+one extra mode will produce a valid estimator, provided that the base ROM is well resolved.
+Later on in Section~\ref{sec:certification_limits} we explore the limits of this certification technique.
 
 \newpage
 \begin{figure}[h]
@@ -875,8 +876,6 @@ one extra mode could do the job fairly well too, provided that the base ROM is w
     We see how it can become more effective to carry more additional modes than rather just one.}
     \label{fig:estimator_accuracy}
 \end{figure}
-
-
 
 \clearpage
 \subsection{Results for Non-Uniform Mesh Stretching}
@@ -915,9 +914,10 @@ By richer basis we intend one that is likely to work better during the online st
 for it has potentially a higher generalization degree.
 
 A possible scenario where the split between the assembly and snapshot-collection steps
-could not be feasible would be one where the displacement had to track the solution of the PDE.
-In that case we have no alternative than to collect 
-\textit{all} the snapshots (operators and solution) from FEM simulations.
+is not feasible is one where the displacement had to track the solution of the PDE,
+e.g. in fluid-structure interaction.
+In that case we have no alternative but to collect 
+\textit{all} the snapshots (operators and solution) from FOM simulations.
 % knowing that the reduction will deal with both effects simultaneously. 
 
 % Within the operators which do not depend on the solution,
@@ -981,14 +981,17 @@ That is why in time it is simple to reduce the operator,
 but not so much across the geometrical parameter space.
 When we were dealing with a uniform deformation of the mesh,
 since the stretching parameter $\delta$ is present linearly,
-the piston oscillation could be captured by sampling one parametrization,
-two at most\footnote{The oscillating frequency $\omega$ is inside a sinusoidal function,
-but this was only relevant for the mesh velocity, 
-not the overall displacement.}.
+the piston oscillation can be captured by sampling one parametrization,
+two\footnote
+{
+    The oscillating frequency $\omega$ is inside a sinusoidal function,
+    but this was only relevant for the mesh velocity, 
+    not the overall displacement.
+} at most.
 
 \subsubsection{Operators Error Decay}
 Now that we have multiple operators with a non-trivial basis, 
-we have to tune simultaneously all of their errors.
+we have to tune all of their errors simultaneously.
 We plot in Figure~\ref{fig:nlinear_disp_operators_error_decay}
 the error decay for each operator as a function of the basis percentile size.
 The offline and online sampling pools are shown in
@@ -1055,7 +1058,7 @@ We already saw in the heatmap from Figure~\ref{fig:nonlinear_error_decay_heatmap
 in Section~\ref{sec:reduced_basis_mdeim_error_interaction}
 how the RB and MDEIM approximation errors could 
 set a lower bound to the HROM error.
-Now, we are going to further show how this interaction can make 
+We show how this interaction can make 
 the HROM certification by truncation fail.
 \begin{table}[h]
     \centering
@@ -1085,12 +1088,13 @@ The online parametrization is given in Table~\ref{tab:parameters_online_arbitrar
 We want to determine the error estimator behaviour when 
 the RB solution approximation error is smaller or greater than the (M)DEIM error.
 
-The conclusion of the experiments is that if the RB solution error is smaller than the (M)DEIM error,
+The conclusion of the experiments is that if the RB solution error 
+is smaller than the (M)DEIM error,
 the HROM error is saturated by the (M)DEIM errors;
 and hence the model truncation technique cannot be used to certify the HROM results,
 because both HROMs produce the same result.
-When the RB solution error is above the (M)DEIM error, the trucation technique 
-will produce effective error estimations.
+When the RB solution error is greater than the (M)DEIM error, 
+the trucation technique will produce effective error estimations.
 
 \begin{table}[h]
     \centering
@@ -1138,7 +1142,8 @@ will produce effective error estimations.
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/truncation_error/no_deim/error_estimation_rom_25_srom_30_0.png}
     \caption{ROM vs. FOM approximation error, no (M)DEIM.
     The FOM operators are assembled and projected for each time step.
-    The certification-by-truncation procedure is accurate, with the estimator matching the ROM error.}
+    The certification-by-truncation procedure is accurate, 
+    with the estimator matching the ROM error.}
     \label{fig:nlinear_disp_no_deim_errors_below_threshold}
 \end{figure}
 
@@ -1147,9 +1152,11 @@ will produce effective error estimations.
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/truncation_error/deim/error_estimation_rom_15_srom_25_0.png}
     \caption{ROM vs. FOM approximation error, (M)DEIM is active.
     The approximation error for all operators is $10^{-6}$.
-    The error of the SROM has increased, making it closer to the ROM.
-    But since it remains below it, 
-    the certification-by-truncation procedure is still perfectly.}
+    The error of the SROM has increased, but it remains smaller than the ROM error.
+    Hence, the certification-by-truncation procedure produces a valid estimator.
+    % (although not as sharp as when no (M)DEIM is activated, 
+    % see Figure~\ref{fig:nlinear_disp_no_deim_errors_below_threshold}).
+    }
     \label{fig:nlinear_disp_deim_errors_above_threshold}
 \end{figure}
 

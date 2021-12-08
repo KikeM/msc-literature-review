@@ -5,13 +5,17 @@
 
 \section{Determination of Piston Movement Law}
 \label{sec:appendix_piston_movement_law}
-We are going to impose the movement of the piston, 
+We impose the movement of the piston, 
 so we need to make sure we do so in a physically meaningful way.
-This appendix is born after making the mistake of believing that any sinusoidal function would do the job.
+This appendix is born after making the mistake 
+of believing that any sinusoidal function would do the job.
 Since our flow will depart from rest, 
-we need to set the piston motion so that for the initial instant the piston will depart from rest too.
+we need to set the piston motion 
+so that at the initial instant the piston also
+starts its movement from rest.
 
-To derive the piston movement, we depart from a force defined by the elemental harmonic functions,
+To derive the piston movement law, 
+we depart from a force defined by the elemental harmonic functions,
 \begin{subequations}
 \begin{align}
         A \cos(\omega t) + B \sin(\omega t) &= m \ddot{x}(t), 
@@ -31,11 +35,13 @@ we arrive to an incongruency,
     - \frac{B}{m \omega} + C_1 = 0 \rightarrow C_1 = \frac{B}{m \omega}.
 \end{equation}
 If we were to integrate in time again, 
-due to the presence of constant $C_1$, 
-a linear term proportional to $\sim t$ will show up.
-This makes no sense, given that we departed from two linear harmonic functions, 
-which introduce and remove energy with fixed frequency and amount from the system. 
-Hence a harmonic movement was expected, not one linearly changing in time.
+due to the presence of the constant $C_1$, 
+a linear term proportional to $\sim t$ would show up.
+
+This is not the physical result we expected, 
+given the fact that we departed from two linear harmonic functions
+(which introduce and remove energy with fixed frequency and amount from the system). 
+Hence a harmonic movement was expected, not one changing linearly in time.
 
 This conflictive result comes from 
 the sinusoidal term in the definition of the force moving the piston.

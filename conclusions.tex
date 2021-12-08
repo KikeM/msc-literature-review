@@ -27,7 +27,7 @@ The methodology is purely algebraic,
 with a non-intrusive property that should allow its implementation on existing solvers.
 We have obtained a reduced basis to carry out the Galerkin projection;
 and a collateral basis for each of the algebraic operators (vectors and matrices),
-to approximate their projection unto the reduced space 
+to approximate their projection onto the reduced space 
 without explicitly assembling and projecting the original FOM operator.
 Building the collateral basis increases the cost of the offline stage,
 but it allows a perfect offline-online split:
@@ -83,22 +83,21 @@ Otherwise, the certification by truncation technique will fail.
 
 \subsection{Limitations and Future Work}
 We are aware of how we have benefited from solving our PDE in a one-dimensional domain.
-Despite including a nonlinear term and a moving mesh,
+Despite the presence of a nonlinear term and a moving mesh,
 the formulation of the problem remained benign. 
 
 Nevertheless, our whole procedure would scale switfly to higher dimensions.
 We have restricted ourselves to $\mathbb{P}1$ finite elements.
 Although for one-dimensional domains scaling to higher order polynomials does not
 raise dimensionality issues, for actual three-dimensional domains it would.
-Therefore, we saw no need to rising our degree at this level either.
+Therefore, we saw no need to rising our degree at this point.
 
-The next natural step would be to extend the methodology to higher-dimensional domains.
+% The next natural step would be to extend the methodology to higher-dimensional domains.
 The oscillating cylinder problem is a good candidate 
 to test the formulation in a more realistic setting.
 Most of the problem algebraic formulation would remain the same (albeit larger matrices),
 except for a difficulty which was not present in this work: 
 the calculation of the Dirichlet lifting. 
-
 In this work we have leveraged the fact that the lifting could be computed analytically.
 For higher dimensions, the boundary conditions need to be numerically extended to the domain, 
 e.g., via harmonic extensions
@@ -110,7 +109,7 @@ These extension problems can be expressed as HROMs too \cite{Santo_Manzoni_2019}
 These are not the only challenges when the problem is dealt with in higher dimensions.
 For the creation of the Navier-Stokes ROM, the velocity field needs to be enriched
 \cite{supremizers},
-so that the inf-sup condition is satisfied at the ROM level too.
+so that the inf-sup condition is also satisfied at the ROM level.
 
 \newpage
 \subsection*{Funding}
