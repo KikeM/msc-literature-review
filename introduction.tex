@@ -120,7 +120,7 @@ numerical grid, as shown in Figure~\ref{fig:jacobianTransformation}.
     \includegraphics[width=\columnwidth]{research_project/piston/figures/Jacobian_determinant_and_distortion.png}
     \caption{Numerical fixed grid to the left, physical moving mesh to the right.
     The Jacobian determinant establishes the connection between 
-    the evalaution of an integral over the red square.
+    the evaluation of an integral over the square (red) in each domain (blue).
     Figure from \cite{jacobianTransformation}.}
     \label{fig:jacobianTransformation}
 \end{figure}
@@ -153,17 +153,22 @@ for in the context of finite elements, ROMs are often built as a system with the
 as the departing full order model (FOM),
 albeit with smaller matrices and vectors. 
 It might even be the case that we cannot completely uncouple the ROM from the FOM, 
-if the problem is complex enough, or that we need satellite ROMs to compute the Jacobian matrix efficiently.
+if the problem is complex enough, or that we need satellite\footnote
+{
+    If the Jacobian is derived from a PDE, 
+    this would be an additional ROM with its corresponding reduced basis to 
+    enhance computation times.
+} ROMs to compute the Jacobian matrix efficiently.
 
 Hence, to avoid all of the previous, 
-we are going to track down a formulation which allows us to remain in the physical domain, 
+we are going to develop a ROM formulation which allows us to remain in the physical domain, 
 whilst maintaining a perfect \textit{offline-online} decomposition,
-making our reduction scheme reach the maximum of its efficiency capacities.
+allowing our reduction scheme to reach its maximum efficiency.
 
 \subsubsection{Document Layout}
 The layout of the document is as follows:
 \begin{itemize}
-    \item in Section~\ref{sec:fom_definition} we define the Full Order Model, that is, 
+    \item in Section~\ref{sec:fom_definition} we define the Full Order Model (FOM), that is, 
     the model PDE and its boundary conditions, 
     mesh deformation and the associated Arbitrary Lagrangian Eulerian (ALE) formulation
     in the physical domain,
@@ -171,7 +176,9 @@ The layout of the document is as follows:
     \item in Section~\ref{sec:rom_definition} we explain the details of the reduction scheme, 
     along with the system approximation technique (M)DEIM;
     \item in Section~\ref{sec:fom_calibration} we analyze the FOM discretization, 
-    and show convergence figures and solutions for the moving piston for different parametrizations;
+    and show convergence figures 
+    % and solutions for the moving piston for different parametrizations
+    ;
     \item finally, in Section~\ref{sec:results_and_certification} we present reduction results
     and certify the reduction scheme with an efficient a posteriori error estimators obtained via model truncation.
 \end{itemize}

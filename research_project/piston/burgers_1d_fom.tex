@@ -15,19 +15,22 @@
 
 \section{One-Dimensional Gas Dynamics}
 \label{sec:fom_definition}
-The full order model for the parametrized one-dimensional piston problem is derived.
-
-
+The full order model for the parametrized one-dimensional 
+piston problem is derived here.
 We depart from the one-dimensional, compressible, and isentropic \mbox{Navier-Stokes} equations 
 to end up with a nonlinear Burgers-like equation.
-Therefore, this problem contains all the necessary ingredients to show how the ROM behaves 
+Therefore, this problem contains all the necessary ingredients to show how a ROM behaves 
 in the presence of a nonlinear term within a moving domain.
 
-The model will be derived in the continuous, semi-discrete and fully discrete contexts for a generic parametrization and forcing term.
-We shall use the Galerkin projection principle to find a weak form, which we later discretize using the Finite Element Method. 
+The model will be derived in the continuous, semi-discrete and fully discrete contexts 
+for a generic parametrization and forcing term.
+We shall use the Galerkin projection principle to find a weak form, 
+which we later discretize using the finite element method (FEM). 
 
-We define the vector $\vec{\mu} \in \mathcal{P}$ to collect all the parameters present in the formulation.
-Parameters will be present in the PDE, in the boundary conditions, or in the geometrical definition of the domain. 
+We define the vector $\vec{\mu} \in \mathcal{P}$ to collect 
+all the parameters present in the formulation.
+Parameters will be present in the PDE, in the boundary conditions, 
+or in the geometrical definition of the domain. 
 
 We consider a problem with a deforming domain in time, whose movement is known and 
 is thus not part of the solution:
@@ -41,22 +44,22 @@ The piston movement $L(t)$ is a real-valued smooth sinusoidal function,
 \begin{equation}
     L(t) = L_0 \left[1 - \delta \left(1 - \cos \left(\omega t\right)\right)\right],
 \end{equation}
-where $\omega$ is the frequency at which it oscillates, 
-and $\delta \ll L_0$ is a scale variable to adjust how much it is displaced from its original position. 
+where~$\omega$ is the frequency at which it oscillates, 
+and \mbox{$\delta \ll L_0$} is a scale variable to adjust how much it is displaced from its original position. 
 A sketch is given in Figure~\ref{fig:piston}.
 The length $L_0$ is defined to keep physical dimensions sound, 
 but it will be fixed to $L_0=1$ for the remainder of the work.
-See Appendix~\ref{sec:appendix_piston_movement_law} for the derivation of this function.
+See Appendix~\ref{sec:appendix_piston_movement_law} 
+for the derivation of this movement law.
 \begin{figure}[h]
-    \includegraphics[width=1.0\columnwidth]{research_project/piston/figures/piston.pdf}
+    \includegraphics[width=1.05\columnwidth]{research_project/piston/figures/piston.pdf}
     \caption{Piston sketch. The flow departs from rest to the left of the piston.
     Outflow (inflow) is represented by a negative (positive) velocity value.}
     \label{fig:piston}
 \end{figure}
 
-To derive the equations of motion, 
-we follow and adapt to our geometry the derivations given in \cite{nonlinearDiffusiveWaves}. 
-We depart from the conservation of mass and momentum, and the isentropic relation between pressure and density,
+We depart from the conservation of mass and momentum, 
+and the isentropic relation between pressure and density,
 \begin{subequations}
 \begin{align}
     \pdv{\rho}{t} + u \pdv{\rho}{x} + \rho \pdv{u}{x} &= 0, \\ 
@@ -68,7 +71,7 @@ Body forces and viscosity have been neglected for the sake of simplicity\footnot
 A difficulty we find in this system for the piston application is the determination of the boundary condition for density at the piston location.
 Ideally, we only want to solve an equation for the velocity, for which boundary conditions are easy to set.
 
-To do so, we take the following steps:
+To do so, we follow the steps given in \cite{nonlinearDiffusiveWaves}:
 \begin{enumerate}
     \item Remove the pressure gradient through the isentropic relation. 
     \item Relate velocity~$u$ to density~$\rho$ explicitly. %with a necessary compatibility condition.
@@ -137,10 +140,11 @@ which is the constant solution, valid but uninteresting, or
 \begin{equation}
     \frac{a^2}{\rho \mathtt{V}'} - \rho \mathtt{V}' = 0 \rightarrow \mathtt{V}' = \pm \frac{a}{\rho}.
 \end{equation}
-The $\pm$ signs come up because there are two travelling waves, one to each side of the domain.
+The $\pm$ signs come up because there are two travelling waves, 
+each directed to one side of the domain.
 Since our piston is located at the right boundary of the domain, 
 we choose the $-$ sign so that waves propagate left.
-We are then dealing with an anechoic left boundary.
+We thus imply an anechoic left boundary.
 We can integrate~$\mathtt{V}'$ with respect to~$\rho$ to obtain a relation between the flow velocity~$u$ and the speed of sound~$a$:
 \begin{equation}
     \mathtt{V} = - \int_{\rho_0}^{\rho} \frac{a}{\rho} d\rho 
@@ -524,8 +528,9 @@ as a function of the reference mesh size and nodes position.
 If the function $\mathcal{F}$ was set to zero, 
 we recover the uniform stretching derived in Section~\ref{sec:ale_uniform_stretching}.
 
-\subsubsection{Time-Derivative in the Reference Domain}
-Since the equations are going to be solved in the physical domain, we need to adjust the time derivative in the physical domain 
+\subsubsection{Time Derivative in the Reference Domain}
+Since the equations are to be solved in the physical domain, 
+we need to adjust the time derivative in the physical domain 
 $\left(\left.\frac{\partial u}{\partial t}\right|_{x}\right)$, 
 so that it takes into account the movement of the mesh nodes.
 By application of the chain rule we get
@@ -613,7 +618,8 @@ to take into account the fact that the velocity variable is now scaled with the 
         \left(1 - \frac{\gamma-1}{2}u(x,t)\right)^{\frac{2}{\gamma-1}} 
         \dd x, 
         \\
-        \frac{MD(t)}{\rho_0 a_0} &= \frac{1}{a_0}I'(t) - u(0,t) \left(1 - \frac{\gamma-1}{2}u(0,t)\right)^{\frac{2}{\gamma-1}}.
+        \frac{MD(t)}{\rho_0 a_0} &= \frac{1}{a_0}I'(t) - u(0,t) 
+        \left(1 - \frac{\gamma-1}{2}u(0,t)\right)^{\frac{2}{\gamma-1}}.
     \end{align}    
 \end{subequations}
 
@@ -754,7 +760,8 @@ which will become apparent when the reduction scheme is presented,
 it is preferable to work with a homogeneous problem in the Dirichlet boundary conditions.
 
 To obtain so, we introduce a \emph{lifting} $g(x,t)$ of the Dirichlet boundary conditions.
-We express the solution of our problem like the linear combination of the solution of the homogeneous problem and the lifting function:
+We express the solution of our problem like the linear combination of 
+the solution of the homogeneous problem and the lifting function:
 \begin{equation}
     \label{eq:1d_fom_homogeneous_plus_lifting}
     u(x,t) = \hat{u}(x,t) + g(x,t).
@@ -780,7 +787,7 @@ and can be done using a linear interpolation of the boundary values,
 % The smoothness condition is reached thanks to the linearity and smoothness of the interpolation functions.
 In higher dimensional settings a similar procedure is used. 
 However, due to the arbitrary shape the domain can take, 
-the construction of the lifting function becomes more laborious.
+the construction of the lifting function can be more laborious.
 
 Introducing the lifting breakdown \eqref{eq:1d_fom_homogeneous_plus_lifting} into the weak formulation \eqref{eq:1d_fom_weak_formulation},
 we find additional forcing terms and PDE terms, due to the cross-product between the function and its derivative, 
@@ -822,7 +829,6 @@ At this point, we have defined the continuous problem for the one-dimensional pi
 \subsection{Semi-Discrete Formulation: Time Discretization}
 The continuous solution changes in two dimensions: space and time.
 Eventually, we need to discretize them both, but we can do so separately.
-
 We choose to first discretize in time. 
 
 % There is a complete body of knowledge devoted to this step of the numerical scheme.
@@ -1244,15 +1250,14 @@ If we collect terms and factor out the unknowns, we get a compact linear system 
     \end{align}
 \end{subequations}
 
-\subsubsection{Wind-Up for the Full Order Problem}
-With all of the above, the finite element problem for the one-dimensional piston problem is defined.
-
+\subsubsection{Summary}
 The problem has been explained within three levels of abstraction: 
 continuous with strong and weak formulations, 
-semi-discrete in time, 
-and fully discretized.
-To approximate the nonlinear convective term, the convective velocity has been extrapolated with an order two scheme, 
-to obtain a sufficiently stable algebraic system.
+semi-discrete in time with the approximation of the time derivative, 
+and fully discretized with the additional FEM representation of the solution.
+To discretize the nonlinear term, 
+the convective velocity has been extrapolated with a second order scheme.
+% to obtain a sufficiently stable algebraic system.
 
 % \mytodo{Add text: how does the semi-discretization play with the stability of the system?
 % What about the convergence rates?} 

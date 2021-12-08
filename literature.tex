@@ -64,7 +64,33 @@ it had to be one-dimensional (to ease implementation),
 contain non-trivial terms (to make the problem interesting),
 and be physically sound (to validate the outcome).
 
-The first two constraints are satisfied by an advection equation with 
+% Nevertheless, most of the mentioned solutions are either asymptotic,
+% computed in a moving frame of reference\footnote{
+%     It is important to make the distinction between a \textit{moving domain}
+%     and a \textit{moving coordinate system}.
+%     The former is deformed around the same neighborhood in space,
+%     whilst the latter is displacing itself across space.
+% }, 
+% or defined for an infinite or fixed domain.
+% Additionally, to obtain results integral formulations have to be solved 
+% (the simple solutions are only defined for fixed domains).
+% Hence, it could become cumbersome to attempt to replicate
+% the results found in these papers.
+
+Luckily, removing viscosity and body forces (which are strong assumptions), 
+and making use of the isentropic condition,
+we can transform the Navier-Stokes equations 
+into a one-dimensional equation \cite{1860_Earnshow, nonlinearDiffusiveWaves}
+in terms of velocity.
+At the discretization level, 
+we can add an artificial viscosity term,
+to make sure the solution remains stable \cite{2011_artificialViscosityPOD}.
+
+This result is a simple yet complete PDE to model the movement of a piston, 
+which can be validated with derived computations such as mass conservation,
+and whose solution makes intuitively sense when plotted.
+
+The equation resembles an advection equation with 
 a nonlinear Burgers-like convective term.
 The Burgers equation showed up in the gas dynamics literature several decades ago
 \cite{BURGERS1948171,
@@ -74,32 +100,6 @@ moran_shen_1966,
 for which under controlled conditions 
 a range of implicit analytical solutions exist \cite{1972_TableSolutionsBurgers},
 including for moving domains \cite{2000_burgersMovingDomainAnalytical}.
-
-Nevertheless, most of the mentioned solutions are either asymptotic,
-computed in a moving frame of reference\footnote{
-    It is important to make the distinction between a \textit{moving domain}
-    and a \textit{moving coordinate system}.
-    The former is deformed around the same neighborhood in space,
-    whilst the latter is displacing itself across space.
-}, 
-or defined for an infinite or fixed domain.
-Additionally, to obtain results integral formulations have to be solved 
-(the simple solutions are only defined for fixed domains).
-Hence, it could become cumbersome to attempt to replicate
-the results found in these papers.
-
-Luckily, removing viscosity and body forces (which are strong assumptions), 
-and making use of the isentropic condition,
-we can transform the Navier-Stokes equations 
-into a one-dimensional equation \cite{1860_Earnshow, nonlinearDiffusiveWaves}
-in terms of velocity.
-At the discretization level though, 
-we will add an artificial viscosity term,
-to make sure the solution remains stable \cite{2011_artificialViscosityPOD}.
-
-This result is a simple yet complete PDE to model the movement of a piston, 
-which can be validated with derived computations such as mass conservation,
-and whose solution makes intuitively sense when plotted.
 
 Compared to modern problems with moving domains,
 the piston is quite simple in nature;
@@ -115,7 +115,7 @@ back in the days, when computational power was not so easy to access
 % Finding the right literature for the Arbitrary Lagrangian Eulerian (ALE) formulation 
 % was more difficult than expected.
 Because the piston problem is a defined in a moving domain,
-one needs to modify the departing PDE to account for the movement 
+one needs to modify the formulation to account for the movement 
 of the mesh nodes, with the introduction of a convective term 
 governed by the mesh velocity vector.
 In fact, this needs to be done even for domains with fixed boundaries, 
@@ -151,7 +151,6 @@ For reasons that will become aparent later on,
 in this thesis we need to solve the \mbox{non-conservative} weak form,
 at least to use the current formulation of the system aproximation technique which 
 we intend to use.
-
 For a complete and generic development of the subject,
 in higher dimensions and for complex problems,
 we refer the reader to 
@@ -159,7 +158,9 @@ we refer the reader to
 DONEA1982689}.
 
 Regarding the stability of the integration scheme,
-the concept of \textit{(Discrete) Geometric Conservation Law} (D-GCL) shows up 
+the concept of a 
+\textit{(Discrete) Geometric Conservation Law} (D-GCL) 
+is often mentioned
 \cite{HUGHES2000467,
 GUILLARD20001467,
 FARHAT2001669,
@@ -173,12 +174,10 @@ to guarantee some notion of stability,
 the scheme should be able to reproduce the constant solution 
 (under the appropriate boundary conditions).
 % \mytodo{Reference: GCL, what happens if the constant solution is not preserved.}
-
-This D-GCL condition can be further explored for simple problems.
 In \cite{formaggiaALE} they prove how the Implicit Euler integration scheme
 becomes conditionally stable for a linear advection-diffusion problem
 if the non-conservative weak formulation is solved.
-So in a way, the worst case scenario would be that we have to lower the time step.
+% So in a way, the worst case scenario would be that we have to lower the time step.
 
 As a final note, 
 we would like to point out that a problem with a deforming domain
@@ -224,7 +223,7 @@ Quarteroni2016,
 benner2017_book},
 including the Navier-Stokes equations 
 \cite{navierStokesReducedBasis}.
-In fact, Burgers' model has been already tackled for a fixed domain
+In fact, reduced basis for the Burgers' model have already been examined for a fixed domain
 \cite{Nguyen2009}.
 
 In the following,
@@ -241,7 +240,7 @@ there must a sampling strategy in the parameter space,
 the reduced basis must converge to the span of the solutions,
 and it must be computationally efficient.
 
-The most plain vanilla version of reduced basis is 
+The most plain version of reduced basis is 
 a collection of solutions for several parametrizations.
 However, the modes of this basis are likely to be almost linearly dependent\footnote{
     A strong assumption underlying reduced basis methods in this context
@@ -251,7 +250,7 @@ However, the modes of this basis are likely to be almost linearly dependent\foot
 and no approximation arguments have been used to obtain it.
 
 % Greedy
-So, the first step one can take is to use a greedy procedure
+A step one can take to improve such basis is to use a greedy procedure
 \cite{Buffa2012APC, Veroy2003}.
 That is, the modes of the basis are still solutions of the PDE, 
 but they are combined iteratively,
@@ -266,50 +265,60 @@ of the basis at each iteration.
 However, it has become the established method to approach steady models \cite{Haasdonk2013}.
 
 % POD-based
-The next step one can take is to rely on an external methodology
+An alternate approach is to rely on an external methodology
 to construct the basis from a collection of solution snapshots.
-We add an additional item to our mathematical toolbox,
+An example is
 the Singular Value Decomposition (SVD)
 \cite{2000_POD_as_SVD},
 which allows us to compress the span of the solution space
 efficiently with optimal convergence properties.
-This is known as the Proper Orthogonal Decomposition (POD) method
+This is also known as the Proper\footnote
+{
+    (adj.) Fitting or right for a particular situation; suitable.
+} Orthogonal Decomposition (POD)
 \cite{Aubry1991}.
 It has been widely used in many contexts 
 to obtain a basis from a collection of solutions automatically,
-or to analyze the underlying dynamics of a flow field \cite{1987_turbulenceDynamicsCoherentStructures_Sirovich}.
+or to analyze the underlying dynamics of a flow field 
+\cite{1987_turbulenceDynamicsCoherentStructures_Sirovich}.
 
-It has a wider application than the greedy method,
-since we could use experimental data too, 
+The POD has also wider application than the greedy method,
+since we could use experimental data, 
 to obtain a reduced basis which we then use to solve a numerical model efficiently.
 Of particular interest is the application made in
 \cite{2003_podBasedReducedOrderModelsWithDeformingGrids_anttonen},
-where they used the POD over an analytical solution 
+where they used the POD of analytical solutions 
 with and without a deforming grid to split effects and analyze convergence rates.
 
-Finally, for unsteady problems one may have the combination of both, 
+Finally, for unsteady problems, one may have the combination of both;
 the \mbox{POD-Greedy} method
 \cite{Haasdonk2008, 
 Haasdonk2013}.
 This method uses the automatic compression feature provided by the POD in the time dimension,
 and the greedy approach to parameter selection in the parameter space.
-
 For our work, we will use a physics-driven approach for the sampling strategy in the parameter space,
 and a nested POD strategy for the time and parameter spaces \cite{Santo_Manzoni_2019}.
 
 Finally, some words need to be said about the handling of 
 the inhomogeneous boundary conditions that we will encounter.
-It was difficult to find specific literature about this aspect,
-for most papers and books deal with either homogeneous boundary conditions, 
-scalar-multiplicative shapes 
+% It was difficult to find specific literature about this aspect,
+% for most papers and books deal with either homogeneous boundary conditions, 
+% or do not dedicate many lines to this implementation detail.
+According to their functional expression, 
+parametrized essential boundary conditions (Dirichlet) 
+can sometimes be applied directly into the algebraic system
+without losing reduction capacities,
+as it is the case with scalar-multiplicative conditions,
 \cite{separableBoundaryCondition,
-separableBoundaryCondition_Two},
-or do not dedicate many lines to this implementation detail.
+separableBoundaryCondition_Two}.
+However, for arbitrary parametrized essential boundary conditions,
+setting them directly into the algebraic operators is not a possibility.
 
-Neumann boundary conditions do not pose a problem, 
-since they are naturally encoded in the weak form.
-So a suitable approach is to transfer the essential boundary conditions to the weak form too,
-via a lifting technique
+Neumann boundary conditions are naturally encoded in the weak form,
+so they do not pose a problem.
+Therefore, a suitable approach with essential boundary conditions
+is to transfer them to the weak form too,
+with a lifting technique
 \cite{2007_ReducedOrderModelingTimeDependentPDEsMultipleParametersBoundaryData_gunzburger}.
 Hence, the target model problem that we reduce 
 becomes one with homogeneous boundary conditions,

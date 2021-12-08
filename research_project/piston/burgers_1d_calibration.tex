@@ -14,10 +14,12 @@
 
 \section{FOM Calibration}
 \label{sec:fom_calibration}
-This section is devoted to present the full order model.
+This section is devoted to present the full order model discretization details.
 Certain parameters need to be defined,
 along with consistency checks to validate the simulation.
 
+Sections~\ref{sec:parameter_space_discretization} and \ref{sec:fom_response}
+define the parametrization space and show some results.
 In Section~\ref{sec:fom_calibration_artificial_viscosity} we show the effects of artificial viscosity,
 in Section~\ref{sec:fom_calibration_bdf_convergence_rates} we explore the differences 
 between BDF-1 and BDF-2 time integration schemes.
@@ -31,6 +33,7 @@ between BDF-1 and BDF-2 time integration schemes.
 % and so we explain how to sample within the feasible range.
 
 \subsection{Parameter Space and Discretization}
+\label{sec:parameter_space_discretization}
 To identify the reduced and collateral bases,
 we randomly sample the parameter space.
 We set the range for each parameter in Table~\ref{tab:parameter_range}.
@@ -39,8 +42,8 @@ The discretization parameters are given in Table~\ref{tab:discretization_paramet
 \begin{table}[h]
     \centering
     \caption{Parameter range for random sampling.
-    We recall that mesh parametrizations which produce an invalid mesh
-    will be discarded at runtime.}
+    Note that mesh parametrizations which produce an invalid mesh
+    are discarded at runtime.}
     \begin{tabular}{ccc}
     \toprule
         Variable   & Min. & Max. \\ 
@@ -85,10 +88,12 @@ The discretization parameters are given in Table~\ref{tab:discretization_paramet
     \end{tabular}
     \label{tab:discretization_parameters}
 \end{table}
-There are two relevant dimensionless groups for this problem, presented in Table~\ref{tab:dimensionless_groups}.
+There are two relevant dimensionless groups for this problem, 
+presented in Table~\ref{tab:dimensionless_groups}.
 \begin{table}[h]
     \centering
-    \caption{Relevant dimensionless groups.}
+    \caption{Relevant dimensionless groups.
+    Note that $\delta$ is a dimensionless scale parameter.}
     \begin{tabular}{cccc}
     \toprule
         Name                               & Expression                      & Min. & Max. \\ 
@@ -99,6 +104,39 @@ There are two relevant dimensionless groups for this problem, presented in Table
     \end{tabular}
     \label{tab:dimensionless_groups}
 \end{table}
+
+\subsection{FOM Response to Piston Motion}
+\label{sec:fom_response}
+We present the response of the system for a piston mach value $u_p = 0.37$.
+The dimensionless velocity profile is shown 
+in Figure~\ref{fig:fom_probes};
+the mass conservation check is examined 
+in Figure~\ref{fig:fom_probes_mass_conservation}.
+The PDE was derived using the mass conservation principle,
+but the mass conservation integral equation has not been 
+used in the discretization of the weak form.
+Hence it is a good independent quality check of our simulation results.
+
+\begin{figure}[h]
+    \includegraphics[width=\columnwidth]{research_project/piston/figures/fom_response/probes_online_fom_0.png}
+    \caption{Flow response (blue) to piston motion (dashed).
+    (Top) Piston outlet, artificial boundary condition.
+    (Bottom) Piston mid-length.
+    A weak shock wave is formed due to Burgers' nonlinear convection.}
+    \label{fig:fom_probes}
+\end{figure}
+
+\begin{figure}[h]
+    \includegraphics[width=\columnwidth]{research_project/piston/figures/fom_response/mass_conservation_online_fom_0.png}
+    \caption{Mass conservation check. 
+    (Top) The two resulting summands from the mass conservation integral equation:
+    density integral derivative in time and outlet boundary mass flow.
+    The weak shock wave is also present in the mass conservation. 
+    (Bottom) Numerical value of the mass conservation principle, coined mass defect $MD$.
+    The mean value (red line) is the corresponding y-axis value 
+    in the convergence plot in Figure~\ref{fig:bdf_convergence_mass}.}
+    \label{fig:fom_probes_mass_conservation}
+\end{figure}
 
 \subsection{Artificial Viscosity}
 \label{sec:fom_calibration_artificial_viscosity}
@@ -111,11 +149,10 @@ stabilization schemes.
 A value needs to be choosen for the viscosity constant~$\varepsilon$.
 This constant should scale with the square of the mesh size, 
 \begin{equation*}
-    \varepsilon \sim k (\Delta x)^2.
+    \varepsilon \sim k \cdot (\Delta x)^2.
 \end{equation*}
 % A parametric sweep for different viscosity values show that this value, 
 % no matter how small, was introducing measurable damping into the system.
-
 For a mesh size of $\Delta x \sim 10^{-3}$,
 the $k$-value which keeps the system stable whilst purely convective 
 (at least for our simulation time scale) is
@@ -146,6 +183,7 @@ reducing the extrema and changing its path on every pass.
 % }
 % seems to withstand such a small numerical viscosity term without incurring into round-off errors\footnote{If there were, we could always reduce the plain vanilla Laplace operator $\int \grad u \cdot \grad v \, \text{d}\Omega$ and scale it by $\varepsilon$ right before solving the system.}.
 
+\newpage
 \subsection{BDF Convergence Rates}
 \label{sec:fom_calibration_bdf_convergence_rates}
 % \mytodo{Convergence rates in space? What would be the expected rate for P1 FE?}
@@ -223,7 +261,6 @@ When it is breached,
 \end{equation}
 we discard that parametrization.
 
-\newpage
 \begin{figure}[h]
     \includegraphics[width =\columnwidth]{research_project/piston/figures/nonlinear_displacement/separable/mapping_mu_05_sigma_01_p_05_compression.png}
     \caption{Feasible mesh compression. 
@@ -248,6 +285,7 @@ we discard that parametrization.
     \label{fig:mesh_disp_expansion_unfeasible}
 \end{figure}
 
+\newpage
 \subsection{Geometric Conservation Law}
 As mentioned in the literature review regarding deforming meshes, 
 in Section \ref{sec:literature_review_deforming_mesh},
@@ -273,7 +311,6 @@ but since our reference solution (the piston) does not suffer from these effects
 we limit ourselves to report this behaviour and skip any further investigation, 
 as we believe it falls out of the scope of this work. 
 
-\newpage
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\columnwidth]{research_project/piston/figures/ale_effect/mean_fe_comparison_constant_solution.png}

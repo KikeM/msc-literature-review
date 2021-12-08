@@ -1,0 +1,67 @@
+% 1.  Justifies the need for hyperreduction, and need for its application for moving domains.
+% Reduced order models express the solution of a PDE as 
+% the linear combination of so called RB solution modes.
+% These modes have been identified with procedures which make them appropriate to capture
+% the relevant dynamics encoded in the PDE (and its boundary conditions).
+
+The algebraic system associated to RB solution modes is 
+obtained by projection of the departing discretized operators,
+assembled with conventional discretization techniques 
+(finite elements, finite volumes, etc.).
+If the RB solution basis size is small and sufficient to represent the solution,
+the resulting matrices are often smaller by several orders of magnitude.
+
+In the context of a fixed mesh, 
+the assembly and projection steps take place once and for all.
+On the contrary, if the mesh moves in time,
+these steps need to take place for every time step.
+Hence, despite the size reduction of the linear system,
+there is still a considerable overhead during its assembly.
+To overcome it, the (M)DEIM system approximation technique is introduced.
+% The (M)DEIM technique defines an ad-hoc affine decomposition for each algebraic operator.
+To use (M)DEIM, the operator is expressed as a linear combination of operator modes (collateral basis);
+whose coefficients are obtaiend from an empirical interpolation method applied over
+the evaluation of a restricted set of operator entries.
+Since an ad-hoc basis is identified for the solution and each of the algebraic operators,
+the combination of these two techniques defines an hyper reduced order model (HROM).
+
+% 2 . Summarises the method you introduced and its results (something like the second paragraph of your report's conclusions). 
+The methodology is purely algebraic, 
+with a non-intrusive property that should allow its implementation on existing solvers.
+We have obtained RB solution and operator bases;
+to approximate the operators projection unto the reduced space 
+without explicitly assembling and projecting the original FOM operator.
+The resulting HROM bases can be truncated
+to resolve for a determined error threshold with respect to the conventional model.
+Building the collateral basis increases the cost of the offline stage,
+but it allows a perfect offline-online split:
+no FOM operators are used during the online run. 
+For the operators, the offline stage is carried out separately from the FOM simulation,
+so that a wider parameter range can be spanned. 
+
+% We present a reduced order model (ROM) for a one-dimensional nonlinear gas dynamics problem:
+% the isentropic piston.
+% The main body of the PDE, 
+% the geometrical definition of the mesh nodes, 
+% and the boundary conditions are parametrized.
+% The full order model is obtained with a Galerkin finite element discretization,
+% under the Arbitrary Lagrangian Eulerian formulation (ALE).
+% To stabilize the system, an artificial viscosity term is included.
+% The nonlinear convective term is linearized with a second-order extrapolation.
+% The reduced basis to express the solution is obtained with the POD technique.
+% To overcome the explicit use of the Jacobian transformation, 
+% typical in the context of moving meshes,
+% a system approximation technique is introduced.
+% The (Matrix) Discrete Empirical Interpolation Method, (M)DEIM, allows us
+% to work with a weak form defined in the physical domain 
+% (and hence the physical weak formulation)
+% whilst maintaining an efficient assembly of the algebraic operators, 
+% despite their change with every time step.
+% Two alternative methods are presented to collect and compress the snapshots 
+% for the linearized solution-dependent convective term.
+% Each method leads to a different offline stage.
+% All in all, our approach is purely algebraic
+% and the reduced model makes no use of full order structures, 
+% thus achieving a perfect \textit{offline-online} split.
+% A concise description of the reduction procedure is provided.
+% The reduced model is certified with a posteriori error estimations obtained via model truncation.

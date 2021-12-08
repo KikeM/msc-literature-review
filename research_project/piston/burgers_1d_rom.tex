@@ -39,13 +39,15 @@ to build suitable approximations of the algebraic operators involved.
 The continuous reduced problem formulation is skipped since it will not be used. 
 % For completeness, it will be defined in the appendix along with relevant remarks.
 Therefore, we jump directly into the discrete problem.
-We recall that we are focused at reducing the problem for 
+We recall that we are focused on reducing the problem for 
 the homogeneous component $\hat{u}(x)$ of our solution, 
-that is, for the weak formulation given by the system of equations~\eqref{eq:1d_fom_weak_formulation_homogeneous}.  
+that is, for the weak formulation given by 
+the system of equations~\eqref{eq:1d_fom_weak_formulation_homogeneous}.  
 
 % -----------------------------------------------------------------------------
 \subsection{A Naive Approach}
-We have included in the title the word \emph{naive} because we are going to define the reduction problem in a very blunt way,
+We have included in the title the word \emph{naive} 
+because we will define the reduction problem in a very blunt way,
 where many ineffiencies will show up.
 We do so to motivate the operator reduction procedures we will include later on.
 
@@ -215,7 +217,7 @@ to obtain the solution $u_h(t, \mu)$ in the physical domain,
 \end{equation}
 
 % -----------------------------------------------------------------------------
-\subsubsection{Wind-Up for the Naive Reduction Scheme}
+\subsubsection{Naive Reduction Scheme: Final Remarks}
 At this point, the naive reduction scheme for the RB-ROM has been defined and explained.
 However, some aspects of it remain unattended.
 
@@ -226,9 +228,11 @@ defines which reduction method we are applying, along with their advantages and 
 The \emph{offline-online decomposition}: 
 that is, to uncouple the usage of FOM operators in as much as possible from the integration of the ROM. 
 Ideally, no FOM structures should be assembled during the online phase.
-In this naive scheme, we are clearly not meeting such requirement, since we need to assemble all the FOM operators and then project them \emph{for each time step}.
+In this naive scheme, we are clearly not meeting such requirement, 
+since we need to assemble all the FOM operators and then project them \emph{for each time step}.
 
-Hence, some additional sections need to be brought up, in order to complete our definition of the reducing scheme.
+Hence, some additional sections need to be brought up, 
+in order to complete our definition of the reduction scheme.
 We now treat the construction of the basis functions, Section~\ref{sec:1d_rom_burgers_basis_construction}; and the approximation of the algebraic operators, Section~\ref{sec:1d_rom_burgers_system_approximation_deim}.
 
 % -----------------------------------------------------------------------------
@@ -297,20 +301,20 @@ including more in the approximation will not improve significantly the approxima
 \label{sec:1d_rom_burgers_basis_construction_nested}
 % A simple procedure to leverage the compression properties of the POD function, 
 % and the nested structure of our PDE with respect to time and the parameters; 
-We are going to describe the nested POD algorithm, 
+We now describe the nested POD algorithm, 
 sketched in Figure~\ref{fig:treewalk_sketch}.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\columnwidth]{research_project/piston/figures/treewalk.pdf}
     \caption{Nested POD treewalk.
-    The parameter space is sampled, for each parameter a simulation is run,
+    For each parameter $\mu$ a simulation is run,
     and snaphsots are collected and compressed in time (red dots).
-    This provides a collateral basis for each parameter.
+    This provides a collateral basis for each value of the parameter.
     These bases are finally compressed into one, 
     which summarizes the changes in time and parameters.}
     \label{fig:treewalk_sketch}
 \end{figure}
-First, for a fixed parameter value, build a POD basis from the snapshots at different time steps,
+First, for a fixed parameter value, we build a POD basis from the snapshots at different time steps,
 \begin{align*}
     \Psi_{\mu_0} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_0), \ldots, \hat{u}_h(t^T; \mu_0)\right]\right), \\
     \Psi_{\mu_1} &= POD_{\varepsilon}\left(\left[\hat{u}_h(t^0; \mu_1), \ldots, \hat{u}_h(t^T; \mu_1)\right]\right), \\  
@@ -327,22 +331,29 @@ In the end, we obtain a basis $\Psi = [\psi_i] = \rbV$,
 which contains information for parameter variations and time evolution.
 %It has been built in a computationally efficient manner, 
 This leads to an efficient basis, in terms of storage and numerical stability
-
 Different error tolerances could be prescribed at the time and parameter compression stages
-for demanding problems.
+for demanding\footnote
+{
+    Ideally, the whole POD basis is stored and then
+    partially loaded during the online stage,
+    according to the desired ROM accuracy.
+    However, the offline stage might still be a memory-consuming one,
+    which could require triming at runtime the POD basis before storing it.
+} problems.
 
-We say this to be an automatic and out-of-the-box procedure because it does not require further developments 
+We call this an automatic and out-of-the-box procedure 
+because it does not require further developments 
 beyond the storage of the snapshots and the implementation of the POD algorithm.
 It only requires the construction of a collection of parameter values to solve for.
 This can be done with random sampling techniques, 
-or if some physical-drive knowledge is available, 
+or if some physical knowledge is available, 
 a custom selection of parameter subsets for which the solution will present strong variations 
 (leading to the identification of richer RB solution modes).
 
 Since we are using an SVD-based POD, we need to set a threshold for
 the acceptable singular values/modes.
-We set this threshold at $10^{-7}$
-after visual inspection of the resulting modes revealed
+We set this threshold at $10^{-7}$,
+since after visual inspection of the resulting modes revealed
 numerical noise beyond this figure.
 % Naturally, more involved procedures exist to create the final basis $\Psi$, 
 % but they need the capacity to evaluate how accurately or poorly 
@@ -358,8 +369,10 @@ numerical noise beyond this figure.
 \label{sec:1d_rom_burgers_system_approximation_deim}
 During the offline stage (where the FOM problem is solved), 
 we have to assemble all the discrete operators for each time step;
-during the online stage we additionally have to project them unto the reduced space too, as shown in Equations~\eqref{eq:1d_rom_linear_system_operators}.
-This projection step can keep a ROM still a costly procedure,
+during the online stage we additionally have to project them 
+onto the reduced space as well, 
+as shown in Equations~\eqref{eq:1d_rom_linear_system_operators}.
+This projection step can mean a ROM is still costly,
 if it only relies on RB solution modes to reduce the problem.
 This will be our main motivation to include a system approximation technique,
 with the goal of speeding up the construction of the operators.
@@ -449,7 +462,8 @@ In the FE context it can be obtained by integrating the weak form locally.
 
 This leads to a determined system, where each $\Theta_q^a(t, \mu)$ is unknown.
 The indices $\mathcal{I}_a$ are selected during the offline stage, 
-according to error reduction arguments of the reconstruction error,
+according to error reduction arguments of the reconstruction error
+\cite{2010_nonlinearModelReductionDeim_chaturantabut},
 \begin{equation}
     e_a(t, \mu) = \norm{A_h(t, \mu) - A_h^m(t, \mu)}.
 \end{equation}
@@ -482,8 +496,8 @@ sampled to identify the RB solution modes.
 The second approach is to recognise that in the execution of the ROM,
 the first component of the trilinear term, the extrapolated solution, 
 will always be expressed in the finite-dimensional subspace of the RB solution modes
-(as by Equation~(\ref{eq:1d_rom_burgers_rb_expansion})),
-why not use these modes to assemble the operator snapshots?
+(as by Equation~(\ref{eq:1d_rom_burgers_rb_expansion})).
+Thus, why not use these modes to assemble the operator snapshots?
 Both approaches are summarized in Table~\ref{tab:summary_trilinear_strategies}.
 
 The \mbox{$u^{*}$-restricted} strategy requires a slight modification of the nested POD algorithm.
@@ -494,7 +508,7 @@ parameters, modes and time, as sketched in Figure~\ref{fig:treewalk_trilinear_sk
     \includegraphics[width=0.8\columnwidth]{research_project/piston/figures/treewalk-trilinear.pdf}
     \caption{Nested POD treewalk for the trilinear term, 
     \mbox{$u^{*}$-restricted} strategy.
-    The parameter space is sampled, for each parameter and RB solution mode 
+    The parameter space is sampled, for each parameter value and RB solution mode 
     snaphsots are collected and compressed in time (red dots).
     This provides a collateral basis for each parameter.
     These bases are finally compressed into one, 
@@ -521,9 +535,9 @@ which is the result of compressing all parameter bases,
 \begin{equation}
     \Psi_{N_h} = POD(\qty{\Psi_{\mu_i}}^{i=N_{\mu}}).
 \end{equation}
-An advantage of this procedure is that the FOM simulation 
-might not be available, 
-if the RB solution modes are obtained, e.g., from experimental data.
+An advantage of this procedure is that it can be used when 
+the FOM simulation is not available, 
+e.g. when the RB solution modes are obtained from experimental data.
 
 \begin{table}[h]
     \centering

@@ -20,6 +20,7 @@
 \usepackage{subfiles}
 \usepackage{physics}
 \usepackage{epigraph}
+\usepackage{pdfpages}
 % \usepackage{savetrees}
 
 \usepackage{todonotes,tocloft,xpatch,hyperref}
@@ -67,6 +68,8 @@
 \newcommand{\mytodo}[1]{\todo[inline, color=green!20, inlinewidth=\columnwidth]{#1}}
 
 \begin{document}
+
+\includepdf[pages=-]{TUD_Report.pdf}
 
 \onecolumn
 
@@ -140,12 +143,10 @@ A. Manzoni, A. Quarteroni
 \tableofcontents
 
 \newpage
-\listoftodos
+\input{abstract_form_AE3c.tex}
 
+\newpage
 \subfile{foreword.tex}
-% \newpage
-% \subfile{executive.tex}
-
 
 \newpage
 \twocolumn
