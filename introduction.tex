@@ -165,7 +165,29 @@ we develop a ROM formulation which allows us to remain in the physical domain,
 whilst maintaining a perfect \textit{offline-online} decomposition,
 allowing our reduction scheme to reach its maximum efficiency.
 
-\subsubsection{Document Layout}
+
+We now frame our work within the current body of knowledge 
+with a short literature review.
+Additional references will be cited within the body of the document, 
+where their appearence is more accurate and helpful.  
+
+\subsection{Literature Review}
+\input{literature.tex}
+
+\subsection{Research Questions}
+- How can the expense of the online application be minimised? 
+[This is what is implied by your perfect online/offline split objective]
+
+- How does the type of mesh movement, 
+(e.g. uniform or non-uniform stretching ) affect the reducibility of the operator?
+
+- How does the non-linear term affect the hyperreduction?
+
+- How should a moving-domain problem be implemented to 
+ensure a general but relatively compact hyperROM? 
+[the lifting procedure and algebraic approach will be parts of the answer to this]
+
+\subsection{Document Layout}
 The layout of the document is as follows:
 \begin{itemize}
     \item in Section~\ref{sec:fom_definition} we define the Full Order Model (FOM), that is, 
@@ -182,12 +204,5 @@ The layout of the document is as follows:
     \item finally, in Section~\ref{sec:results_and_certification} we present reduction results
     and certify the reduction scheme with an efficient a posteriori error estimators obtained via model truncation.
 \end{itemize}
-Before all that, we frame our work within the current body of knowledge 
-with a short literature review.
-Additional references will be cited within the body of the document, 
-where their appearence is more accurate and helpful.  
-
-\subsection{Literature Review}
-\input{literature.tex}
 
 \end{document}

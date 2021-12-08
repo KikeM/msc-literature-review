@@ -77,13 +77,53 @@ the improvement and limits of the $u^{*}$-restricted approach.
 % sec:certification_limits
 % sec:arbitrary_mesh_nmdeim_mode_evaluation
 
+\subsection{RB Solution Basis}
+The piston is moving according to a harmonic law,
+and we have seen in Figure~\ref{fig:fom_probes} from the previous section
+how the flow response is periodic and nonlinear.
+Additionally, the solution is stretched in time with the boundary movement.
+We expect to find these effects in the RB solution modes.
+
+We show the first ten RB solution modes obtained by the POD 
+in Figure~\ref{fig:rb_solution_modes}.
+They are represented in the reference domain with $L_0=1$.
+The first five modes contain some sort of oscillatory response near the right,
+where the piston movement is located, 
+but they are not harmonic at all.
+The next five look more like Fourier modes, 
+which is an expected behaviour given the harmonic movement of the piston
+and the sampling for different $\omega$ values during training.
+The forcing of the piston at the right boundary can still be guessed.
+% where the amplitude is present.
+The first five modes capture the nonlinear response,
+whereas higher order modes present the oscillatory nature of the solution.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{research_project/piston/figures/hrom/RB_basis_modes.png}
+    \caption{First ten RB solution modes 
+    (0-indexing is used to be aligned with code results).
+    (Top) First five modes.
+    (Bottom) Next five modes.
+    The first modes seem to collect the effects of the weak shock wave formation.
+    The next five modes look like Fourier modes for different frequencies
+    (which is an expected behaviour given the harmonic movement of the piston
+    and the sampling for different $\omega$ values during training).
+    % since they do not present the piston's harmonic motion
+    % (which the remaining modes do seem to collect).
+    }
+    \label{fig:rb_solution_modes}
+\end{figure}
+
+\newpage
 \subsection{RB Solution Basis Error}
 \label{sec:hrom_results_reduced_basis}
 We explore how the number of modes influences the approximation error of the FOM solution.
 We have trained our model with 10 random samples according the parameter ranges given in
 Tables~\ref{tab:parameter_range} and~\ref{tab:dimensionless_groups}.  
 In Table~\ref{tab:uniform_stretching_basis_size} the resulting bases size are reported.
-Since the stretching is uniformly spread across the mesh elements, despite their change in time,
+Since the stretching is uniformly spread across the mesh elements, 
+despite their change in time,
 all the linear operators are trivially reduced.
 The RHS requires two RB operator modes because it contains the lifting and its gradient.
 \begin{table}[!h]
@@ -203,7 +243,7 @@ unless we include a sufficient number of RB solution modes.
 To fix this problem, certain techniques exist which enhance the POD basis 
 without adding excessive complexity \cite{weightedPOD}.
 
-\newpage
+% \newpage
 \subsection{N-MDEIM Basis Error}
 \label{sec:uniform_mdeim_errors}
 In this section we explore the reduction of the trilinear operator
@@ -612,7 +652,7 @@ Now that we have been able to reproduce the same behaviour,
 and to validate our working hypothesis,
 we go back to the use of RB solution modes.
 
-\newpage
+% \newpage
 \subsubsection{N-MDEIM with RB Solution Modes}
 \label{sec:nmdeim_one_mode}
 What would happen if we only used one mode from the RB solution modes to reduce the operator?
@@ -622,7 +662,7 @@ and create a linear combination $f(x)$ with them,
 \begin{equation}
     f(x) = 2 \psi_0(x) + \psi_1(x) + 3 \psi_2(x).
 \end{equation} 
-This is shown in Figure~\ref{fig:appendix_rb_linear_combination}.
+% This is shown in Figure~\ref{fig:appendix_rb_linear_combination}.
 We now reduce the trilinear form with two strategies:
 \begin{itemize}
     \item \mbox{(a) Subspace}: using only the first RB solution mode.
@@ -644,12 +684,12 @@ due to the linearity of the integrand within the trilinear form,
 and the linearity of the Jacobian transformation.
 Despite the fact that the function $f(x)$ contains other modes, 
 the collateral basis built with one mode is able to reproduce its effect on the operator perfectly. 
-\begin{figure}[h]
-    \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/linear_combination.png}
-    \caption{First three RB solution modes and a linear combination $f(x)$ of them.  
-    The RB solution modes are shown in dashed.}
-    \label{fig:appendix_rb_linear_combination}
-\end{figure}
+% \begin{figure}[h]
+%     \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/linear_combination.png}
+%     \caption{First three RB solution modes and a linear combination $f(x)$ of them.  
+%     The RB solution modes are shown in dashed.}
+%     \label{fig:appendix_rb_linear_combination}
+% \end{figure}
 \begin{figure}[h]
     \includegraphics[width=\columnwidth]{research_project/piston/figures/svd_fourier/trilinear_nonlinear/rb_basis_mdeim_errors_trilinear_num_1.png}
     \caption{Reconstruction error for the trilinear operator evaluated with linear combination $f(x)$.
@@ -667,6 +707,7 @@ the collateral basis built with one mode is able to reproduce its effect on the 
 \end{figure}
 In the next section we explore what happens if a nonlinear function is present in the integrand.
 
+\newpage
 \subsubsection{N-MDEIM with a Nonlinearity in Space}
 We have shown in the previous section how 
 one can achieve a perfect collateral basis for the trilinear using exclusively one RB solution mode.
@@ -719,6 +760,7 @@ meaningful results if it were used in a simulation.
     \label{fig:appendix_rb_nonlinear_num_3}
 \end{figure}
 
+\newpage
 \subsubsection{Wrap-Up}
 We have clarified the behaviour of the POD in the presence of a trilinear form 
 and a linear Jacobian transformation.
