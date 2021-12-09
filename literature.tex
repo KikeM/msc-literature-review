@@ -114,7 +114,7 @@ back in the days, when computational power was not so easy to access
 \label{sec:literature_review_deforming_mesh}
 % Finding the right literature for the Arbitrary Lagrangian Eulerian (ALE) formulation 
 % was more difficult than expected.
-Because the piston problem is a defined in a moving domain,
+Because the piston problem is defined in a moving domain,
 one needs to modify the formulation to account for the movement 
 of the mesh nodes, with the introduction of a convective term 
 governed by the mesh velocity vector.
@@ -236,7 +236,7 @@ Our narrative takes the perspective of: where does the basis come from?
 Or in other words,
 how many mathematical tools are necessary to obtain it?
 The construction of the reduced basis needs to take into account the following facts:
-there must a sampling strategy in the parameter space,
+there must be a sampling strategy in the parameter space,
 the reduced basis must converge to the span of the solutions,
 and it must be computationally efficient.
 
@@ -356,7 +356,7 @@ The entries at which the interpolation should be enforced
 are computed during the basis creation,
 and they represent those locations where the approximation behaves worse.
 The collection of the entries is referred to as the \textit{reduced mesh}.
-The collateral basis is generated with function valuations following
+The collateral basis is generated with function evaluations following
 a greedy procedure 
 \cite{Hesthaven2014}.
 

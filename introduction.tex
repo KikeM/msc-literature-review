@@ -45,7 +45,7 @@
         $a_0$ & reference speed of sound \\
         $p_0$ & reference pressure \\
         $\rho_0$ & reference density \\
-        $\delta$ & piston displacement from rest \\
+        $\delta$ & piston displacement from rest (as a fraction of $L_0$)\\
         $\omega$ & piston oscillating frequency  \\
         $c$ & dimensionless convection velocity \\
         $b_0$ & dimensionless constant convection coefficient \\
@@ -55,7 +55,7 @@
         $\sigma_c$ & Gaussian bell dispersion factor \\
         $y_c$ & Gaussian bell scaling factor \\
         $N_h$ & number of finite element degrees of freedom \\ 
-        $N$ & number of reduced basis degrees of freedom \\ 
+        $N$ & number of reduced basis modes \\ 
         $V_h$ & space of Lagrangian functions\\ 
         $V_N$ & space of RB solution modes\\ 
         $\varphi_i$ & Lagrangian finite element basis function \\ 
@@ -67,7 +67,7 @@
 \newpage 
 \section{Introduction}
 When a painter sets out to paint, she will probably use most of the available basic colours.
-However, if she knew beforehand that she was only going to paint landscapes, 
+However, if she knew beforehand that she is going to paint landscapes, 
 she would fare well with a farsighted palette: greens, browns, blues, whites, etc.
 Such is the nature of reduced order models, 
 to find a subset among the combinations of basic colours 
@@ -88,7 +88,7 @@ That is, we can find a basis for each algebraic operator to build them efficient
 
 Finally, since she is a vanguard painter, the domain of our problem, her canvas, 
 will be allowed to change in time as she paints.
-The landscape colours and brushes we select will need to take this into account.
+The landscape colours and brushes we select need to take this into account.
 
 So far with metaphors.
 
@@ -98,7 +98,7 @@ Conventional PDE discretization techniques
 rely on a generic representation of the PDE solution
 to form an algebraic system; 
 whose unknowns allow the determination of the PDE solution
-at each mesh location and time step. 
+at each mesh node for every time step. 
 The discretized operators which conform these algebraic systems
 are often sparse\footnote
 {
@@ -172,7 +172,7 @@ we build and certify an HROM
 for a one-dimensional parametrized piston problem, 
 whose movement is prescribed.
 The model PDE, the boundary conditions and 
-the geometrical configuration are parametrized.
+the mesh geometry are parametrized.
 The finite element method is used as the conventional discretization technique.
 This work extends 
 \cite{Santo_Manzoni_2019,
@@ -183,8 +183,9 @@ for unsteady problems with geometrically parametrized domains,
 although the mesh (and the domain boundary) remained fixed in time.
 
 \subsection{The Modeling Impact of a Moving Mesh}
-Physical problems with moving meshes require 
-the introduction of a convective term to account for 
+Physical problems with moving meshes 
+(related or not to fluid dynamics),
+require the introduction of a convective term to account for 
 the movement of the mesh, 
 and potentially a transformation in the finite element weak form.
 This transformation translates the integrals 
@@ -281,11 +282,6 @@ In this work we answer the following specific questions to drive our research:
     In Section~\ref{sec:fom_calibration} 
     we examine the FOM parametrization and response, 
     check the discretization convergence rates, and show GCL results.
-    In Section~\ref{sec:results_and_certification} we present reduction results
-    and certify the reduction scheme with an efficient a posteriori error estimators obtained via model truncation.
-
-    Finally, in Section~\ref{sec:results_and_certification} 
-    we present reduction results
-    and certify the reduction scheme with 
-    an efficient a posteriori error estimators obtained via model truncation.
+    Finally, in Section~\ref{sec:results_and_certification} we present reduction results
+    and certify the reduction scheme with an efficient a posteriori error estimators obtained via mode truncation.
 \end{document}

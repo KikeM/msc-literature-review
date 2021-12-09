@@ -100,7 +100,6 @@ where $\vb{X}_{h}$ and $\vb{F}_{h}$ stand for each of the FOM operators (matrice
 The assembly of matrices based on a FE basis can be easily done in parallel due to their local support, 
 whereas the integration of functions with global support is not necessarily computationally efficient.
 
-
 By doing so, we find the following pure ROM problem for the time evolution problem,
 \begin{subequations}
     \label{eq:1d_rom_weak_formulation_discrete}
@@ -146,10 +145,10 @@ this time in the reduced space, to be solved for each time step to advance the s
         \\
         \vb{\hat{u}}_{N}^{0} &= \vb{\hat{u}}_{N,0};
         \\[2mm]
-        \vb{K}_{N}^{n+1} &= m_{\text{BDF}} \Ah{M} + \dt \left[\Ah{A} + \Ah{C} \right. 
+        \vb{K}_{N}^{n+1} &= m_{\text{BDF}} \vb{M}^{n+1}_{N} + \dt \left[\vb{A}^{n+1}_{N} + \vb{C}^{n+1}_{N} \right. 
         \nonumber 
         \\
-                        &\left. + \Ah{\hat{N}} + \Ah{N}\left(\vb{\hat{u}}_{N}^{*}\right)\right],
+                        &\left. + \vb{\hat{N}}^{n+1}_{N} + \vb{N}^{n+1}_{N}\left(\vb{\hat{u}}_{N}^{*}\right)\right],
         \\[2mm]
         \vb{b}_{N}^{n+1} &= \vb{F}_{\vb{\hat{u}}_{N}}^{n} + \dt \vb{F}_{g,N}^{n+1}.
     \end{align}
@@ -279,7 +278,7 @@ The modes $\psi_i$ are obtained from an optimality problem in the $L^2$ norm,
 \begin{equation}
     (v_i, \psi_i) \, \text{s.t.} \, \min \sum_k \norm{y_k(x) - \sum_i v_i \psi_i}^2 \leq \epspod,
 \end{equation}
-that is, the representation of any vector in the original space can be reconstructed the POD basis, 
+that is, the representation of any vector in the original space can be reconstructed by the POD basis, 
 and the error in the $L^2$ norm should be less or equal to \epspod.
 
 There is a relation between the prescribed tolerance error $\epspod$ 
@@ -598,10 +597,10 @@ to be solved for each time step to advance the solution,
         \\
         \vb{\hat{u}}_{N}^{0} &= \vb{\hat{u}}_{N,0};
         \\[5mm]
-        \vb{K}_{N}^{m, n+1} &= m_{\text{BDF}} \Ahm{M} + \dt \left[\Ahm{A} + \Ahm{C} \right. 
+        \vb{K}_{N}^{m, n+1} &= m_{\text{BDF}} \vb{M}^{m, n+1}_{N} + \dt \left[\vb{A}^{m, n+1}_{N} + \vb{C}^{m, n+1}_{N} \right. 
         \nonumber 
         \\
-                        &\left. + \Ahm{\hat{N}} + \Ahm{N}\left(\vb{\hat{u}}_{N}^{m, *}\right)\right],
+                        &\left. + \vb{\hat{N}}^{m, n+1}_{N} + \vb{N}^{m, n+1}_{N}\left(\vb{\hat{u}}_{N}^{m, *}\right)\right],
         \\[2mm]
         \vb{b}_{N}^{m, n+1} &= \vb{F}_{\vb{\hat{u}}_{N}}^{m,n} + \dt \vb{F}_{g,N}^{m, n+1}.
     \end{align}

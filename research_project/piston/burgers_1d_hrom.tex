@@ -439,7 +439,7 @@ because there is no decay in its singular value spectrum.
 We will clarify the loss of hierarchy in Section~\ref{sec:nonhierachical_pod_bases}.
 
 \newpage
-\subsection{Non-Hierachical POD Bases}
+\subsection{Non-Hierarchical POD Bases}
 \label{sec:nonhierachical_pod_bases}
 We investigate further the non-hierarchical character of the N-MDEIM basis
 that showed up in Section~\ref{sec:us_non-hierarchical_basis}.
@@ -496,7 +496,7 @@ each of the $u_k^{*}$ values is quite similar to the ones from the previous time
 However, when the modes are used to create 
 the trilinear operator snapshots, 
 for any two different basis modes $\psi_1(x)$ and $\psi_2(x)$,
-we know that they satisfy an orthogonality condition,
+we know that they satisfy an orthogonality condition.
 % \begin{equation}
 %     \int_\Omega \psi_1(x) \psi_2(x) \dd x = 0.
 % \end{equation}
@@ -813,7 +813,7 @@ we are better off computing the FOM model straightaway
 Hence, we need an efficient a posteriori error estimator.
 
 \subsubsection{Sacrificial ROM}
-We use the model truncation technique.
+We use the mode truncation technique.
 That is, we carry with us \textit{two} ROMs,
 with different basis sizes.
 The additional ROM is called \textit{sacrificial} ROM (SROM).
@@ -1137,7 +1137,7 @@ the RB solution approximation error is smaller or greater than the (M)DEIM error
 The conclusion of the experiments is that if the RB solution error 
 is smaller than the (M)DEIM error,
 the HROM error is saturated by the (M)DEIM errors;
-and hence the model truncation technique cannot be used to certify the HROM results,
+and hence the mode truncation technique cannot be used to certify the HROM results,
 because both HROMs produce the same result.
 When the RB solution error is greater than the (M)DEIM error, 
 the trucation technique will produce effective error estimations.

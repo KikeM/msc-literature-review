@@ -45,7 +45,7 @@ The piston movement $L(t)$ is a real-valued smooth sinusoidal function,
     L(t) = L_0 \left[1 - \delta \left(1 - \cos \left(\omega t\right)\right)\right],
 \end{equation}
 where~$\omega$ is the frequency at which it oscillates, 
-and \mbox{$\delta \ll L_0$} is a scale variable to adjust how much it is displaced from its original position. 
+and \mbox{$\delta \ll 1$} is a scale variable to adjust how much it is displaced from its original position. 
 A sketch is given in Figure~\ref{fig:piston}.
 The length $L_0$ is defined to keep physical dimensions sound, 
 but it will be fixed to $L_0=1$ for the remainder of the work.
@@ -218,32 +218,36 @@ Before we present the complete problem and its numerical solution, we comment
 on the integral equation for mass conservation.
 This equation will not be explicitely used to integrate the system
 (as some methods do), 
-but we will use it is a numerical check 
+but we will use it as a numerical check 
 to assess the correcteness of the results
-(we expect to satisfy up to a given accuracy).
+(we expect to satisfy it up to a given accuracy).
 
 For a control volume whose boundary moves with the piston, 
 the integral expression for mass conservation is
 \begin{equation}
-    \frac{d}{dt}\int_{\Omega_t} \rho d\Omega 
+    \frac{d}{dt}\int_{\Omega_t} \rho \dd \Omega 
     + \int_{\partial\Omega_t} \rho \left(\vec{u} - \vec{u}_c\right) \cdot \vec{n} dS = 0
 \end{equation}
 At the piston location the flow moves with the piston, $\vec{u} = \vec{u}_c$, 
 so the boundary integral vanishes. 
-There is no flux through the walls either, so the only contribution left is the outflow.
+There is no flux through the walls either, so the only contribution left is the outlet.
 At this location, the scalar product of the velocity and normal vectors is 
-negative\footnote{Although we expect the flow to leave the domain at this point, 
-which means a negative magnitude, this products needs to be done taking 
-the variables positive in the direction of the axes.}, which implies
+negative\footnote
+{
+    Although we expect the flow to leave the domain during compression, 
+    which means a negative magnitude, this products needs to be done taking 
+    the variables positive in the direction of their axes.
+}, 
+which implies
 \begin{equation}
-    \frac{d}{dt}\int_{0}^{L(t)} \rho(x,t) dx - \rho(0,t) u(0,t) = 0.
+    \frac{d}{dt}\int_{0}^{L(t)} \rho(x,t) \dd x - \rho(0,t) u(0,t) = 0.
     \label{eq:integral_mass_conservation}
 \end{equation}
 If we introduce the expression for density in terms of velocity from 
 Equation~(\ref{eq:density_as_a_function_of_speed}), we get
 \begin{equation}
 \begin{split}
-        \frac{d}{dt}\int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}\left(\frac{u(x,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}} dx 
+        \frac{d}{dt}\int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}\left(\frac{u(x,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}} \dd x 
         \\
         - u(0,t) \left(1 - \frac{\gamma-1}{2}\left(\frac{u(0,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}}  = 0,
 \end{split}
@@ -253,7 +257,7 @@ and the whole equation an equality with zero.
 
 To ease our task at verifying this equation, we rather calculate the integral term for each time step
 \begin{equation}
-    I(t) = \int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}\left(\frac{u(x,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}} dx,
+    I(t) = \int_{0}^{L(t)} \left(1 - \frac{\gamma-1}{2}\left(\frac{u(x,t)}{a_0}\right)\right)^{\frac{2}{\gamma-1}} \dd x,
 \end{equation}
 and only then compute time derivatives, which can be done with a second order finite difference scheme.
 Then we can compute the mass defect $MD(t)$ between the time derivative of volume variation
@@ -375,7 +379,7 @@ the solution does not change in space once it is far away from the piston motion
 
 \subsubsection{ALE Formulation}
 Despite the fact that we will be solving the problem in the physical moving domain, 
-we still need the two basic ingredients stemming at the root of the ALE method:
+we still need two basic ingredients stemming at the root of the ALE method:
 \begin{itemize}
     \item a smooth mapping between domains;
     \item a mesh velocity vector.
@@ -390,7 +394,7 @@ that connects a point in the fixed reference domain $\mathcal{X}$ with a point i
         \aleX &= \alemap^{-1}(x, t).
     \end{align}
 \end{subequations}
-We assume this map to be regular enough for all the operations that we will carry with it.
+We assume this map to be regular enough for all the operations that we carry with it.
 Then, we define the mesh velocity $w_m(x,t)$ function as the time derivative of the spatial coordinate, which will coincide with the time derivative of the ALE map:
 \begin{equation}
     w_m(x,t) = \pdv{x}{t} = \pdv{\alemap}{t} \ (x, t) = \pdv{\alemap}{t} \ (\alemap(\aleX,t), t).
@@ -471,9 +475,9 @@ which proves the identity.
 Equation~\eqref{eq:jacobian_derivative} could be part of our problem 
 if we did not have access to an explicit expression for the Jacobian, 
 and we wanted to solve our problem in a fixed reference domain. 
-It is an ODE whose initial condition would be 
-$J_{\alemap}(0) = 1$
-if the reference domain coincided with the initial domain configuration of the transient domain.
+If the reference domain coincided with the initial configuration of the transient domain,
+this would be an ODE whose initial condition is 
+$J_{\alemap}(0) = 1$.
 
 \subsubsection{ALE: Non-Uniform Mesh Displacement}
 We also introduce a non-uniform distortion to the nodes,
@@ -486,7 +490,7 @@ where three geometrical parameters are defined:
 \begin{itemize}
     \item $x_c$: location;
     \item $\sigma_c$: span,
-    \item $y_0$: magnitude.
+    \item $y_c$: magnitude.
 \end{itemize}
 This will concentrate nodes on a specific region of the domain.
 Then, for $\aleX \in \Omega_0$, where $\Omega_0 = \qty[0, L_0]$ is the fixed reference domain,
@@ -546,7 +550,7 @@ from where we get the necessary modification to the strong form (\ref{eq:1d_fom_
     - \varepsilon \pdv[2]{u}{x} = 0.
 \end{equation}
 An additional convective term shows up, to take into account the movement of the nodes.
-We will show in the results section how, if we remove this term, mass is no longer conserved.
+If we neglect this term, mass is no longer conserved.
 
 % -----------------------------------------------------------------------------
 \subsubsection{Dimensionless Equations}
@@ -652,7 +656,7 @@ if two functions \textit{look} alike $\norm{f-g}$ will return a small value,
 \end{equation}
 % Eventually, we will also be interested in other norms, such as the $H^1(\Omega)$ norm, which captures the differences in the gradients too.
 % This is important when computing stress-related values from the solved field.
-With this inner product, we project the residual of the strong formulation onto a given fuction 
+With this inner product, we project the residual of the strong formulation onto a given fuction space 
 $u, v \in V$,
 where $V$ is a suitable Hilbert space,
 \begin{subequations}
