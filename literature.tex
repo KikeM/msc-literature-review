@@ -43,7 +43,7 @@
 % You can use it to discuss various theories, models, and definitions of key concepts.
 % You might argue for the relevance of a specific theoretical approach, 
 % or combine various theoretical concepts to create a framework for your research.
-In the following, we present the relevant literature used in this work.
+% In the following, we present the relevant literature used in this work.
 % We have preferred to group references by conceptual blocks, 
 % and towards the end bridge all of them together.
 We have used mainly two types of papers: 
@@ -380,6 +380,20 @@ is much cheaper than assembling the whole operator
 \cite{Santo_Manzoni_2019}.
 Additionally, the collateral basis can be projected in the reduced space,
 so that the reduced operator is approximated right away. 
+
+When nonlinearities in the solution are present, 
+two options are available to solve the problem.
+Either the \mbox{Newton-Rapshon} (NR) method 
+is used, 
+and the MDEIM technique is used 
+to approximate the NR Jacobian matrix \cite{Wirtz2014};
+or the nonlinear term is discretized in such a way
+that it is modeled by a trilinear form,
+whose additional argument is an approximation of 
+the effects that using the actual solution would produce,
+and the MDEIM is used to approximate the trilinear form
+\cite{Santo_Manzoni_2019}.
+In our work, we follow the second approach.
 
 In all of the above, 
 time can be easily included by treating it as an additional parameter,

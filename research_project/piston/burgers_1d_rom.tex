@@ -427,7 +427,6 @@ and so we introduce the notation $A_h^m(t, \mu)$ to reference the approximation 
     \label{eq:1d_rom_burgers_system_approximation}
     A_h(t, \mu) \simeq A_h^m(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{h,q}.
 \end{equation}
-
 Naturally, this idea leads to the concept of approximated reduced operators,
 \begin{equation}
     A_N(t, \mu) \simeq A_N^m(t, \mu) = \sum_q^{Q_a} \Theta_q^a(t, \mu) A_{N,q},
@@ -440,8 +439,11 @@ has been projected unto the reduced space.
 To evaluate the $\Theta_q^a(t, \mu)$ functions, we set and solve an interpolation problem;
 that is, we enforce the approximation to actually match certain entries of the operator, 
 \begin{equation}
+    \begin{split}
+        [A_h(t, \mu)]_{k} &= [A_h^m(t, \mu)]_{k} \\
+                          &= \sum_q^{Q_a} \Theta_q^a(t, \mu) [A_{h, q}]_{k}, 
+    \end{split}
     \label{eq:1d_rom_burgers_interpolation_problem}
-    [A_h(t, \mu)]_{k} = [A_h^m(t, \mu)]_{k} = \sum_q^{Q_a} \Theta_q^a(t, \mu) [A_{h, q}]_{k}
 \end{equation}
 for certain indices~$k \in \mathcal{I}_a$ such that~$\left|\mathcal{I}_a\right| = Q_a$.
 These indices $\mathcal{I}_a$ are known as the reduced mesh nodes, 

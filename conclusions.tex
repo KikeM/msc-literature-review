@@ -1,5 +1,24 @@
 \documentclass[thesis.tex]{subfiles}
 
+% \subsection{Research Questions}
+% In this work we answer the following specific questions to drive our research:
+% \begin{itemize}
+%     \item How can the expense of the online application be minimised? 
+%     This minimization will go through using 
+%     as little information from the FOM as possible 
+%     (including using no information at all).
+%     % [This is what is implied by your perfect online/offline split objective]
+%     \item How does the type of mesh movement, 
+%     (e.g. uniform or non-uniform stretching) 
+%     affect the reducibility of the operator?
+%     \item How does the nonlinear term affect the hyperreduction?
+%     \begin{itemize}
+%         \item Is there more than one way to reduce a nonlinear term?
+%     \end{itemize}
+%     \item How should a moving-domain problem be implemented to 
+%     ensure a general but relatively compact HROM? 
+%     % [the lifting procedure and algebraic approach will be parts of the answer to this]
+% \end{itemize}
 
 \begin{document}
 
@@ -7,46 +26,66 @@
 % The Jacobian can be succesfully skipped!
 An hyper reduced order model has been succesfully created and certified for
 the one-dimensional isentropic moving piston.
-This is a simplified gas dynamics problem, 
-with all the ingredients that conform a real life problem in their milder versions:
+This simplified gas dynamics problem contains 
+all the ingredients that conform a real life problem:
 a Burgers-like nonlinear term and a moving mesh.
-We have dealt in a general way with the parametrized Dirichlet boundary conditions,
-without any assumption on their functional form.
+% 
 Two parametrized moving meshes have been introduced: 
-uniform and non-uniform mesh stretching, 
-using a Gaussian bell density function as a proxy
-for more elaborate mesh moving techniques.
+uniform and non-uniform mesh stretching. 
+% using a Gaussian bell density function as a proxy
+% for more elaborate mesh moving techniques.
 We are not restricted to moving boundaries, 
 the conclusions and methods are also valid for domains 
 whose mesh nodes move inside the domain, 
 whilst remaining fixed at the boundaries.
-Our reduction strategy permits us to remain in the physical domain, 
+
+The reduction strategy permits us to remain in the physical domain, 
 thus skipping the Jacobian transformation.
 
-The methodology is purely algebraic, 
-with a non-intrusive property that should allow its implementation on existing solvers.
-We have obtained a reduced basis to carry out the Galerkin projection;
+\subsection{Research Answers}
+Thanks to the fact that the methodology is purely algebraic, 
+and that we have dealt in a general way 
+with the parametrized Dirichlet boundary conditions,
+(without any assumption on their functional form),
+our reduction strategy adquires non-intrusive and compactness properties,
+that should allow its implementation on existing solvers.
+
+We have identified a reduced basis to carry out the Galerkin projection;
 and a collateral basis for each of the algebraic operators (vectors and matrices),
 to approximate their projection onto the reduced space 
 without explicitly assembling and projecting the original FOM operator.
 Building the collateral basis increases the cost of the offline stage,
 but it allows a perfect offline-online split:
 no FOM operators are used during the online run. 
-For the linear operators, the offline stage is carried out separately from the FOM simulation,
-so that a wider parameter range can be spanned. 
+For the linear operators,
+the offline stage is carried out separately 
+from the solution RB basis identification,
+so that a wider parameter range can be spanned,
+and thus a richer operator basis obtained
+(a simulation is more expensive than the assembly of an operator).
+To approximate the operators at the same level of accuracy, 
+the presence of the non-uniform mesh movement 
+requires more operator modes than the uniform mesh.
 
-\subsection{Discretization Flexibility}
+The interaction between the RB and (M)DEIM errors has been analyzed.
+The number of RB solution and RB operators modes needs to be such that
+the (M)DEIM error is always smaller or equal to the RB solution error.
+Otherwise, the certification by truncation technique will fail.
+
+\subsubsection{Discretization Flexibility}
 The (M)DEIM technique determines certain operator entries which 
 have to be computed at runtime during the online stage 
 to carry out the empirical interpolation.
 In the finite element context, this is quite convenient.
 The restricted operator entries are computed by evaluating the weak form integral
 for the mesh elements associated with the selected entries. 
-However, this technique is not tied to the the finite element formulation.
-All the content of this work could be reused in a finite difference or finite volume formulation,
-provided that the implementation is capable of an efficient calculation of individual operator entries.
+% However, this technique is not tied to the the finite element formulation.
+However, all the content of this work could be reused 
+in a finite difference or finite volume formulation,
+provided that the implementation is 
+capable of an efficient calculation of individual operator entries.
 
-\subsection{Nonlinear Convection MDEIM}
+\subsubsection{Nonlinear Convection MDEIM}
 Due to the velocity extrapolation in Burgers' nonlinear convection term,
 a trilinear operator is present in the FOM discretization.
 We have compared two approaches to create the MDEIM basis for this operator:
@@ -75,12 +114,6 @@ in terms of a linear combination of the solutions.
 In fact, if the additional argument belonged to another space (different from the solution space),
 the modes\footnote{Not necessarily obtained with a POD decomposition.} of such function space could be used to sample the operator efficiently.
 
-\subsection{RB and MDEIM Interaction Error}
-The interaction between the RB and (M)DEIM errors has been analyzed.
-The number of RB solution and RB operators modes needs to be such that
-the (M)DEIM error is always smaller or equal to the RB solution error.
-Otherwise, the certification by truncation technique will fail.
-
 \subsection{Limitations and Future Work}
 We are aware of how we have benefited from solving our PDE in a one-dimensional domain.
 Despite the presence of a nonlinear term and a moving mesh,
@@ -90,7 +123,7 @@ Nevertheless, our whole procedure would scale switfly to higher dimensions.
 We have restricted ourselves to $\mathbb{P}1$ finite elements.
 Although for one-dimensional domains scaling to higher order polynomials does not
 raise dimensionality issues, for actual three-dimensional domains it would.
-Therefore, we saw no need to rising our degree at this point.
+Therefore, we saw no need for rising our degree at this point.
 
 % The next natural step would be to extend the methodology to higher-dimensional domains.
 The oscillating cylinder problem is a good candidate 

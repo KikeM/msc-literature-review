@@ -92,30 +92,105 @@ The landscape colours and brushes we select will need to take this into account.
 
 So far with metaphors.
 
-\subsection{Purpose and Layout}
-We are going to build and certify an
-{hyper reduced order model} 
-for a one-dimensional parametrized piston problem, 
-whose movement is prescribed.
+\subsection{The Need for Reduction}
+Conventional PDE discretization techniques 
+(finite elements, finite volumes, finite differences, etc.) 
+rely on a generic representation of the PDE solution
+to form an algebraic system; 
+whose unknowns allow the determination of the PDE solution
+at each mesh location and time step. 
+The discretized operators which conform these algebraic systems
+are often sparse\footnote
+{
+    Conventional discretization techniques typically 
+    use functions with local support to represent the solution.
+}
+and high-dimensional\footnote
+{
+    The more mesh nodes are added to the mesh
+    (and thus the more unknowns the discretized algebraic system has),
+    the closer the discrete PDE solution will get to the continuous PDE solution.
+}.
+For real-life scenarios, the computational time
+required to solve them 
+can become prohibitive 
+for parameter sweeps or optimization problems
+(two tasks which are often an important step of scientific or engineering works).
+
+This leads to the idea of building and using
+ad-hoc reduced basis (RB) modes 
+to represent the solution, 
+in substitution of the generic functions used by conventional methods.
+The RB solution modes encode the main dynamics of the PDE,
+and thus with a few number of them the solution can be accurately represented.   
+The reduced order model (ROM) associated to the RB solution modes is 
+obtained by projection of the discretized operators associated 
+with the original conventional method.
+The resulting linear system is dense,
+and several orders of magnitude smaller;
+which makes it suitable for many-query tasks.
+We refer to the RB mode identification step as the 
+\textit{offline stage};
+and to its use to solve new problems as the
+\textit{online stage}.
+
+\subsubsection{Reduction in a Moving Mesh Context}
+In the context of a fixed mesh, 
+the assembly and projection steps take place once and for all.
+On the contrary, if the mesh moves in time,
+these steps need to take place for every time step\footnote
+{
+    Discrete 
+    integrals,
+    fluxes, 
+    or interpolations 
+    associated to the conventional discretization method
+    need to be recomputed for the new mesh.
+}.
+Hence, despite the reduction in size of the linear system,
+there is still a considerable overhead during its assembly.
+To overcome it, a system approximation technique is introduced,
+following the same idea behind RB modes: 
+find and use a suitable ad-hoc representation basis;
+thus the discrete operator is expressed as 
+a linear combination of operator modes (collateral basis).
+The system approximation technique must require that 
+an efficient assembly of the projected operator can be obtained
+at runtime, for each time step.
+
+Since a basis is identified for the solution and each of the algebraic operators,
+the combination of these two techniques defines an hyper reduced order model (HROM).
 The adjective \mbox{\textit{hyper}}\footnote{
-    Word-forming element meaning "over, above, beyond", 
-    and often implying "exceedingly, to excess".
     From Greek \textit{hyper} (prep. and adv.) 
     "over, beyond, overmuch, above measure".
 } is present because 
 a collateral basis will be created for each algebraic operator,
 on top of the one created for the solution space.
-The model PDE, the boundary conditions and the geometrical configuration will be parametrized.
 
-This work extends \cite{Santo_Manzoni_2019,2015_efficientModelReductionParametrizedSystemsMatrixDeim_Negri}
-(albeit for a simpler PDE), 
-which introduced the MDEIM technique for parametrized domains, whose mesh remained fixed in time.
+To put in practice the ideas previously stated, 
+we build and certify an HROM 
+for a one-dimensional parametrized piston problem, 
+whose movement is prescribed.
+The model PDE, the boundary conditions and 
+the geometrical configuration are parametrized.
+The finite element method is used as the conventional discretization technique.
+This work extends 
+\cite{Santo_Manzoni_2019,
+2015_efficientModelReductionParametrizedSystemsMatrixDeim_Negri}
+(albeit for a simpler PDE and domain), 
+which did introduce the MDEIM system approximation technique 
+for unsteady problems with geometrically parametrized domains, 
+although the mesh (and the domain boundary) remained fixed in time.
 
-\subsubsection{Thesis Goal}
-Physical problems with moving meshes may require 
-the introduction of a transformation in the weak form,
-to translate the PDE defined in a deforming space into a fixed, 
-numerical grid, as shown in Figure~\ref{fig:jacobianTransformation}.
+\subsection{The Modeling Impact of a Moving Mesh}
+Physical problems with moving meshes require 
+the introduction of a convective term to account for 
+the movement of the mesh, 
+and potentially a transformation in the finite element weak form.
+This transformation translates the integrals 
+defined in a deforming space into a fixed, 
+numerical grid, 
+as shown in Figure~\ref{fig:jacobianTransformation}.
 \begin{figure}[h]
     \includegraphics[width=\columnwidth]{research_project/piston/figures/Jacobian_determinant_and_distortion.png}
     \caption{Numerical fixed grid to the left, physical moving mesh to the right.
@@ -156,7 +231,7 @@ It might even be the case that we cannot completely uncouple the ROM from the FO
 if the problem is complex enough, or that we need satellite\footnote
 {
     If the Jacobian is derived from a PDE, 
-    this would be an additional ROM with its corresponding reduced basis to 
+    this would require an additional ROM with its corresponding reduced basis to 
     enhance computation times.
 } ROMs to compute the Jacobian matrix efficiently.
 
@@ -165,44 +240,52 @@ we develop a ROM formulation which allows us to remain in the physical domain,
 whilst maintaining a perfect \textit{offline-online} decomposition,
 allowing our reduction scheme to reach its maximum efficiency.
 
-
+\subsection{Literature Review}
 We now frame our work within the current body of knowledge 
 with a short literature review.
 Additional references will be cited within the body of the document, 
 where their appearence is more accurate and helpful.  
-
-\subsection{Literature Review}
 \input{literature.tex}
 
+\clearpage
 \subsection{Research Questions}
-- How can the expense of the online application be minimised? 
-[This is what is implied by your perfect online/offline split objective]
-
-- How does the type of mesh movement, 
-(e.g. uniform or non-uniform stretching ) affect the reducibility of the operator?
-
-- How does the non-linear term affect the hyperreduction?
-
-- How should a moving-domain problem be implemented to 
-ensure a general but relatively compact hyperROM? 
-[the lifting procedure and algebraic approach will be parts of the answer to this]
-
-\subsection{Document Layout}
-The layout of the document is as follows:
+In this work we answer the following specific questions to drive our research:
 \begin{itemize}
-    \item in Section~\ref{sec:fom_definition} we define the Full Order Model (FOM), that is, 
-    the model PDE and its boundary conditions, 
-    mesh deformation and the associated Arbitrary Lagrangian Eulerian (ALE) formulation
-    in the physical domain,
-    both at the continuous and discrete levels;
-    \item in Section~\ref{sec:rom_definition} we explain the details of the reduction scheme, 
-    along with the system approximation technique (M)DEIM;
-    \item in Section~\ref{sec:fom_calibration} we analyze the FOM discretization, 
-    and show convergence figures 
-    % and solutions for the moving piston for different parametrizations
-    ;
-    \item finally, in Section~\ref{sec:results_and_certification} we present reduction results
-    and certify the reduction scheme with an efficient a posteriori error estimators obtained via model truncation.
+    \item How can the expense of the online application be minimised? 
+    This minimization will go through using 
+    as little information from the FOM as possible 
+    (including using no information at all).
+    % [This is what is implied by your perfect online/offline split objective]
+    \item How does the type of mesh movement, 
+    (e.g. uniform or non-uniform stretching) 
+    affect the reducibility of the operator?
+    \item How does the nonlinear term affect the hyperreduction?
+    Is there more than one way to reduce a nonlinear term?
+    \item How do the approximation errors of
+    the solution and operators RB basis interact?
+    \item How should a moving-domain problem be implemented to 
+    ensure a general but relatively compact HROM? 
+    % [the lifting procedure and algebraic approach will be parts of the answer to this]
 \end{itemize}
 
+\subsection{Document Layout}
+    In Section~\ref{sec:fom_definition} we derive the full order model (FOM), 
+    that is, the model PDE and its boundary conditions, 
+    mesh deformation and 
+    the associated Arbitrary Lagrangian Eulerian (ALE) formulation
+    in the physical domain,
+    both at the continuous and discrete levels.
+    In Section~\ref{sec:rom_definition} we explain the details of the reduction scheme, 
+    along with the system approximation technique (M)DEIM.
+
+    In Section~\ref{sec:fom_calibration} 
+    we examine the FOM parametrization and response, 
+    check the discretization convergence rates, and show GCL results.
+    In Section~\ref{sec:results_and_certification} we present reduction results
+    and certify the reduction scheme with an efficient a posteriori error estimators obtained via model truncation.
+
+    Finally, in Section~\ref{sec:results_and_certification} 
+    we present reduction results
+    and certify the reduction scheme with 
+    an efficient a posteriori error estimators obtained via model truncation.
 \end{document}

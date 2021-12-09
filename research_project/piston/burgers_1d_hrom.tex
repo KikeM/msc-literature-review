@@ -87,16 +87,20 @@ We expect to find these effects in the RB solution modes.
 We show the first ten RB solution modes obtained by the POD 
 in Figure~\ref{fig:rb_solution_modes}.
 They are represented in the reference domain with $L_0=1$.
-The first five modes contain some sort of oscillatory response near the right,
+The first five modes contain some sort of oscillatory response near the right boundary,
 where the piston movement is located, 
 but they are not harmonic at all.
-The next five look more like Fourier modes, 
+The next five modes look similar to Fourier modes, 
 which is an expected behaviour given the harmonic movement of the piston
-and the sampling for different $\omega$ values during training.
-The forcing of the piston at the right boundary can still be guessed.
+and the fact that we sample for different $\omega$ values during training.
+The forcing of the piston at the right boundary can be guessed.
 % where the amplitude is present.
 The first five modes capture the nonlinear response,
 whereas higher order modes present the oscillatory nature of the solution.
+
+We do not represent the RB operator bases because
+their interpretation would be too abstract, 
+given that the operator itself does not have a simple representation in space.
 
 \begin{figure}[h]
     \centering
@@ -108,7 +112,7 @@ whereas higher order modes present the oscillatory nature of the solution.
     The first modes seem to collect the effects of the weak shock wave formation.
     The next five modes look like Fourier modes for different frequencies
     (which is an expected behaviour given the harmonic movement of the piston
-    and the sampling for different $\omega$ values during training).
+    and the fact that we sample for different $\omega$ values during training).
     % since they do not present the piston's harmonic motion
     % (which the remaining modes do seem to collect).
     }
@@ -1230,7 +1234,8 @@ This is due to the following facts:
 \end{itemize}
 The last fact is crucial, making the non-uniform mesh size go unnoticed.
 For $\mathbb{P}1$ polynomials, the derivative of the Lagrangian function 
-is the inverse of the mesh size, which gets cancelled by the integration.
+is the inverse of the mesh size, which gets cancelled 
+by the integration over the mesh element.
 This is a known fact of convection-like forms, 
 for which the mesh size does not show up in the FEM matrix.
 We could have expected that due to the non-uniform displacement,
@@ -1241,7 +1246,7 @@ For our particular scenario
 (despite the the non-uniform of the mesh displacement),
 to reduce the trilinear form it is sufficient to collect snapshots for one parameter
 for as many RB solution modes as we will be using for the HROM simulation
-(taking into account the SROM). 
+(taking into account the number of modes carried by the SROM). 
 
 As we saw in previous sections, when the basis is not hierarchical, 
 the reconstruction error cannot be used as a proxy to determine the accuracy of the collateral basis.
